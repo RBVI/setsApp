@@ -42,6 +42,7 @@ public class CyActivator extends AbstractCyActivator {
 
 		TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
 		Properties createSetTaskProps = new Properties();
+		// These are just example properties for placing the factory in the apps menu
 		createSetTaskProps.setProperty(PREFERRED_MENU, "Apps.SetsApp");
 		createSetTaskProps.setProperty(TITLE, "Create set");
 		createSetTaskProps.setProperty(COMMAND, "createSet");
