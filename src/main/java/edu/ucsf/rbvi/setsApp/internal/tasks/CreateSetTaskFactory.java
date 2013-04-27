@@ -7,9 +7,11 @@ import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 import edu.ucsf.rbvi.setsApp.internal.SetOperations;
 
 
@@ -46,8 +48,8 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 		return null;
 	}
 	
-	public TaskIterator createTaskIterator(String setName, List<CyIdentifiable> cyIds) {
-		return new TaskIterator(new CreateSetTask(setsManager, setName, cyIds));
+	public TaskIterator createTaskIterator(String setName, CyNetworkViewManager networkViewManager, CyIdType t) {
+		return new TaskIterator(new CreateSetTask(setsManager, setName, networkViewManager, t));
 	}
 	
 	public TaskIterator createTaskIterator(String setName, List<CyNode> cyNodes, List<CyEdge> cyEdges) {

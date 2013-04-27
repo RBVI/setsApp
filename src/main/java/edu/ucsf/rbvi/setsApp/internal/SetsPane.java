@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,6 +23,7 @@ import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -62,14 +65,16 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		createNodeSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(null, getSelectedNodes(networkViewManager), null));
+			//	taskManager.execute(createSetTaskFactory.createTaskIterator(null, getSelectedNodes(networkViewManager), null));
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
 			}
 		});
 		createEdgeSet = new JButton("Create Edge Set");
 		createEdgeSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(null, null, getSelectedEdges(networkViewManager)));
+			//	taskManager.execute(createSetTaskFactory.createTaskIterator(null, null, getSelectedEdges(networkViewManager)));
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
 			}
 		});
 		importSet = new JButton("Import Set");
@@ -116,17 +121,14 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		return bundleContext.getService(bundleContext.getServiceReference(serviceClass.getName()));
     }
 	
-	private List<CyNode> getSelectedNodes(CyNetworkViewManager networkViewManager) {
+/*	private List<CyNode> getSelectedNodes(CyNetworkViewManager networkViewManager) {
 		List<CyNode> cyNodes = null;
 		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
 		CyNetwork cyNetwork = null;
 		while (networkViewSet.hasNext()) {
 			cyNetwork = networkViewSet.next().getModel();
 			if (cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class))
-		/*	if (cyNodes == null) */
 				cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
-		/*	else
-				cyNodes.addAll(CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true)); */
 		}
 		return cyNodes;
 	}
@@ -141,7 +143,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
 		}
 		return cyEdges;
-	}
+	} */
 	
 	private static final long serialVersionUID = -3152025163466058952L;
 
@@ -170,6 +172,15 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			CyIdentifiable cyId = iterator.next();
 			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
 		}
+		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
+		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
+		if (networkTable.getColumn(event.getSetName()) == null)
+			networkTable.createListColumn(event.getSetName(), String.class, false);
+		ArrayList<String> suidSet = new ArrayList<String>();
+		iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
+		while (iterator.hasNext())
+			suidSet.add(iterator.next().getSUID().toString());
+		networkTable.getRow(cyNetwork.getSUID()).set(event.getSetName(), suidSet);
 	}
 
 	public void setRemoved(SetChangedEvent event) {
