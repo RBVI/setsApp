@@ -20,7 +20,6 @@ import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.view.model.CyNetworkView;
@@ -164,9 +163,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	}
 
 	public void setCreated(SetChangedEvent event) {
+		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
+		sets.add(thisSet);
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		while (iterator.hasNext()) {
-			System.out.println(iterator.next().toString());
+			CyIdentifiable cyId = iterator.next();
+			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
 		}
 	}
 

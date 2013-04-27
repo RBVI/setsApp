@@ -76,14 +76,17 @@ public class SetsManager {
 	
 	public void union(String newName, String set1, String set2) {
 		setsMap.put(newName, setsMap.get(set1).unionGeneric(newName, setsMap.get(set2)));
+		fireSetCreatedEvent(newName);
 	}
 	
 	public void intersection(String newName, String set1, String set2) {
 		setsMap.put(newName, setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2)));
+		fireSetCreatedEvent(newName);
 	}
 	
 	public void difference(String newName, String set1, String set2) {
 		setsMap.put(newName, setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2)));
+		fireSetCreatedEvent(newName);
 	}
 	
 	public Set<? extends CyIdentifiable> getSet(String setName) {
