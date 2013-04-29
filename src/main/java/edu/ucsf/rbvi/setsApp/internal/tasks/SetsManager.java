@@ -65,7 +65,7 @@ public class SetsManager {
 	public void createSet(String name, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
 		if (cyNodes != null)
 			setsMap.put(name, new Set<CyNode>(name,cyNodes));
-		else if (cyEdges != null)
+		if (cyEdges != null)
 			setsMap.put(name, new Set<CyEdge>(name, cyEdges));
 		fireSetCreatedEvent(name);
 	}

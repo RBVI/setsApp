@@ -20,6 +20,7 @@ import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.AbstractCyActivator;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -69,6 +70,7 @@ public class CyActivator extends AbstractCyActivator {
 		task.execute(createSetTaskFactory.createTaskIterator()); */
 		
 		registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
+		registerService(bc,setsPanel,SessionLoadedListener.class, new Properties());
 	/*	registerService(bc, createSetTaskFactory, NetworkTaskFactory.class, createSetTaskProps); */
 	}
 }

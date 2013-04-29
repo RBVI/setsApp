@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -19,12 +20,16 @@ import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
+import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.session.events.SessionLoadedEvent;
+import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskManager;
@@ -35,7 +40,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 
-public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener {
+public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
 	private JButton createNodeSet, createEdgeSet, importSet, exportSet, newSetFromAttribute, union, intersection, difference;
 	private JTree setsTree;
 	private DefaultMutableTreeNode sets;
@@ -46,11 +51,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private CreateSetTaskFactory createSetTaskFactory;
 	private TaskManager taskManager;
 	
-	/**
-	 * 
-	 */	
-
-
 	public SetsPane(BundleContext bc) {
 		bundleContext = bc;
 		mySets = new SetsManager(this);
@@ -163,30 +163,90 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	public String getTitle() {
 		return "Sets";
 	}
+	
+	private void addSetToTree(String name) {
+		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(name);
+		Iterator<? extends CyIdentifiable> cyIds = (Iterator<? extends CyIdentifiable>) mySets.getSet(name).getElements();
+		while (cyIds.hasNext()) {
+			CyIdentifiable cyId = cyIds.next();
+			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
+		}
+		sets.add(thisSet);
+	}
 
 	public void setCreated(SetChangedEvent event) {
+		System.out.println("Adding " + event.getSetName() + " to tree");
 		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
-		sets.add(thisSet);
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		while (iterator.hasNext()) {
 			CyIdentifiable cyId = iterator.next();
 			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
 		}
+		sets.add(thisSet);
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
-		if (networkTable.getColumn(event.getSetName()) == null)
-			networkTable.createListColumn(event.getSetName(), String.class, false);
-		ArrayList<String> suidSet = new ArrayList<String>();
-		iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
-		while (iterator.hasNext())
-			suidSet.add(iterator.next().getSUID().toString());
-		networkTable.getRow(cyNetwork.getSUID()).set(event.getSetName(), suidSet);
+		if (networkTable.getColumn("setsApp:" + event.getSetName()) == null) {
+			networkTable.createListColumn("setsApp:" + event.getSetName(), Long.class, false);
+			ArrayList<Long> suidSet = new ArrayList<Long>();
+			iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
+			while (iterator.hasNext())
+				suidSet.add(iterator.next().getSUID());
+			networkTable.getRow(cyNetwork.getSUID()).set("setsApp:" + event.getSetName(), suidSet);
+		}
 	}
 
 	public void setRemoved(SetChangedEvent event) {
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		while (iterator.hasNext()) {
 			System.out.println(iterator.next().toString());
+		}
+	}
+
+	public void handleEvent(SessionLoadedEvent event) {
+		CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
+		Iterator<CyNetwork> networks = nm.getNetworkSet().iterator();
+		while (networks.hasNext()) {
+			CyNetwork cyNetwork = networks.next();
+			CyTable cyTable = cyNetwork.getDefaultNetworkTable();
+			Iterator<CyColumn> cyColumns = cyTable.getColumns().iterator();
+			while (cyColumns.hasNext()) {
+				CyColumn c = cyColumns.next();
+				String colName = c.getName();
+				if (colName.length() >= 9 && colName.substring(0, 8).equals("setsApp:")) {
+					ArrayList<CyNode> cyNodes = null;
+					ArrayList<CyEdge> cyEdges = null;
+					String loadedSetName = colName.substring(8);
+					Iterator<List> suidIterator = c.getValues(List.class).iterator();
+					Iterator<Long> suids = suidIterator.next().iterator();
+					System.out.println(loadedSetName);
+					while (suids.hasNext()) {
+						long suid = suids.next();
+						CyNode thisNode = cyNetwork.getNode(suid);
+						CyEdge thisEdge = cyNetwork.getEdge(suid);
+						if (thisNode != null) {
+							if (cyNodes != null) 
+								cyNodes.add(thisNode);
+							else {
+								cyNodes = new ArrayList<CyNode>();
+								cyNodes.add(thisNode);
+							}
+						}
+						if (thisEdge != null) {
+							if (cyEdges != null)
+								cyEdges.add(thisEdge);
+							else {
+								cyEdges = new ArrayList<CyEdge>();
+								cyEdges.add(thisEdge);
+							}
+						}
+					}
+					mySets.createSet(loadedSetName, cyNodes, cyEdges);
+					Set<? extends CyIdentifiable> exampleSet = mySets.getSet(loadedSetName);
+					Iterator<? extends CyIdentifiable> iterator = exampleSet.getElements();
+					while (iterator.hasNext())
+						System.out.println(iterator.next().getSUID());
+				}
+			}
 		}
 	}
 
