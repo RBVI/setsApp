@@ -174,15 +174,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		sets.add(thisSet);
 	}
 
-	public void setCreated(SetChangedEvent event) {
-		System.out.println("Adding " + event.getSetName() + " to tree");
+	public synchronized void setCreated(SetChangedEvent event) {
+	//	System.out.println("Adding " + event.getSetName() + " to tree");
 		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
+		System.out.println(mySets.getSet("Set " + event.getSetName() + ":" +event.getSetName()));
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		while (iterator.hasNext()) {
 			CyIdentifiable cyId = iterator.next();
 			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
 		}
 		sets.add(thisSet);
+	//	System.out.println("Added " + event.getSetName() + " to tree");
+	//	System.out.println("Adding " + event.getSetName() + " to table");
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
 		if (networkTable.getColumn("setsApp:" + event.getSetName()) == null) {
@@ -193,6 +196,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				suidSet.add(iterator.next().getSUID());
 			networkTable.getRow(cyNetwork.getSUID()).set("setsApp:" + event.getSetName(), suidSet);
 		}
+	//	else
+	//		System.out.println(event.getSetName() + " already in table");
 	}
 
 	public void setRemoved(SetChangedEvent event) {
@@ -203,6 +208,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	}
 
 	public void handleEvent(SessionLoadedEvent event) {
+		mySets.reset();
 		CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
 		Iterator<CyNetwork> networks = nm.getNetworkSet().iterator();
 		while (networks.hasNext()) {
@@ -218,7 +224,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					String loadedSetName = colName.substring(8);
 					Iterator<List> suidIterator = c.getValues(List.class).iterator();
 					Iterator<Long> suids = suidIterator.next().iterator();
-					System.out.println(loadedSetName);
+				//	System.out.println(loadedSetName);
 					while (suids.hasNext()) {
 						long suid = suids.next();
 						CyNode thisNode = cyNetwork.getNode(suid);
@@ -240,11 +246,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							}
 						}
 					}
-					mySets.createSet(loadedSetName, cyNodes, cyEdges);
-					Set<? extends CyIdentifiable> exampleSet = mySets.getSet(loadedSetName);
-					Iterator<? extends CyIdentifiable> iterator = exampleSet.getElements();
-					while (iterator.hasNext())
-						System.out.println(iterator.next().getSUID());
+				//	System.out.println("cyNodes to be added: " + cyNodes);
+				//	System.out.println("cyEdges to be added: " + cyEdges);
+					taskManager.execute(createSetTaskFactory.createTaskIterator(loadedSetName, cyNetwork, cyNodes, cyEdges));
 				}
 			}
 		}

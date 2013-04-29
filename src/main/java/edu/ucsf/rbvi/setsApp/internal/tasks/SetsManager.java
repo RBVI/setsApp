@@ -2,10 +2,9 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -19,20 +18,20 @@ import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 import edu.ucsf.rbvi.setsApp.internal.Set;
 
 public class SetsManager {
-	private HashMap<String, Set<? extends CyIdentifiable>> setsMap;
-	private HashMap<String, CyNetwork> networkSetNames;
+	private ConcurrentHashMap<String, Set<? extends CyIdentifiable>> setsMap;
+	private ConcurrentHashMap<String, CyNetwork> networkSetNames;
 	private ArrayList<SetChangedListener> setChangedListener = new ArrayList<SetChangedListener>();
 /*	private CreateSetTaskFactory createSetTaskFactory; */
 	
 	public SetsManager() {
-		this.setsMap = new HashMap<String, Set<? extends CyIdentifiable>> ();
-		this.networkSetNames = new HashMap<String, CyNetwork>();
+		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
+		this.networkSetNames = new ConcurrentHashMap<String, CyNetwork>();
 	/*	createSetTaskFactory = new CreateSetTaskFactory(this); */
 	}
 	
 	public SetsManager(SetChangedListener s) {
-		this.setsMap = new HashMap<String, Set<? extends CyIdentifiable>> ();
-		this.networkSetNames = new HashMap<String, CyNetwork>();
+		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
+		this.networkSetNames = new ConcurrentHashMap<String, CyNetwork>();
 		if (s != null)
 			this.setChangedListener.add(s);
 	}
@@ -62,11 +61,16 @@ public class SetsManager {
 		
 	} */
 	
-	public void createSet(String name, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
-		if (cyNodes != null)
+	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
+		if (cyNodes != null) {
 			setsMap.put(name, new Set<CyNode>(name,cyNodes));
-		if (cyEdges != null)
+		//	System.out.println("Added " + this.getSet(name) + " to set");
+		}
+		if (cyEdges != null) {
 			setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+		//	System.out.println("Added " + this.getSet(name) + " to set");
+		}
+		networkSetNames.put(name, cyNetwork);
 		fireSetCreatedEvent(name);
 	}
 	
@@ -148,6 +152,11 @@ public class SetsManager {
 	
 	public CyNetwork getCyNetwork(String name) {
 		return networkSetNames.get(name);
+	}
+	
+	public void reset() {
+		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
+		this.networkSetNames = new ConcurrentHashMap<String, CyNetwork>();
 	}
 	
 	public Set<? extends CyIdentifiable> getSet(String setName) {

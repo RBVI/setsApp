@@ -52,8 +52,8 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 		return new TaskIterator(new CreateSetTask(setsManager, setName, networkViewManager, t));
 	}
 	
-	public TaskIterator createTaskIterator(String setName, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
-		return new TaskIterator(new CreateSetTask(setsManager, setName, cyNodes, cyEdges));
+	public TaskIterator createTaskIterator(String setName, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
+		return new TaskIterator(new RestoreSetTask(setsManager, cyNetwork, setName, cyNodes, cyEdges));
 	}
 
 	public TaskIterator createTaskIterator(String setName, String set1, String set2, SetOperations operation) {

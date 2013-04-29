@@ -13,9 +13,7 @@ import org.cytoscape.work.Tunable;
 
 import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 
-public class CreateSetTask extends AbstractTask {
-	@Tunable(description="Enter a name for the set:")
-	public String setName;
+public class RestoreSetTask extends AbstractTask {
 	private SetsManager setsManager;
 	private CyNetworkViewManager nvm = null;
 	private CyNetwork cyNetwork = null;
@@ -24,23 +22,15 @@ public class CreateSetTask extends AbstractTask {
 	private CyIdType type;
 	private String newName;
 	
-	public CreateSetTask(SetsManager mgr, String name, CyNetwork network, List<CyNode> nodes, List<CyEdge> edges) {
+	public RestoreSetTask(SetsManager mgr, CyNetwork network, String name, List<CyNode> nodes, List<CyEdge> edges) {
 		setsManager = mgr;
 		newName = name;
 		cyNodes = nodes;
 		cyEdges = edges;
 		cyNetwork = network;
 	}
-
-	public CreateSetTask(SetsManager mgr, String name, CyNetworkViewManager networkViewManager, CyIdType t) {
-		setsManager = mgr;
-		newName = name;
-		nvm = networkViewManager;
-		type = t;
-	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (newName == null) newName = setName;
 		if (nvm != null)
 			setsManager.createSetFromSelectedNetwork(newName, nvm, type);
 		else
