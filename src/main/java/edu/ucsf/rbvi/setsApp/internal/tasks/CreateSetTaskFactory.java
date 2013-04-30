@@ -5,6 +5,7 @@ import java.util.List;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -46,6 +47,10 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 	
 	public TaskIterator createTaskIterator() {
 		return null;
+	}
+	
+	public TaskIterator createTaskIterator(String name, CyNetworkManager networkManager, CyIdType type) {
+		return new TaskIterator(new CreateSetFromAttributeTask(setsManager, name, networkManager, type));
 	}
 	
 	public TaskIterator createTaskIterator(String setName, CyNetworkViewManager networkViewManager, CyIdType t) {

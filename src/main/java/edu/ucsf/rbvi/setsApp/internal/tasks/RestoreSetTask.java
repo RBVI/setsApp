@@ -15,11 +15,9 @@ import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 
 public class RestoreSetTask extends AbstractTask {
 	private SetsManager setsManager;
-	private CyNetworkViewManager nvm = null;
 	private CyNetwork cyNetwork = null;
 	private List<CyNode> cyNodes = null;
 	private List<CyEdge> cyEdges = null;
-	private CyIdType type;
 	private String newName;
 	
 	public RestoreSetTask(SetsManager mgr, CyNetwork network, String name, List<CyNode> nodes, List<CyEdge> edges) {
@@ -31,10 +29,7 @@ public class RestoreSetTask extends AbstractTask {
 	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {
-		if (nvm != null)
-			setsManager.createSetFromSelectedNetwork(newName, nvm, type);
-		else
-			setsManager.createSet(newName, cyNetwork, cyNodes, cyEdges);
+		setsManager.createSet(newName, cyNetwork, cyNodes, cyEdges);
 	}
 
 }

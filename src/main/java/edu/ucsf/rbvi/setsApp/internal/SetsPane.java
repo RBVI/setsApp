@@ -41,12 +41,13 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
-	private JButton createNodeSet, createEdgeSet, importSet, exportSet, newSetFromAttribute, union, intersection, difference;
+	private JButton createNodeSet, createEdgeSet, importSet, exportSet, newNodeSetFromAttribute, newEdgeSetFromAttribute, union, intersection, difference;
 	private JTree setsTree;
 	private DefaultMutableTreeNode sets;
 	private JScrollPane scrollPane;
 	private BundleContext bundleContext;
 	private SetsManager mySets;
+	private CyNetworkManager networkManager;
 	private CyNetworkViewManager networkViewManager;
 	private CreateSetTaskFactory createSetTaskFactory;
 	private TaskManager taskManager;
@@ -55,6 +56,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		bundleContext = bc;
 		mySets = new SetsManager(this);
 		createSetTaskFactory = new CreateSetTaskFactory(mySets);
+		networkManager = (CyNetworkManager) getService(CyNetworkManager.class);
 		networkViewManager = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
 		taskManager = (TaskManager) getService(TaskManager.class);
 
@@ -79,7 +81,20 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		importSet = new JButton("Import Set");
 		exportSet = new JButton("Export Set");
-		newSetFromAttribute = new JButton("New Set From Attributes");
+		newNodeSetFromAttribute = new JButton("New Node Set From Attributes");
+		newNodeSetFromAttribute.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkManager, CyIdType.NODE));
+			}
+		});
+		newEdgeSetFromAttribute = new JButton("New Edge Set From Attributes");
+		newEdgeSetFromAttribute.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkManager, CyIdType.EDGE));
+			}
+		});
 		union = new JButton("Union");
 		union.addActionListener(new ActionListener() {
 			
@@ -108,9 +123,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		add(createNodeSet);
 		add(createEdgeSet);
-		add(importSet);
-		add(exportSet);
-		add(newSetFromAttribute);
+	//	add(importSet);
+	//	add(exportSet);
+		add(newNodeSetFromAttribute);
+		add(newEdgeSetFromAttribute);
 		add(scrollPane);
 		add(union);
 		add(intersection);
@@ -164,29 +180,25 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		return "Sets";
 	}
 	
-	private void addSetToTree(String name) {
-		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(name);
-		Iterator<? extends CyIdentifiable> cyIds = (Iterator<? extends CyIdentifiable>) mySets.getSet(name).getElements();
-		while (cyIds.hasNext()) {
-			CyIdentifiable cyId = cyIds.next();
-			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
-		}
-		sets.add(thisSet);
-	}
-
 	public synchronized void setCreated(SetChangedEvent event) {
 	//	System.out.println("Adding " + event.getSetName() + " to tree");
 		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
-		System.out.println(mySets.getSet("Set " + event.getSetName() + ":" +event.getSetName()));
+		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
+		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
+		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		while (iterator.hasNext()) {
 			CyIdentifiable cyId = iterator.next();
-			thisSet.add(new DefaultMutableTreeNode(cyId.toString()));
+			String cyIdName = "???";
+			if (nodeTable.rowExists(cyId.getSUID()))
+				cyIdName = nodeTable.getRow(cyId.getSUID()).get("name", String.class);
+			if (edgeTable.rowExists(cyId.getSUID()))
+				cyIdName = edgeTable.getRow(cyId.getSUID()).get("name", String.class);
+			thisSet.add(new DefaultMutableTreeNode(cyIdName));
 		}
 		sets.add(thisSet);
 	//	System.out.println("Added " + event.getSetName() + " to tree");
 	//	System.out.println("Adding " + event.getSetName() + " to table");
-		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
 		if (networkTable.getColumn("setsApp:" + event.getSetName()) == null) {
 			networkTable.createListColumn("setsApp:" + event.getSetName(), Long.class, false);
