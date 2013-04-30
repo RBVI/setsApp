@@ -25,12 +25,10 @@ public class SetsManager {
 	private ConcurrentHashMap<String, Set<? extends CyIdentifiable>> setsMap;
 	private ConcurrentHashMap<String, CyNetwork> networkSetNames;
 	private ArrayList<SetChangedListener> setChangedListener = new ArrayList<SetChangedListener>();
-/*	private CreateSetTaskFactory createSetTaskFactory; */
 	
 	public SetsManager() {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		this.networkSetNames = new ConcurrentHashMap<String, CyNetwork>();
-	/*	createSetTaskFactory = new CreateSetTaskFactory(this); */
 	}
 	
 	public SetsManager(SetChangedListener s) {
@@ -140,32 +138,6 @@ public class SetsManager {
 			setsMap.put(name, new Set<CyNode>(name,cyNodes));
 		else if (cyEdges != null)
 			setsMap.put(name, new Set<CyEdge>(name,cyEdges));
-/*		if (type == CyIdType.NODE) {
-			List<CyNode> cyNodes = null;
-			Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
-			CyNetwork cyNetwork = null;
-			while (networkViewSet.hasNext()) {
-				cyNetwork = networkViewSet.next().getModel();
-				if (cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
-					cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
-					networkSetNames.put(name, cyNetwork);
-				}
-			}
-			setsMap.put(name, new Set<CyNode>(name,cyNodes));
-		}
-		else if (type == CyIdType.EDGE) {
-			List<CyEdge> cyEdges = null;
-			Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
-			CyNetwork cyNetwork = null;
-			while (networkViewSet.hasNext()) {
-				cyNetwork = networkViewSet.next().getModel();
-				if (cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
-					cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
-					networkSetNames.put(name, cyNetwork);
-				}
-			}
-			setsMap.put(name, new Set<CyEdge>(name, cyEdges));
-		} */
 		fireSetCreatedEvent(name);
 	}
 	

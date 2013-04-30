@@ -3,7 +3,6 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.view.model.CyNetworkViewManager;

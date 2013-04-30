@@ -3,15 +3,10 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
-import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNode;
-import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
-import org.cytoscape.work.Tunable;
-
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 
 public class RestoreSetTask extends AbstractTask {
 	private SetsManager setsManager;
