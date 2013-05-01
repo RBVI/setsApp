@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.cytoscape.model.CyEdge;
@@ -33,8 +34,8 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 		return null;
 	}
 	
-	public TaskIterator createTaskIterator(String name, CyNetworkManager networkManager, CyIdType type) {
-		return new TaskIterator(new CreateSetFromAttributeTask(setsManager, name, networkManager, type));
+	public TaskIterator createTaskIterator(CyNetwork network, CyIdType type) {
+		return new TaskIterator(new CreateSetFromAttributeTask(setsManager, network, type));
 	}
 	
 	public TaskIterator createTaskIterator(String setName, CyNetworkViewManager networkViewManager, CyIdType t) {
@@ -45,7 +46,15 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 		return new TaskIterator(new RestoreSetTask(setsManager, cyNetwork, setName, cyNodes, cyEdges));
 	}
 
-	public TaskIterator createTaskIterator(String setName, String set1, String set2, SetOperations operation) {
+/*	public TaskIterator createTaskIterator(String setName, String set1, String set2, SetOperations operation) {
 		return new TaskIterator(new SetOperationsTask(setsManager, setName, set1, set2, operation));
+	} */
+	
+	public TaskIterator createTaskIterator(CyIdType type, SetOperations operation) {
+		return new TaskIterator(new SetOperationsTask(setsManager, type, operation));
 	}
+	
+/*	public TaskIterator createTaskIterator(List<String> attributes, SetOperations operation) {
+		return new TaskIterator(new SetOperationsTask(setsManager, attributes, operation));
+	} */
 }

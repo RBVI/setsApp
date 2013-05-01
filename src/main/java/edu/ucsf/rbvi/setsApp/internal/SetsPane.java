@@ -86,31 +86,36 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		newSetFromAttribute.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				if (selectNodes.isSelected())
-					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkManager, CyIdType.NODE));
-				if (selectEdges.isSelected())
-					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkManager, CyIdType.EDGE));
+				CyNetwork network = null;
+				for (CyNetwork n: networkManager.getNetworkSet())
+					if (n.getRow(n).get(CyNetwork.SELECTED, Boolean.class)) network = n;
+				if (network != null) {
+					if (selectNodes.isSelected())
+						taskManager.execute(createSetTaskFactory.createTaskIterator(network, CyIdType.NODE));
+					if (selectEdges.isSelected())
+						taskManager.execute(createSetTaskFactory.createTaskIterator(network, CyIdType.EDGE));
+				}
 			}
 		});
 		union = new JButton("Union");
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(null, null, null, SetOperations.UNION));
+				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.UNION));
 			}
 		});
 		intersection = new JButton("Intersection");
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(null, null, null, SetOperations.INTERSECT));
+				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.INTERSECT));
 			}
 		});
 		difference = new JButton("Set Difference");
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(null, null, null, SetOperations.DIFFERENCE));
+				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
 			}
 		});
 		

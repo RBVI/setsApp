@@ -37,7 +37,7 @@ public class Set <T extends CyIdentifiable> {
 	}
 	
 	public void remove(T cyId) {
-		
+		set.remove(cyId.getSUID());
 	}
 	public Set<T> intersection(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
