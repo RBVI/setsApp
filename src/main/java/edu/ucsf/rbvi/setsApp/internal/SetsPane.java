@@ -4,6 +4,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -11,12 +12,14 @@ import java.util.List;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
@@ -54,6 +57,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private CyNetworkViewManager networkViewManager;
 	private CreateSetTaskFactory createSetTaskFactory;
 	private TaskManager taskManager;
+	public static final String tablePrefix = "setsApp:";
 	
 	public SetsPane(BundleContext bc) {
 		bundleContext = bc;
@@ -123,6 +127,15 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		setsTree = new JTree(sets);
 		scrollPane = new JScrollPane(setsTree);
 		treeModel = (DefaultTreeModel) setsTree.getModel();
+		URL myUrl = SetsPane.class.getResource("images/Node.png");
+		ImageIcon nodeIcon = new ImageIcon(myUrl);
+		myUrl = SetsPane.class.getResource("images/Edge.png");
+		ImageIcon edgeIcon = new ImageIcon(myUrl);
+		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+		renderer.setLeafIcon(nodeIcon);
+		setsTree.setCellRenderer(renderer);
+	//	if (nodeIcon != null && edgeIcon != null)
+	//		setsTree.setCellRenderer(new SetIconRenderer(nodeIcon, edgeIcon));
 		
 		add(selectNodes);
 		add(selectEdges);
@@ -170,18 +183,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				cyIdName = nodeTable.getRow(cyId.getSUID()).get("name", String.class);
 			if (edgeTable.rowExists(cyId.getSUID()))
 				cyIdName = edgeTable.getRow(cyId.getSUID()).get("name", String.class);
-			thisSet.add(new DefaultMutableTreeNode(cyIdName));
+			thisSet.add(new DefaultMutableTreeNode(new StringHolder(cyIdName)));
 		}
 		treeModel.insertNodeInto(thisSet, sets, sets.getChildCount());
 	//	sets.add(thisSet);
 		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
-		if (networkTable.getColumn("setsApp:" + event.getSetName()) == null) {
-			networkTable.createListColumn("setsApp:" + event.getSetName(), Long.class, false);
+		if (networkTable.getColumn(tablePrefix + event.getSetName()) == null) {
+			networkTable.createListColumn(tablePrefix + event.getSetName(), Long.class, false);
 			ArrayList<Long> suidSet = new ArrayList<Long>();
 			iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 			while (iterator.hasNext())
 				suidSet.add(iterator.next().getSUID());
-			networkTable.getRow(cyNetwork.getSUID()).set("setsApp:" + event.getSetName(), suidSet);
+			networkTable.getRow(cyNetwork.getSUID()).set(tablePrefix + event.getSetName(), suidSet);
 		}
 	}
 
@@ -235,5 +248,53 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		}
 	}
+	
+	private class SetIconRenderer extends DefaultTreeCellRenderer {
 
+		private static final long serialVersionUID = -4782376042373670468L;
+		private Icon nodeIcon, edgeIcon;
+		
+		public SetIconRenderer(Icon icon1, Icon icon2) {
+			nodeIcon = icon1;
+			edgeIcon = icon2;
+		}
+		
+		public Component getTreeCellRendererComponent(
+				JTree tree,
+				Object value,
+				boolean sel,
+				boolean expanded,
+				boolean leaf,
+				int row,
+				boolean hasFocus) {
+			super.getTreeCellRendererComponent(
+					tree, value, sel,
+					expanded, leaf, row,
+					hasFocus);
+			CyIdType type = getCyIdType(value);
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
+			if (node.getParent() != null) {
+				if (type == CyIdType.NODE) setIcon(nodeIcon);
+				else if (type == CyIdType.EDGE) setIcon(edgeIcon);
+				else setIcon(nodeIcon);
+			}
+			return this;
+		}
+		
+		private CyIdType getCyIdType(Object o) {
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) o;
+			StringHolder nodeName = (StringHolder) node.getUserObject();
+			return mySets.getType(nodeName.s);
+		}
+	}
+	
+	private class StringHolder {
+		public String s;
+		public StringHolder(String string) {
+			s = string;
+		}
+		public String toString(){
+			return s;
+		}
+	}
 }
