@@ -238,6 +238,13 @@ public class SetsManager {
 		return setNames;
 	}
 	
+	public boolean isInSetsManager(String name) {
+		if (setsMap.get(name) == null)
+			return false;
+		else
+			return true;
+	}
+	
 	public CyIdType getType(String name) {
 		return setType.get(name);
 	}

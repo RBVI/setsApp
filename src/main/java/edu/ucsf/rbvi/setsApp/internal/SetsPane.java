@@ -125,17 +125,17 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		sets = new DefaultMutableTreeNode("Sets");
 		setsTree = new JTree(sets);
-		scrollPane = new JScrollPane(setsTree);
 		treeModel = (DefaultTreeModel) setsTree.getModel();
 		URL myUrl = SetsPane.class.getResource("images/Node.png");
 		ImageIcon nodeIcon = new ImageIcon(myUrl);
 		myUrl = SetsPane.class.getResource("images/Edge.png");
 		ImageIcon edgeIcon = new ImageIcon(myUrl);
-		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-		renderer.setLeafIcon(nodeIcon);
-		setsTree.setCellRenderer(renderer);
-	//	if (nodeIcon != null && edgeIcon != null)
-	//		setsTree.setCellRenderer(new SetIconRenderer(nodeIcon, edgeIcon));
+	//	DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+	//	renderer.setLeafIcon(nodeIcon);
+	//	setsTree.setCellRenderer(renderer);
+		if (nodeIcon != null && edgeIcon != null)
+			setsTree.setCellRenderer(new SetIconRenderer(nodeIcon, edgeIcon));
+		scrollPane = new JScrollPane(setsTree);
 		
 		add(selectNodes);
 		add(selectEdges);
@@ -183,7 +183,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				cyIdName = nodeTable.getRow(cyId.getSUID()).get("name", String.class);
 			if (edgeTable.rowExists(cyId.getSUID()))
 				cyIdName = edgeTable.getRow(cyId.getSUID()).get("name", String.class);
-			thisSet.add(new DefaultMutableTreeNode(new StringHolder(cyIdName)));
+			thisSet.add(new DefaultMutableTreeNode(cyIdName));
 		}
 		treeModel.insertNodeInto(thisSet, sets, sets.getChildCount());
 	//	sets.add(thisSet);
@@ -216,7 +216,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			while (cyColumns.hasNext()) {
 				CyColumn c = cyColumns.next();
 				String colName = c.getName();
-				if (colName.length() >= 9 && colName.substring(0, 8).equals("setsApp:")) {
+				if (colName.length() >= 9 && colName.substring(0, 8).equals(tablePrefix)) {
 					ArrayList<CyNode> cyNodes = null;
 					ArrayList<CyEdge> cyEdges = null;
 					String loadedSetName = colName.substring(8);
@@ -273,28 +273,20 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					hasFocus);
 			CyIdType type = getCyIdType(value);
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-			if (node.getParent() != null) {
+			if (leaf == false && !node.isRoot()) {
 				if (type == CyIdType.NODE) setIcon(nodeIcon);
 				else if (type == CyIdType.EDGE) setIcon(edgeIcon);
-				else setIcon(nodeIcon);
 			}
 			return this;
 		}
 		
 		private CyIdType getCyIdType(Object o) {
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) o;
-			StringHolder nodeName = (StringHolder) node.getUserObject();
-			return mySets.getType(nodeName.s);
-		}
-	}
-	
-	private class StringHolder {
-		public String s;
-		public StringHolder(String string) {
-			s = string;
-		}
-		public String toString(){
-			return s;
+			String nodeName = (String) node.getUserObject();
+			if (mySets.isInSetsManager(nodeName))
+				return mySets.getType(nodeName);
+			else
+				return null;
 		}
 	}
 }
