@@ -20,7 +20,9 @@ Essential features:
 - Add button/actions for 
 -- "Import Set" (top)
 -- "Export Set" (bottom)
+-- "Export as attribute"
 -- "Select" (bottom)
+- Import and export should read/write to plain text files with node/edge names
 
 Bugs:
 -- Icons couldn't be loaded
