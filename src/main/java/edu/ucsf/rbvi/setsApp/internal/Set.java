@@ -65,7 +65,7 @@ public class Set <T extends CyIdentifiable> {
 		Iterator<T> sValues = s.getElements();
 		while (sValues.hasNext()) {
 			T curValue = sValues.next();
-			if (set.containsKey(((CyIdentifiable) curValue).getSUID()))
+			if (! set.containsKey(((CyIdentifiable) curValue).getSUID()))
 				newSet.add(curValue);
 		}
 		return newSet;

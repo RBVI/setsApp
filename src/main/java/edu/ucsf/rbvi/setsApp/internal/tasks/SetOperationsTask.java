@@ -54,7 +54,7 @@ public class SetOperationsTask extends AbstractTask {
 			sm.intersection(setName, set1, set2);
 			break;
 		case DIFFERENCE:
-			sm.intersection(setName, set1, set2);
+			sm.difference(setName, set1, set2);
 			break;
 		case UNION:
 			sm.union(setName, set1, set2);
