@@ -126,15 +126,14 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		sets = new DefaultMutableTreeNode("Sets");
 		setsTree = new JTree(sets);
 		treeModel = (DefaultTreeModel) setsTree.getModel();
-		URL myUrl = SetsPane.class.getResource("images/Node.png");
+	/*	URL myUrl = SetsPane.class.getResource("images/Node.png");
 		ImageIcon nodeIcon = new ImageIcon(myUrl);
 		myUrl = SetsPane.class.getResource("images/Edge.png");
 		ImageIcon edgeIcon = new ImageIcon(myUrl);
-	//	DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+	//	DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer(); */
 	//	renderer.setLeafIcon(nodeIcon);
 	//	setsTree.setCellRenderer(renderer);
-		if (nodeIcon != null && edgeIcon != null)
-			setsTree.setCellRenderer(new SetIconRenderer(nodeIcon, edgeIcon));
+		setsTree.setCellRenderer(new SetIconRenderer());
 		scrollPane = new JScrollPane(setsTree);
 		
 		add(selectNodes);
@@ -252,11 +251,19 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private class SetIconRenderer extends DefaultTreeCellRenderer {
 
 		private static final long serialVersionUID = -4782376042373670468L;
-		private Icon nodeIcon, edgeIcon;
+		private Icon setsIcon, nodeSetIcon, edgeSetIcon, nodeIcon, edgeIcon;
 		
-		public SetIconRenderer(Icon icon1, Icon icon2) {
-			nodeIcon = icon1;
-			edgeIcon = icon2;
+		public SetIconRenderer() {
+			URL myUrl = SetsPane.class.getResource("images/node_set.png");
+			nodeSetIcon = new ImageIcon(myUrl);
+			myUrl = SetsPane.class.getResource("images/edge_set.png");
+			edgeSetIcon = new ImageIcon(myUrl);
+			myUrl = SetsPane.class.getResource("images/sets.png");
+			setsIcon = new ImageIcon(myUrl);
+			myUrl = SetsPane.class.getResource("images/edge.png");
+			edgeIcon = new ImageIcon(myUrl);
+			myUrl = SetsPane.class.getResource("images/node.png");
+			nodeIcon = new ImageIcon(myUrl);
 		}
 		
 		public Component getTreeCellRendererComponent(
@@ -273,9 +280,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					hasFocus);
 			CyIdType type = getCyIdType(value);
 			DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-			if (leaf == false && !node.isRoot()) {
-				if (type == CyIdType.NODE) setIcon(nodeIcon);
-				else if (type == CyIdType.EDGE) setIcon(edgeIcon);
+			if (node.isRoot()) {setIcon(setsIcon);}
+			else if (leaf) {
+				DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+				if (parent != null) {
+					CyIdType parentType = getCyIdType(parent);
+					if (parentType == CyIdType.NODE) setIcon(nodeIcon);
+					else if (parentType == CyIdType.EDGE) setIcon(edgeIcon);
+				}
+			}
+			else {
+				if (type == CyIdType.NODE) setIcon(nodeSetIcon);
+				else if (type == CyIdType.EDGE) setIcon(edgeSetIcon);
 			}
 			return this;
 		}
@@ -289,4 +305,17 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				return null;
 		}
 	}
+	
+/*	private class SetInfo {
+		public String label;
+		public CyIdType type;
+		
+		public SetInfo(String s, CyIdType t) {
+			label = s;
+			type = t;
+		}
+		public String toString() {
+			return label;
+		}
+	} */
 }

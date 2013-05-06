@@ -67,13 +67,13 @@ public class SetsManager {
 	} */
 	
 	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
-		if (cyNodes != null || cyEdges != null) {
-			if (cyNodes != null) {
+		if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
+			if (cyNodes != null && ! cyNodes.isEmpty()) {
 				setsMap.put(name, new Set<CyNode>(name,cyNodes));
 				setType.put(name, CyIdType.NODE);
 			//	System.out.println("Added " + this.getSet(name) + " to set");
 			}
-			if (cyEdges != null) {
+			if (cyEdges != null && ! cyEdges.isEmpty()) {
 				setsMap.put(name, new Set<CyEdge>(name, cyEdges));
 				setType.put(name, CyIdType.EDGE);
 			//	System.out.println("Added " + this.getSet(name) + " to set");
@@ -142,6 +142,7 @@ public class SetsManager {
 				for (String s: cyNodeSet.keySet()) {
 					setsMap.put(s, cyNodeSet.get(s));
 					networkSetNames.put(s, network);
+					setType.put(s, CyIdType.NODE);
 					fireSetCreatedEvent(s);
 				}
 			}
@@ -158,6 +159,7 @@ public class SetsManager {
 				for (String s: cyNodeSet.keySet()) {
 					setsMap.put(s, cyNodeSet.get(s));
 					networkSetNames.put(s, network);
+					setType.put(s, CyIdType.EDGE);
 					fireSetCreatedEvent(s);
 				}
 			}
@@ -172,22 +174,35 @@ public class SetsManager {
 		while (networkViewSet.hasNext()) {
 			cyNetwork = networkViewSet.next().getModel();
 			if (cyNetwork != null && cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
-				if (type == CyIdType.NODE)
+				if (type == CyIdType.NODE) {
 					cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
-				else if (type == CyIdType.EDGE)
+					if (! cyNodes.isEmpty()) {
+						setsMap.put(name, new Set<CyNode>(name,cyNodes));
+						networkSetNames.put(name, cyNetwork);
+						setType.put(name, type);
+						fireSetCreatedEvent(name);
+					}
+				}
+				else if (type == CyIdType.EDGE) {
 					cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
-				if (cyNodes != null || cyEdges != null)
-					networkSetNames.put(name, cyNetwork);
+					if (! cyEdges.isEmpty()) {
+						setsMap.put(name, new Set<CyEdge>(name,cyEdges));
+						networkSetNames.put(name, cyNetwork);
+						setType.put(name, type);
+						fireSetCreatedEvent(name);
+					}
+				}
 			}
 		}
-		if (cyNodes != null)
+	/*	if (cyNodes != null && ! cyNodes.isEmpty())
 			setsMap.put(name, new Set<CyNode>(name,cyNodes));
-		else if (cyEdges != null)
+		else if (cyEdges != null && ! cyEdges.isEmpty())
 			setsMap.put(name, new Set<CyEdge>(name,cyEdges));
-		if (cyNodes != null || cyEdges != null) {
+		if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
+			networkSetNames.put(name, cyNetwork);
 			setType.put(name, type);
 			fireSetCreatedEvent(name);
-		}
+		} */
 	}
 	
 	public void createSet(String name, List<CyIdentifiable> cyNodes) {
