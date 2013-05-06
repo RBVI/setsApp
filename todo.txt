@@ -1,0 +1,38 @@
+Essential features:
+
+- Set context menu with the following items:
+-- Add ... (nodes/edges)
+-- Rename
+-- Delete
+-- Select
+-- Copy to ...
+-- Move to ...
+- Move to and copy to should be available for networks in the same root set
+
+- Node/Edge context menu
+-- Delete
+-- Select
+-- Copy to ...
+-- Move to ...
+
+- Show number of nodes/edges in set name
+
+- Add button/actions for 
+-- "Import Set" (top)
+-- "Export Set" (bottom)
+-- "Export as attribute"
+-- "Select" (bottom)
+- Import and export should read/write to plain text files with node/edge names
+
+Bugs:
+-- Icons couldn't be loaded
+-- Set difference doesn't seem to work
+-- Message to the user/stdout when an action could not be performed
+
+
+Non-essential features
+- Enable/disable buttons on selection and network availability
+- Automatic selection of nodes/edges when set selected
+- Add operations to context menu
+- Layout of panel
+- Close panel
