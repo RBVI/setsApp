@@ -22,6 +22,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.NetworkTaskFactory;
+import org.cytoscape.task.NodeViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskFactory;
@@ -31,6 +32,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.ModifyNodeTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 
 public class CyActivator extends AbstractCyActivator {
 	private static Logger logger = LoggerFactory
@@ -41,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-
+		SetsManager sets = null;
 		// See if we have a graphics console or not
 		boolean haveGUI = true;
 		CySwingApplication cyApplication = getService(bc, CySwingApplication.class);
@@ -65,12 +68,16 @@ public class CyActivator extends AbstractCyActivator {
 		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
 		CyNetwork cyNetwork = networkViewSet.next().getModel(); */
 		SetsPane setsPanel = new SetsPane(bc);
-		
-		TaskManager task = getService(bc, TaskManager.class); /*
+		sets = setsPanel.getSetsManager();
+		NodeViewTaskFactory modifyNode = new ModifyNodeTaskFactory(sets);
+		Properties modifySetProperties = new Properties();
+		modifySetProperties.setProperty("title", "Add node to set");
+	/*	TaskManager task = getService(bc, TaskManager.class);
 		task.execute(createSetTaskFactory.createTaskIterator()); */
 		
 		registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
 		registerService(bc,setsPanel,SessionLoadedListener.class, new Properties());
+		registerService(bc,modifyNode,NodeViewTaskFactory.class,modifySetProperties);
 	/*	registerService(bc, createSetTaskFactory, NetworkTaskFactory.class, createSetTaskProps); */
 	}
 }

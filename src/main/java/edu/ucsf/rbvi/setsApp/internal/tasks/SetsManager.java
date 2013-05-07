@@ -54,8 +54,17 @@ public class SetsManager {
 			iterator.next().setCreated(event);
 	}
 	
+	private void fireSetAddedEvent(String setName, List<? extends CyIdentifiable> added) {
+		SetChangedEvent event = new SetChangedEvent(setName);
+		event.setSetName(setName);
+		event.cyIdsAdded(added);
+		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
+		while (iterator.hasNext())
+			iterator.next().setChanged(event);
+	}
+	
 	private void fireSetRemovedEvent(String setName) {
-		SetChangedEvent event = new SetChangedEvent(null);
+		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
 		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
 		while (iterator.hasNext())
@@ -67,129 +76,136 @@ public class SetsManager {
 	} */
 	
 	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
-		if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
-			if (cyNodes != null && ! cyNodes.isEmpty()) {
-				setsMap.put(name, new Set<CyNode>(name,cyNodes));
-				setType.put(name, CyIdType.NODE);
-			//	System.out.println("Added " + this.getSet(name) + " to set");
+		if (! setsMap.containsKey(name))
+			if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
+				if (cyNodes != null && ! cyNodes.isEmpty()) {
+					setsMap.put(name, new Set<CyNode>(name,cyNodes));
+					setType.put(name, CyIdType.NODE);
+				//	System.out.println("Added " + this.getSet(name) + " to set");
+				}
+				if (cyEdges != null && ! cyEdges.isEmpty()) {
+					setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+					setType.put(name, CyIdType.EDGE);
+				//	System.out.println("Added " + this.getSet(name) + " to set");
+				}
+				networkSetNames.put(name, cyNetwork);
+				fireSetCreatedEvent(name);
 			}
-			if (cyEdges != null && ! cyEdges.isEmpty()) {
-				setsMap.put(name, new Set<CyEdge>(name, cyEdges));
-				setType.put(name, CyIdType.EDGE);
-			//	System.out.println("Added " + this.getSet(name) + " to set");
-			}
-			networkSetNames.put(name, cyNetwork);
-			fireSetCreatedEvent(name);
-		}
 	}
 	
 	public void createSetFromAttributes(String name, String column, Object attribute, CyNetworkManager networkManager, String networkName, CyIdType type) {
-		CyNetwork network = null;
-		java.util.Set<CyNetwork> networkSet = networkManager.getNetworkSet();
-		for (CyNetwork net: networkSet) {
-			CyTable cyTable = net.getDefaultNetworkTable();
-			String netName = cyTable.getRow(net.getSUID()).get("name", String.class);
-			if (networkName.equals(netName))
-				network = net;
-		}
-		if (network != null) {
-			if (type == CyIdType.NODE) {
-				CyTable cyTable = network.getDefaultNodeTable();
-				final ArrayList<CyNode> nodes = new ArrayList<CyNode>();
-				final Collection<CyRow> selectedRows = cyTable.getMatchingRows(column, attribute);
-				String primaryKey = cyTable.getPrimaryKey().getName();
-				for (CyRow row: selectedRows) {
-					final Long nodeId = row.get(primaryKey, Long.class);
-					if (nodeId == null) continue;
-					final CyNode node = network.getNode(nodeId);
-					if (node == null) continue;
-					nodes.add(node);
-				}
-				setsMap.put(name, new Set<CyNode>(name, nodes));
+		if (! setsMap.containsKey(name)) {
+			CyNetwork network = null;
+			java.util.Set<CyNetwork> networkSet = networkManager.getNetworkSet();
+			for (CyNetwork net: networkSet) {
+				CyTable cyTable = net.getDefaultNetworkTable();
+				String netName = cyTable.getRow(net.getSUID()).get("name", String.class);
+				if (networkName.equals(netName))
+					network = net;
 			}
-			if (type == CyIdType.EDGE) {
-				CyTable cyTable = network.getDefaultEdgeTable();
-				final ArrayList<CyEdge> edges = new ArrayList<CyEdge>();
-				final Collection<CyRow> selectedRows = cyTable.getMatchingRows(column, attribute);
-				String primaryKey = cyTable.getPrimaryKey().getName();
-				for (CyRow row: selectedRows) {
-					final Long edgeId = row.get(primaryKey, Long.class);
-					if (edgeId == null) continue;
-					final CyEdge edge = network.getEdge(edgeId);
-					if (edge == null) continue;
-					edges.add(edge);
+			if (network != null) {
+				if (type == CyIdType.NODE) {
+					CyTable cyTable = network.getDefaultNodeTable();
+					final ArrayList<CyNode> nodes = new ArrayList<CyNode>();
+					final Collection<CyRow> selectedRows = cyTable.getMatchingRows(column, attribute);
+					String primaryKey = cyTable.getPrimaryKey().getName();
+					for (CyRow row: selectedRows) {
+						final Long nodeId = row.get(primaryKey, Long.class);
+						if (nodeId == null) continue;
+						final CyNode node = network.getNode(nodeId);
+						if (node == null) continue;
+						nodes.add(node);
+					}
+					setsMap.put(name, new Set<CyNode>(name, nodes));
 				}
-				setsMap.put(name, new Set<CyEdge>(name, edges));		
+				if (type == CyIdType.EDGE) {
+					CyTable cyTable = network.getDefaultEdgeTable();
+					final ArrayList<CyEdge> edges = new ArrayList<CyEdge>();
+					final Collection<CyRow> selectedRows = cyTable.getMatchingRows(column, attribute);
+					String primaryKey = cyTable.getPrimaryKey().getName();
+					for (CyRow row: selectedRows) {
+						final Long edgeId = row.get(primaryKey, Long.class);
+						if (edgeId == null) continue;
+						final CyEdge edge = network.getEdge(edgeId);
+						if (edge == null) continue;
+						edges.add(edge);
+					}
+					setsMap.put(name, new Set<CyEdge>(name, edges));		
+				}
+				networkSetNames.put(name, network);
+				setType.put(name, type);
+				fireSetCreatedEvent(name);
 			}
-			networkSetNames.put(name, network);
-			setType.put(name, type);
-			fireSetCreatedEvent(name);
 		}
 	}
 	
 	public void createSetsFromAttributes(String name, String column, CyNetwork network, CyIdType type) {
-		if (network != null) {
-			if (type == CyIdType.NODE) {
-				CyTable cyTable = network.getDefaultNodeTable();
-				CyColumn cyIdColumn = cyTable.getPrimaryKey();
-				List<Long> cyIdList = cyIdColumn.getValues(Long.class);
-				HashMap<String, Set<CyNode>> cyNodeSet = new HashMap<String, Set<CyNode>>();
-				for (Long cyId: cyIdList) {
-					String attrName = name + ":" + cyTable.getRow(cyId).get(column, String.class);
-					if (!cyNodeSet.containsKey(attrName)) cyNodeSet.put(attrName, new Set<CyNode>(attrName));
-					cyNodeSet.get(attrName).add(network.getNode(cyId));
+		if (! setsMap.containsKey(name)) {
+			if (network != null) {
+				if (type == CyIdType.NODE) {
+					CyTable cyTable = network.getDefaultNodeTable();
+					CyColumn cyIdColumn = cyTable.getPrimaryKey();
+					List<Long> cyIdList = cyIdColumn.getValues(Long.class);
+					HashMap<String, Set<CyNode>> cyNodeSet = new HashMap<String, Set<CyNode>>();
+					for (Long cyId: cyIdList) {
+						String attrName = name + ":" + cyTable.getRow(cyId).get(column, String.class);
+						if (!cyNodeSet.containsKey(attrName)) cyNodeSet.put(attrName, new Set<CyNode>(attrName));
+						cyNodeSet.get(attrName).add(network.getNode(cyId));
+					}
+					for (String s: cyNodeSet.keySet()) {
+						setsMap.put(s, cyNodeSet.get(s));
+						networkSetNames.put(s, network);
+						setType.put(s, CyIdType.NODE);
+						fireSetCreatedEvent(s);
+					}
 				}
-				for (String s: cyNodeSet.keySet()) {
-					setsMap.put(s, cyNodeSet.get(s));
-					networkSetNames.put(s, network);
-					setType.put(s, CyIdType.NODE);
-					fireSetCreatedEvent(s);
-				}
-			}
-			if (type == CyIdType.EDGE) {
-				CyTable cyTable = network.getDefaultEdgeTable();
-				CyColumn cyIdColumn = cyTable.getPrimaryKey();
-				List<Long> cyIdList = cyIdColumn.getValues(Long.class);
-				HashMap<String, Set<CyEdge>> cyNodeSet = new HashMap<String, Set<CyEdge>>();
-				for (Long cyId: cyIdList) {
-					String attrName = name + ":" + cyTable.getRow(cyId).get(column, String.class);
-					if (!cyNodeSet.containsKey(attrName)) cyNodeSet.put(attrName, new Set<CyEdge>(attrName));
-					cyNodeSet.get(attrName).add(network.getEdge(cyId));
-				}
-				for (String s: cyNodeSet.keySet()) {
-					setsMap.put(s, cyNodeSet.get(s));
-					networkSetNames.put(s, network);
-					setType.put(s, CyIdType.EDGE);
-					fireSetCreatedEvent(s);
+				if (type == CyIdType.EDGE) {
+					CyTable cyTable = network.getDefaultEdgeTable();
+					CyColumn cyIdColumn = cyTable.getPrimaryKey();
+					List<Long> cyIdList = cyIdColumn.getValues(Long.class);
+					HashMap<String, Set<CyEdge>> cyNodeSet = new HashMap<String, Set<CyEdge>>();
+					for (Long cyId: cyIdList) {
+						String attrName = name + ":" + cyTable.getRow(cyId).get(column, String.class);
+						if (!cyNodeSet.containsKey(attrName)) cyNodeSet.put(attrName, new Set<CyEdge>(attrName));
+						cyNodeSet.get(attrName).add(network.getEdge(cyId));
+					}
+					for (String s: cyNodeSet.keySet()) {
+						setsMap.put(s, cyNodeSet.get(s));
+						networkSetNames.put(s, network);
+						setType.put(s, CyIdType.EDGE);
+						fireSetCreatedEvent(s);
+					}
 				}
 			}
 		}
 	}
 	
 	public void createSetFromSelectedNetwork(String name, CyNetworkViewManager networkViewManager, CyIdType type) {
-		List<CyNode> cyNodes = null;
-		List<CyEdge> cyEdges = null;
-		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
-		CyNetwork cyNetwork = null;
-		while (networkViewSet.hasNext()) {
-			cyNetwork = networkViewSet.next().getModel();
-			if (cyNetwork != null && cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
-				if (type == CyIdType.NODE) {
-					cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
-					if (! cyNodes.isEmpty()) {
-						setsMap.put(name, new Set<CyNode>(name,cyNodes));
-						networkSetNames.put(name, cyNetwork);
-						setType.put(name, type);
-						fireSetCreatedEvent(name);
+		if (! setsMap.containsKey(name)) {
+			List<CyNode> cyNodes = null;
+			List<CyEdge> cyEdges = null;
+			Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
+			CyNetwork cyNetwork = null;
+			while (networkViewSet.hasNext()) {
+				cyNetwork = networkViewSet.next().getModel();
+				if (cyNetwork != null && cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
+					if (type == CyIdType.NODE) {
+						cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
+						if (! cyNodes.isEmpty()) {
+							setsMap.put(name, new Set<CyNode>(name,cyNodes));
+							networkSetNames.put(name, cyNetwork);
+							setType.put(name, type);
+							fireSetCreatedEvent(name);
+						}
 					}
-				}
-				else if (type == CyIdType.EDGE) {
-					cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
-					if (! cyEdges.isEmpty()) {
-						setsMap.put(name, new Set<CyEdge>(name,cyEdges));
-						networkSetNames.put(name, cyNetwork);
-						setType.put(name, type);
-						fireSetCreatedEvent(name);
+					else if (type == CyIdType.EDGE) {
+						cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
+						if (! cyEdges.isEmpty()) {
+							setsMap.put(name, new Set<CyEdge>(name,cyEdges));
+							networkSetNames.put(name, cyNetwork);
+							setType.put(name, type);
+							fireSetCreatedEvent(name);
+						}
 					}
 				}
 			}
@@ -205,8 +221,13 @@ public class SetsManager {
 		} */
 	}
 	
-	public void createSet(String name, List<CyIdentifiable> cyNodes) {
-		setsMap.put(name, new Set<CyIdentifiable>(name,cyNodes));
+	public void rename(String name, String newName) {
+		if (setsMap.containsKey(name)) {
+			Set<? extends CyIdentifiable> oldSet = setsMap.get(name);
+			setsMap.remove(name);
+			setsMap.put(newName, oldSet);
+			oldSet.rename(newName);
+		}
 	}
 	
 	public void removeSet(String name) {
@@ -217,27 +238,42 @@ public class SetsManager {
 	}
 	
 	public void union(String newName, String set1, String set2) {
-		setsMap.put(newName, setsMap.get(set1).unionGeneric(newName, setsMap.get(set2)));
-		networkSetNames.put(newName, networkSetNames.get(set1));
-		if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-			setType.put(newName, setType.get(set1));
-		fireSetCreatedEvent(newName);
+		if (! setsMap.containsKey(newName)) {
+			setsMap.put(newName, setsMap.get(set1).unionGeneric(newName, setsMap.get(set2)));
+			networkSetNames.put(newName, networkSetNames.get(set1));
+			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+				setType.put(newName, setType.get(set1));
+			fireSetCreatedEvent(newName);
+		}
 	}
 	
 	public void intersection(String newName, String set1, String set2) {
-		setsMap.put(newName, setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2)));
-		networkSetNames.put(newName, networkSetNames.get(set1));
-		if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-			setType.put(newName, setType.get(set1));
-		fireSetCreatedEvent(newName);
+		if (! setsMap.containsKey(newName)) {
+			setsMap.put(newName, setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2)));
+			networkSetNames.put(newName, networkSetNames.get(set1));
+			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+				setType.put(newName, setType.get(set1));
+			fireSetCreatedEvent(newName);
+		}
 	}
 	
 	public void difference(String newName, String set1, String set2) {
-		setsMap.put(newName, setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2)));
-		networkSetNames.put(newName, networkSetNames.get(set1));
-		if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-			setType.put(newName, setType.get(set1));
-		fireSetCreatedEvent(newName);
+		if (! setsMap.containsKey(newName)) {
+			setsMap.put(newName, setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2)));
+			networkSetNames.put(newName, networkSetNames.get(set1));
+			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+				setType.put(newName, setType.get(set1));
+			fireSetCreatedEvent(newName);
+		}
+	}
+	
+	public void addToSet(String name, CyIdentifiable cyId) {
+		Set<? extends CyIdentifiable> s = setsMap.get(name);
+		if (s.addCyId(cyId)) {
+			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
+			cyIdList.add(cyId);
+			fireSetAddedEvent(name, cyIdList);
+		}
 	}
 	
 	public CyNetwork getCyNetwork(String name) {

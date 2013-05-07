@@ -32,13 +32,44 @@ public class Set <T extends CyIdentifiable> {
 		}
 	}
 	
-	public void add(T cyId) {
-		set.put(cyId.getSUID(), cyId);
+	public boolean add(T cyId) {
+		if (! set.containsKey(cyId.getSUID())) {
+			set.put(cyId.getSUID(), cyId);
+			return true;
+		}
+		else
+			return false;
 	}
 	
-	public void remove(T cyId) {
-		set.remove(cyId.getSUID());
+	public boolean addCyId(CyIdentifiable cyId) {
+		if (! set.containsKey(cyId.getSUID())) {
+			set.put(cyId.getSUID(), (T) cyId);
+			return true;
+		}
+		else
+			return false;
 	}
+	
+	public boolean remove(T cyId) {
+		if (set.containsKey(cyId.getSUID())) {
+			set.remove(cyId.getSUID());
+			return true;
+		}
+		else return false;
+	}
+	
+	public boolean removeCyId(CyIdentifiable cyId) {
+		if (set.containsKey(cyId.getSUID())) {
+			set.remove(cyId.getSUID());
+			return true;
+		}
+		else return false;
+	}
+	
+	public void rename(String newName) {
+		name = newName;
+	}
+	
 	public Set<T> intersection(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
 		Iterator<T> sValues = s.getElements();
