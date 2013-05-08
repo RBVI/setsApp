@@ -97,14 +97,20 @@ public class SetsManager {
 		if (! setsMap.containsKey(name))
 			if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
 				if (cyNodes != null && ! cyNodes.isEmpty()) {
-					setsMap.put(name, new Set<CyNode>(name,cyNodes));
+					List<CyNode> filteredNodes = new ArrayList<CyNode>();
+					for (CyNode n: cyNodes) {
+						if (cyNetwork.getRow(n) != null) filteredNodes.add(n);
+					}
+					setsMap.put(name, new Set<CyNode>(name,filteredNodes));
 					setType.put(name, CyIdType.NODE);
-				//	System.out.println("Added " + this.getSet(name) + " to set");
 				}
 				if (cyEdges != null && ! cyEdges.isEmpty()) {
-					setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+					List<CyEdge> filteredEdges = new ArrayList<CyEdge>();
+					for (CyEdge e: cyEdges) {
+						if (cyNetwork.getRow(e) != null) filteredEdges.add(e);
+					}
+					setsMap.put(name, new Set<CyEdge>(name, filteredEdges));
 					setType.put(name, CyIdType.EDGE);
-				//	System.out.println("Added " + this.getSet(name) + " to set");
 				}
 				networkSetNames.put(name, cyNetwork);
 				fireSetCreatedEvent(name);
@@ -265,7 +271,7 @@ public class SetsManager {
 	}
 	
 	public void union(String newName, String set1, String set2) {
-		if (! setsMap.containsKey(newName)) {
+		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			setsMap.put(newName, setsMap.get(set1).unionGeneric(newName, setsMap.get(set2)));
 			networkSetNames.put(newName, networkSetNames.get(set1));
 			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
@@ -275,7 +281,7 @@ public class SetsManager {
 	}
 	
 	public void intersection(String newName, String set1, String set2) {
-		if (! setsMap.containsKey(newName)) {
+		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			setsMap.put(newName, setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2)));
 			networkSetNames.put(newName, networkSetNames.get(set1));
 			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
@@ -285,7 +291,7 @@ public class SetsManager {
 	}
 	
 	public void difference(String newName, String set1, String set2) {
-		if (! setsMap.containsKey(newName)) {
+		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			setsMap.put(newName, setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2)));
 			networkSetNames.put(newName, networkSetNames.get(set1));
 			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
@@ -296,7 +302,7 @@ public class SetsManager {
 	
 	public void addToSet(String name, CyIdentifiable cyId) {
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
-		if (s.addCyId(cyId)) {
+		if (networkSetNames.get(name).getRow(cyId) != null && s.addCyId(cyId)) {
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 			cyIdList.add(cyId);
 			fireSetAddedEvent(name, cyIdList);

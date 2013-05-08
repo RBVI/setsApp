@@ -345,7 +345,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							}
 						}
 					}
-					taskManager.execute(createSetTaskFactory.createTaskIterator(loadedSetName, cyNetwork, cyNodes, cyEdges));
+					mySets.createSet(loadedSetName, cyNetwork, cyNodes, cyEdges);
+				//	taskManager.execute(createSetTaskFactory.createTaskIterator(loadedSetName, cyNetwork, cyNodes, cyEdges));
 				}
 			}
 		}
