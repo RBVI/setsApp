@@ -48,6 +48,7 @@ import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
@@ -168,8 +169,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					move.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							taskManager.execute(new TaskIterator(new CopyCyIdTask(mySets, selectecCyId)));
-							mySets.removeFromSet(thisSetName, selectecCyId);
+							taskManager.execute(new TaskIterator(new MoveCyIdTask(mySets, thisSetName, selectecCyId)));
+						//	mySets.removeFromSet(thisSetName, selectecCyId);
 						}
 					});
 					delete.addActionListener(new ActionListener() {

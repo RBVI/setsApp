@@ -300,13 +300,21 @@ public class SetsManager {
 		}
 	}
 	
-	public void addToSet(String name, CyIdentifiable cyId) {
+	public boolean addToSet(String name, CyIdentifiable cyId) {
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
-		if (networkSetNames.get(name).getRow(cyId) != null && s.addCyId(cyId)) {
-			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
-			cyIdList.add(cyId);
-			fireSetAddedEvent(name, cyIdList);
+		try {
+			if (networkSetNames.get(name).getRow(cyId) != null && s.addCyId(cyId)) {
+				ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
+				cyIdList.add(cyId);
+				fireSetAddedEvent(name, cyIdList);
+				return true;
+			}
+			else return false;
 		}
+		catch (Exception E) {
+			System.err.println("Unsupported operation: Trying to insert node into a different network.");
+		}
+		return false;
 	}
 	
 	public void removeFromSet(String name, CyIdentifiable cyId) {
