@@ -48,6 +48,7 @@ import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
@@ -201,7 +202,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					rename.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							
+							taskManager.execute(new TaskIterator(new RenameSetTask(mySets, (String) node.getUserObject())));
 						}
 					});
 					popup.add(delete);
@@ -470,7 +471,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
-		networkTable.deleteColumn(tablePrefix + event.getSetName());
+		networkTable.deleteColumn(tablePrefix + event.getOldSetName());
 		networkTable.createListColumn(tablePrefix + event.getSetName(), Long.class, false);
 		ArrayList<Long> suidSet = new ArrayList<Long>();
 		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();

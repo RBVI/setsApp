@@ -25,7 +25,7 @@ public class SetChangedEvent extends EventObject {
 	
 	public void changeSetName(String oldName, String newName) {
 		if (setName == null) setName = newName;
-		if (oldSet == null) setName = oldName;
+		if (oldSet == null) oldSet = oldName;
 	}
 	
 	public void cyIdsAdded(List<? extends CyIdentifiable> a) {

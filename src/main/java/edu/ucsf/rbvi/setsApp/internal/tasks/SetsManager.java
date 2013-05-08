@@ -78,7 +78,7 @@ public class SetsManager {
 		event.changeSetName(oldName, setName);
 		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
 		while (iterator.hasNext())
-			iterator.next().setChanged(event);
+			iterator.next().setRenamed(event);
 	}
 	
 	private void fireSetRemovedEvent(String setName) {
