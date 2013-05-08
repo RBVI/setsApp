@@ -32,7 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
-import edu.ucsf.rbvi.setsApp.internal.tasks.ModifyNodeTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.AddNodeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 
 public class CyActivator extends AbstractCyActivator {
@@ -69,7 +69,7 @@ public class CyActivator extends AbstractCyActivator {
 		CyNetwork cyNetwork = networkViewSet.next().getModel(); */
 		SetsPane setsPanel = new SetsPane(bc);
 		sets = setsPanel.getSetsManager();
-		NodeViewTaskFactory modifyNode = new ModifyNodeTaskFactory(sets);
+		NodeViewTaskFactory modifyNode = new AddNodeViewTaskFactory(sets);
 		Properties modifySetProperties = new Properties();
 		modifySetProperties.setProperty("title", "Add node to set");
 	/*	TaskManager task = getService(bc, TaskManager.class);

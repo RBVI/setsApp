@@ -63,6 +63,24 @@ public class SetsManager {
 			iterator.next().setChanged(event);
 	}
 	
+	private void fireSetRemovedEvent(String setName, List<? extends CyIdentifiable> removed) {
+		SetChangedEvent event = new SetChangedEvent(setName);
+		event.setSetName(setName);
+		event.cyIdsRemoved(removed);
+		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
+		while (iterator.hasNext())
+			iterator.next().setChanged(event);
+	}
+	
+	private void fireSetRenamedEvent(String oldName, String setName) {
+		SetChangedEvent event = new SetChangedEvent(setName);
+		event.setSetName(setName);
+		event.changeSetName(oldName, setName);
+		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
+		while (iterator.hasNext())
+			iterator.next().setChanged(event);
+	}
+	
 	private void fireSetRemovedEvent(String setName) {
 		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
@@ -224,9 +242,18 @@ public class SetsManager {
 	public void rename(String name, String newName) {
 		if (setsMap.containsKey(name)) {
 			Set<? extends CyIdentifiable> oldSet = setsMap.get(name);
+			CyNetwork oldNetwork = networkSetNames.get(name);
+			CyIdType oldType = setType.get(name);
+			
 			setsMap.remove(name);
+			networkSetNames.remove(name);
+			setType.remove(name);
+			
 			setsMap.put(newName, oldSet);
+			networkSetNames.put(newName, oldNetwork);
+			setType.put(newName, oldType);
 			oldSet.rename(newName);
+			fireSetRenamedEvent(name, newName);
 		}
 	}
 	
@@ -273,6 +300,15 @@ public class SetsManager {
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 			cyIdList.add(cyId);
 			fireSetAddedEvent(name, cyIdList);
+		}
+	}
+	
+	public void removeFromSet(String name, CyIdentifiable cyId) {
+		Set<? extends CyIdentifiable> s = setsMap.get(name);
+		if (s.removeCyId(cyId)) {
+			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
+			cyIdList.add(cyId);
+			fireSetRemovedEvent(name, cyIdList);
 		}
 	}
 	

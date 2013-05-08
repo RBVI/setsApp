@@ -6,15 +6,15 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
-public class ModifyNodeTaskFactory extends AbstractNodeViewTaskFactory {
+public class AddNodeViewTaskFactory extends AbstractNodeViewTaskFactory {
 	
 	private SetsManager mgr;
-	public ModifyNodeTaskFactory (SetsManager manager) {
+	public AddNodeViewTaskFactory (SetsManager manager) {
 		mgr = manager;
 	}
 	
 	public TaskIterator createTaskIterator(View<CyNode> arg0, CyNetworkView arg1) {
-		return new TaskIterator(new ModifyNodeTask(mgr, arg0.getModel()));
+		return new TaskIterator(new AddNodeTask(mgr, arg0.getModel()));
 	}
 
 }

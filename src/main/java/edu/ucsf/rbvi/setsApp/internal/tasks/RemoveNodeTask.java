@@ -10,16 +10,14 @@ import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
 import edu.ucsf.rbvi.setsApp.internal.CyIdType;
-import edu.ucsf.rbvi.setsApp.internal.Set;
 
-public class ModifyNodeTask extends AbstractTask {
-	
-	@Tunable(description="Select set to add node to:")
+public class RemoveNodeTask extends AbstractTask {
+	@Tunable(description="Select set to remove nodes from:")
 	public ListSingleSelection<String> sets;
 	private SetsManager mgr;
 	private CyNode node;
 	
-	public ModifyNodeTask (SetsManager manager, CyNode cyNode) {
+	public RemoveNodeTask (SetsManager manager, CyNode cyNode) {
 		mgr = manager;
 		node = cyNode;
 		sets = new ListSingleSelection<String>(getSelectedSets(CyIdType.NODE));
@@ -40,10 +38,10 @@ public class ModifyNodeTask extends AbstractTask {
 		}
 		return selectSet;
 	}
-	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		mgr.addToSet(sets.getSelectedValue(), node);
+		// TODO Auto-generated method stub
+		
 	}
 
 }

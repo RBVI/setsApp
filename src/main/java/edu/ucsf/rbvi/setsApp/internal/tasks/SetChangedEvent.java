@@ -40,6 +40,10 @@ public class SetChangedEvent extends EventObject {
 		return setName;
 	}
 	
+	public String getOldSetName() {
+		return oldSet;
+	}
+	
 	public List<? extends CyIdentifiable> getCyIdsAdded() {return added;}
 	
 	public List<? extends CyIdentifiable> getCyIdsRemoved() {return removed;}
