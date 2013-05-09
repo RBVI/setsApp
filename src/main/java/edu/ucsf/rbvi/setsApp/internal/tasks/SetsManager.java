@@ -1,5 +1,7 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -88,10 +90,6 @@ public class SetsManager {
 		while (iterator.hasNext())
 			iterator.next().setRemoved(event);
 	}
-/*	public void createSetTask(String name, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
-		createSetTaskFactory.loadCyIdentifiables(name, cyNodes, cyEdges);
-		
-	} */
 	
 	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
 		if (! setsMap.containsKey(name))
@@ -115,6 +113,45 @@ public class SetsManager {
 				networkSetNames.put(name, cyNetwork);
 				fireSetCreatedEvent(name);
 			}
+	}
+	
+	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) {
+		if (! setsMap.containsKey(name)) {
+			HashSet<String> inputSet = new HashSet<String>();
+			String curLine;
+			try {
+				while ((curLine = reader.readLine()) != null) inputSet.add(curLine);
+			}
+			catch (IOException e) {e.printStackTrace();}
+			if (network != null) {
+				CyTable table = null;
+				if (type == CyIdType.NODE) {
+					table = network.getDefaultNodeTable();
+					List<Long> cyIdList = table.getPrimaryKey().getValues(Long.class);
+					List<CyNode> cyNodes = new ArrayList<CyNode>();
+					for (Long cyId: cyIdList) {
+						String curCell = table.getRow(cyId).get(column, String.class);
+						if (inputSet.contains(curCell))
+							cyNodes.add(network.getNode(cyId));
+					}
+					setsMap.put(name, new Set<CyNode>(name, cyNodes));
+				}
+				if (type == CyIdType.EDGE) {
+					table = network.getDefaultEdgeTable();
+					List<Long> cyIdList = table.getPrimaryKey().getValues(Long.class);
+					List<CyEdge> cyEdges = new ArrayList<CyEdge>();
+					for (Long cyId: cyIdList) {
+						String curCell = table.getRow(cyId).get(column, String.class);
+						if (inputSet.contains(curCell))
+							cyEdges.add(network.getEdge(cyId));
+					}
+					setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+				}
+				networkSetNames.put(name, network);
+				setType.put(name, type);
+				fireSetCreatedEvent(name);
+			}
+		}
 	}
 	
 	public void createSetFromAttributes(String name, String column, Object attribute, CyNetworkManager networkManager, String networkName, CyIdType type) {

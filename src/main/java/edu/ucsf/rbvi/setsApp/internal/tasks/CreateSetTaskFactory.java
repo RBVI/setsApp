@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import java.io.BufferedReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,16 +46,12 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 	public TaskIterator createTaskIterator(String setName, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
 		return new TaskIterator(new RestoreSetTask(setsManager, cyNetwork, setName, cyNodes, cyEdges));
 	}
-
-/*	public TaskIterator createTaskIterator(String setName, String set1, String set2, SetOperations operation) {
-		return new TaskIterator(new SetOperationsTask(setsManager, setName, set1, set2, operation));
-	} */
 	
 	public TaskIterator createTaskIterator(CyIdType type, SetOperations operation) {
 		return new TaskIterator(new SetOperationsTask(setsManager, type, operation));
 	}
 	
-/*	public TaskIterator createTaskIterator(List<String> attributes, SetOperations operation) {
-		return new TaskIterator(new SetOperationsTask(setsManager, attributes, operation));
-	} */
+	public TaskIterator createTaskIterator(CyNetworkManager cnm, BufferedReader stream, CyIdType t) {
+		return new TaskIterator(new CreateSetFromFileTask(setsManager, cnm, stream, t));
+	}
 }

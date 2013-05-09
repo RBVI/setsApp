@@ -6,6 +6,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +22,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -55,7 +61,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
-	private JButton createSet, newSetFromAttribute, union, intersection, difference;
+	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
 	private ButtonGroup select;
 	private JRadioButton selectNodes, selectEdges;
 	private JTree setsTree;
@@ -70,6 +76,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private TaskManager taskManager;
 	private HashMap<String, DefaultMutableTreeNode> setsNode;
 	private HashMap<String, HashMap<Long, DefaultMutableTreeNode>> cyIdNode;
+	private JFileChooser chooseImport;
 	public static final String tablePrefix = "setsApp:";
 	
 	public SetsPane(BundleContext bc) {
@@ -79,7 +86,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		networkManager = (CyNetworkManager) getService(CyNetworkManager.class);
 		networkViewManager = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
 		taskManager = (TaskManager) getService(TaskManager.class);
-
+		chooseImport = new JFileChooser();
+		
 		setPreferredSize(new Dimension(500,600));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		
@@ -89,6 +97,25 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		selectEdges = new JRadioButton("Edges");
 		select.add(selectNodes);
 		select.add(selectEdges);
+		importSet = new JButton("Import Set From File");
+		importSet.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if (JFileChooser.APPROVE_OPTION == chooseImport.showOpenDialog(SetsPane.this)){
+					BufferedReader reader;
+					try {
+						reader = new BufferedReader(new FileReader(chooseImport.getSelectedFile()));
+						if (selectNodes.isSelected())
+							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.NODE));
+						if (selectEdges.isSelected())
+							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.EDGE));
+					} catch (FileNotFoundException e1) {
+						System.err.println("Couldn't open file: " + chooseImport.getSelectedFile().getName());
+						e1.printStackTrace();
+					}
+				}
+			}
+		});
 		createSet = new JButton("Create Set");
 		createSet.addActionListener(new ActionListener() {
 			
@@ -133,6 +160,23 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			
 			public void actionPerformed(ActionEvent e) {
 				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
+			}
+		});
+		exportSet = new JButton("Export Set");
+		exportSet.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				if (JFileChooser.APPROVE_OPTION == chooseImport.showSaveDialog(SetsPane.this)) {
+					File f = chooseImport.getSelectedFile();
+					if (!f.exists())
+						try {
+							f.createNewFile();
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					
+				}
 			}
 		});
 		
@@ -226,12 +270,14 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		add(selectNodes);
 		add(selectEdges);
+		add(importSet);
 		add(createSet);
 		add(newSetFromAttribute);
 		add(scrollPane);
 		add(union);
 		add(intersection);
 		add(difference);
+		add(exportSet);
 	}
 	
 	public SetsManager getSetsManager() {return mySets;}
