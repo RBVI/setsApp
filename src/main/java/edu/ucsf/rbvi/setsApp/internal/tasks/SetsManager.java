@@ -20,6 +20,7 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
+import org.cytoscape.model.subnetwork.CySubNetwork;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 
@@ -284,7 +285,7 @@ public class SetsManager {
 	}
 	
 	public void rename(String name, String newName) {
-		if (setsMap.containsKey(name)) {
+		if (setsMap.containsKey(name) && ! setsMap.containsKey(newName)) {
 			Set<? extends CyIdentifiable> oldSet = setsMap.get(name);
 			CyNetwork oldNetwork = networkSetNames.get(name);
 			CyIdType oldType = setType.get(name);
