@@ -10,6 +10,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -59,6 +61,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
+import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
 	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
@@ -168,14 +171,20 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			public void actionPerformed(ActionEvent e) {
 				if (JFileChooser.APPROVE_OPTION == chooseImport.showSaveDialog(SetsPane.this)) {
 					File f = chooseImport.getSelectedFile();
-					if (!f.exists())
+					if (!f.exists()) {
 						try {
 							f.createNewFile();
+							if (selectNodes.isSelected())
+								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.NODE)));
+							if (selectEdges.isSelected())
+								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.EDGE)));
 						} catch (IOException e1) {
-							// TODO Auto-generated catch block
+							System.err.println("Unable to create file: " + f.getName());
 							e1.printStackTrace();
 						}
-					
+					}
+					else
+						System.out.println("File already exist, choose another file name/directory.");
 				}
 			}
 		});

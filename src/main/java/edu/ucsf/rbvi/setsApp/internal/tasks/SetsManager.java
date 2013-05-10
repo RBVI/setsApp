@@ -1,6 +1,7 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -360,6 +361,30 @@ public class SetsManager {
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 			cyIdList.add(cyId);
 			fireSetRemovedEvent(name, cyIdList);
+		}
+	}
+	
+	public void exportSetToStream(String name, String column, BufferedWriter writer) {
+		Iterator<? extends CyIdentifiable> cyIds = setsMap.get(name).getElements();
+		CyNetwork network = networkSetNames.get(name);
+		CyTable table = null;
+		if (setType.get(name) == CyIdType.NODE) table = network.getDefaultNodeTable();
+		if (setType.get(name) == CyIdType.EDGE) table = network.getDefaultEdgeTable();
+		if (table != null) {
+			try {
+				while (cyIds.hasNext())
+					writer.write(table.getRow(cyIds.next().getSUID()).get(column, String.class) + "\n");
+			} catch (IOException e) {
+				System.err.println("Cannot write to file: " + writer.toString());
+				e.printStackTrace();
+			}
+		}
+		try {
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			System.err.println("Problems writing to stream: " + writer.toString());
+			e.printStackTrace();
 		}
 	}
 	
