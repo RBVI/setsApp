@@ -15,6 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
@@ -336,6 +338,17 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		}
 	}
 	
+	private void importFromAttribute(String loadedSetName) {
+		CyNetwork cyNetwork = mySets.getCyNetwork(loadedSetName);
+		List<CyNode> cyNodes = null;
+		List<CyEdge> cyEdges = null;
+		cyNodes = CyTableUtil.getNodesInState(cyNetwork, loadedSetName, true);
+		cyEdges = CyTableUtil.getEdgesInState(cyNetwork, loadedSetName, true);
+		if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
+		if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
+		mySets.createSet(loadedSetName, cyNetwork, cyNodes, cyEdges);
+	}
+	
 	public synchronized void setCreated(SetChangedEvent event) {
 		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
 		setsNode.put(event.getSetName(), thisSet);
@@ -358,8 +371,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		setsNode.put(event.getSetName(), thisSet);
 		cyIdNode.put(event.getSetName(), setNodesMap);
 		treeModel.insertNodeInto(thisSet, sets, sets.getChildCount());
-	//	sets.add(thisSet);
-		CyTable networkTable = cyNetwork.getDefaultNetworkTable();
+	/*	CyTable networkTable = cyNetwork.getDefaultNetworkTable();
 		if (networkTable.getColumn(tablePrefix + event.getSetName()) == null) {
 			networkTable.createListColumn(tablePrefix + event.getSetName(), Long.class, false);
 			ArrayList<Long> suidSet = new ArrayList<Long>();
@@ -367,7 +379,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			while (iterator.hasNext())
 				suidSet.add(iterator.next().getSUID());
 			networkTable.getRow(cyNetwork.getSUID()).set(tablePrefix + event.getSetName(), suidSet);
-		}
+		} */
+		exportToAttribute(event.getSetName());
 	}
 
 	public void setRemoved(SetChangedEvent event) {
@@ -387,7 +400,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		while (sets.getChildCount() > 0) {
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
-		CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
+	/*	CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
 		Iterator<CyNetwork> networks = nm.getNetworkSet().iterator();
 		while (networks.hasNext()) {
 			CyNetwork cyNetwork = networks.next();
@@ -425,6 +438,36 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					}
 					mySets.createSet(loadedSetName, cyNetwork, cyNodes, cyEdges);
 				//	taskManager.execute(createSetTaskFactory.createTaskIterator(loadedSetName, cyNetwork, cyNodes, cyEdges));
+				}
+			}
+		} */
+		CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
+		java.util.Set<CyNetwork> networks = nm.getNetworkSet();
+		CyTable cyTable;
+		Collection<CyColumn> cyColumns;
+		for (CyNetwork cyNetwork: networks) {
+			cyTable = cyNetwork.getDefaultNodeTable();
+			cyColumns = cyTable.getColumns();
+			for (CyColumn c: cyColumns) {
+				String colName = c.getName();
+				if (colName.length() >= 9 && colName.substring(0, 8).equals(tablePrefix)) {
+					String loadedSetName = colName.substring(8);
+					List<CyNode> cyNodes = null;
+					cyNodes = CyTableUtil.getNodesInState(cyNetwork, c.getName(), true);
+					if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
+					mySets.createSet(loadedSetName, cyNetwork, cyNodes, null);
+				}
+			}
+			cyTable = cyNetwork.getDefaultEdgeTable();
+			cyColumns = cyTable.getColumns();
+			for (CyColumn c: cyColumns) {
+				String colName = c.getName();
+				if (colName.length() >= 9 && colName.substring(0, 8).equals(tablePrefix)) {
+					String loadedSetName = colName.substring(8);
+					List<CyEdge> cyEdges = null;
+					cyEdges = CyTableUtil.getEdgesInState(cyNetwork, c.getName(), true);
+					if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
+					mySets.createSet(loadedSetName, cyNetwork, null, cyEdges);
 				}
 			}
 		}
