@@ -70,6 +70,11 @@ public class Set <T extends CyIdentifiable> {
 		name = newName;
 	}
 	
+	public boolean hasCyId(Long cyId) {
+		if (set.get(cyId) != null) return true;
+		else return false;
+	}
+	
 	public Set<T> intersection(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
 		Iterator<T> sValues = s.getElements();

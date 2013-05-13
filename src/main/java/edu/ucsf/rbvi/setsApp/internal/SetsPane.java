@@ -238,13 +238,19 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				}
 				else if (!node.isRoot()) {
 					JMenuItem add = new JMenuItem("Add...");
+					JMenuItem export = new JMenuItem("Export as Attribute");
 					JMenuItem delete = new JMenuItem("Delete");
 					JMenuItem rename = new JMenuItem("Rename");
 					add.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							// TODO Auto-generated method stub
 							
+						}
+					});
+					export.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							exportToAttribute((String) node.getUserObject());
 						}
 					});
 					delete.addActionListener(new ActionListener() {
@@ -259,6 +265,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							taskManager.execute(new TaskIterator(new RenameSetTask(mySets, (String) node.getUserObject())));
 						}
 					});
+					popup.add(export);
 					popup.add(delete);
 					popup.add(rename);
 				}
@@ -312,6 +319,21 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 	public String getTitle() {
 		return "Sets";
+	}
+	
+	private void exportToAttribute(String name) {
+		CyTable table = null;
+		CyNetwork network = mySets.getCyNetwork(name);
+		String colName = tablePrefix + name;
+		if (mySets.getType(name) == CyIdType.NODE)
+			table = network.getDefaultNodeTable();
+		if (mySets.getType(name) == CyIdType.EDGE)
+			table = network.getDefaultEdgeTable();
+		if (table != null && table.getColumn(colName) == null) {
+			table.createColumn(colName, Boolean.class, false);
+			for (Long cyId: table.getPrimaryKey().getValues(Long.class))
+				table.getRow(cyId).set(colName, mySets.isInSet(name, cyId));
+		}
 	}
 	
 	public synchronized void setCreated(SetChangedEvent event) {

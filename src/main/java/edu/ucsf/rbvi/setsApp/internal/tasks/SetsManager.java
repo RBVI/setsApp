@@ -356,6 +356,12 @@ public class SetsManager {
 		return false;
 	}
 	
+	public boolean isInSet(String name, Long cyId) {
+		Set<? extends CyIdentifiable> thisSet;
+		if ((thisSet = setsMap.get(name)) != null) return  thisSet.hasCyId(cyId);
+		else return false;
+	}
+	
 	public void removeFromSet(String name, CyIdentifiable cyId) {
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
 		if (s.removeCyId(cyId)) {
