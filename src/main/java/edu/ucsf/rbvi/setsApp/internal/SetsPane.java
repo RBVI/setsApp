@@ -348,9 +348,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			CyIdentifiable cyId = iterator.next();
 			String cyIdName = "???";
 			if (nodeTable.rowExists(cyId.getSUID()))
-				cyIdName = nodeTable.getRow(cyId.getSUID()).get("name", String.class);
+				cyIdName = nodeTable.getRow(cyId.getSUID()).get(CyNetwork.NAME, String.class);
 			if (edgeTable.rowExists(cyId.getSUID()))
-				cyIdName = edgeTable.getRow(cyId.getSUID()).get("name", String.class);
+				cyIdName = edgeTable.getRow(cyId.getSUID()).get(CyNetwork.NAME, String.class);
 			DefaultMutableTreeNode thisNode = new DefaultMutableTreeNode(new NodeInfo(cyIdName, cyId));
 			thisSet.add(thisNode);
 			setNodesMap.put(cyId.getSUID(), thisNode);
@@ -505,9 +505,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			for (CyIdentifiable node: added) {
 				String cyIdName = null;
 				if (nodeTable.rowExists(node.getSUID()))
-					cyIdName = nodeTable.getRow(node.getSUID()).get("name", String.class);
+					cyIdName = nodeTable.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
 				if (edgeTable.rowExists(node.getSUID()))
-					cyIdName = edgeTable.getRow(node.getSUID()).get("name", String.class);
+					cyIdName = edgeTable.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
 				DefaultMutableTreeNode newTreeNode = new DefaultMutableTreeNode(new NodeInfo(cyIdName, node));
 				cyIdNode.get(event.getSetName()).put(node.getSUID(), newTreeNode);
 				treeModel.insertNodeInto(newTreeNode, setNode, setNode.getChildCount());
