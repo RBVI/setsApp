@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.setsApp.internal;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -77,9 +78,8 @@ public class Set <T extends CyIdentifiable> {
 	
 	public Set<T> intersection(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
-		Iterator<T> sValues = s.getElements();
-		while (sValues.hasNext()) {
-			T curValue = sValues.next();
+		Collection<T> sValues = s.getElements();
+		for (T curValue: sValues) {
 			if (set.containsKey(curValue.getSUID()))
 				newSet.add(curValue);
 		}
@@ -88,27 +88,26 @@ public class Set <T extends CyIdentifiable> {
 	
 	public Set<T> union(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
-		Iterator<T> sValues = s.getElements(), thisValue = getElements();
-		while (sValues.hasNext())
-			newSet.add(sValues.next());
-		while (thisValue.hasNext())
-			newSet.add(thisValue.next());
+		Collection<T> sValues = s.getElements(), thisValue = getElements();
+		for (T value: sValues)
+			newSet.add(value);
+		for (T value: thisValue)
+			newSet.add(value);
 		return newSet;
 	}
 	
 	public Set<T> difference(String newName, Set<T> s) {
 		Set<T> newSet = new Set<T>(newName);
-		Iterator<T> sValues = s.getElements();
-		while (sValues.hasNext()) {
-			T curValue = sValues.next();
+		Collection<T> sValues = s.getElements();
+		for (T curValue: sValues) {
 			if (! set.containsKey(((CyIdentifiable) curValue).getSUID()))
 				newSet.add(curValue);
 		}
 		return newSet;
 	}
 	
-	public Iterator<T> getElements() {
-		return set.values().iterator();
+	public Collection<T> getElements() {
+		return set.values();
 	}
 
 	public Set<? extends CyIdentifiable> unionGeneric(String newName,

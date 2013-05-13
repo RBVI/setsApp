@@ -1,4 +1,4 @@
-package edu.ucsf.rbvi.setsApp.internal.tasks;
+package edu.ucsf.rbvi.setsApp.internal.events;
 
 import java.util.EventObject;
 import java.util.List;

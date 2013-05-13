@@ -56,12 +56,12 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.osgi.framework.BundleContext;
 
+import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
+import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
-import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedEvent;
-import edu.ucsf.rbvi.setsApp.internal.tasks.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
 
@@ -84,9 +84,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private JFileChooser chooseImport;
 	public static final String tablePrefix = "setsApp:";
 	
-	public SetsPane(BundleContext bc) {
+	public SetsPane(BundleContext bc, SetsManager thisSet) {
 		bundleContext = bc;
-		mySets = new SetsManager(this);
+		mySets = thisSet;
+		mySets.addSetChangedListener(this);
 		createSetTaskFactory = new CreateSetTaskFactory(mySets);
 		networkManager = (CyNetworkManager) getService(CyNetworkManager.class);
 		networkViewManager = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
@@ -214,7 +215,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					
 					JMenuItem copy = new JMenuItem("Copy to...");
 					JMenuItem move = new JMenuItem("Move to...");
-					JMenuItem delete = new JMenuItem("Delete");
+					JMenuItem delete = new JMenuItem("Remove from Set");
 					copy.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
@@ -239,20 +240,13 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					popup.add(delete);
 				}
 				else if (!node.isRoot()) {
-					JMenuItem add = new JMenuItem("Add...");
-					JMenuItem export = new JMenuItem("Export as Attribute");
-					JMenuItem delete = new JMenuItem("Delete");
+					JMenuItem delete = new JMenuItem("Remove Set");
 					JMenuItem rename = new JMenuItem("Rename");
-					add.addActionListener(new ActionListener() {
+
+					rename.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							
-						}
-					});
-					export.addActionListener(new ActionListener() {
-						
-						public void actionPerformed(ActionEvent e) {
-							exportToAttribute((String) node.getUserObject());
+							taskManager.execute(new TaskIterator(new RenameSetTask(mySets, (String) node.getUserObject())));
 						}
 					});
 					delete.addActionListener(new ActionListener() {
@@ -261,13 +255,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							mySets.removeSet(node.getUserObject().toString());
 						}
 					});
-					rename.addActionListener(new ActionListener() {
-						
-						public void actionPerformed(ActionEvent e) {
-							taskManager.execute(new TaskIterator(new RenameSetTask(mySets, (String) node.getUserObject())));
-						}
-					});
-					popup.add(export);
+					
 					popup.add(delete);
 					popup.add(rename);
 				}
@@ -355,9 +343,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
 		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
-		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
-		while (iterator.hasNext()) {
-			CyIdentifiable cyId = iterator.next();
+		Collection<? extends CyIdentifiable> cyIds = mySets.getSet(event.getSetName()).getElements();
+		for (CyIdentifiable cyId: cyIds) {
 			String cyIdName = "???";
 			if (nodeTable.rowExists(cyId.getSUID()))
 				cyIdName = nodeTable.getRow(cyId.getSUID()).get(CyNetwork.NAME, String.class);
@@ -495,7 +482,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 	public void setChanged(SetChangedEvent event) {
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
-		Iterator<? extends CyIdentifiable> iterator = (Iterator<? extends CyIdentifiable>) mySets.getSet(event.getSetName()).getElements();
 		List<CyIdentifiable> added = (List<CyIdentifiable>) event.getCyIdsAdded(),
 				removed = (List<CyIdentifiable>) event.getCyIdsRemoved();
 		DefaultMutableTreeNode setNode = setsNode.get(event.getSetName());

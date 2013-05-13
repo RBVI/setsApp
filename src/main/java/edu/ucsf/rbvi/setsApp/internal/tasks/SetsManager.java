@@ -26,6 +26,8 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 
 import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 import edu.ucsf.rbvi.setsApp.internal.Set;
+import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
+import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
 
 public class SetsManager {
 	private ConcurrentHashMap<String, Set<? extends CyIdentifiable>> setsMap;
@@ -62,9 +64,8 @@ public class SetsManager {
 		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
 		event.cyIdsAdded(added);
-		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
-		while (iterator.hasNext())
-			iterator.next().setChanged(event);
+		for (SetChangedListener listener: setChangedListener)
+			listener.setChanged(event);
 	}
 	
 	private void fireSetRemovedEvent(String setName, List<? extends CyIdentifiable> removed) {
@@ -72,25 +73,23 @@ public class SetsManager {
 		event.setSetName(setName);
 		event.cyIdsRemoved(removed);
 		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
-		while (iterator.hasNext())
-			iterator.next().setChanged(event);
+		for (SetChangedListener listener: setChangedListener)
+			listener.setChanged(event);
 	}
 	
 	private void fireSetRenamedEvent(String oldName, String setName) {
 		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
 		event.changeSetName(oldName, setName);
-		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
-		while (iterator.hasNext())
-			iterator.next().setRenamed(event);
+		for (SetChangedListener listener: setChangedListener)
+			listener.setRenamed(event);
 	}
 	
 	private void fireSetRemovedEvent(String setName) {
 		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
-		Iterator<SetChangedListener> iterator = setChangedListener.iterator();
-		while (iterator.hasNext())
-			iterator.next().setRemoved(event);
+		for (SetChangedListener listener: setChangedListener)
+			listener.setRemoved(event);
 	}
 	
 	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
@@ -372,15 +371,15 @@ public class SetsManager {
 	}
 	
 	public void exportSetToStream(String name, String column, BufferedWriter writer) {
-		Iterator<? extends CyIdentifiable> cyIds = setsMap.get(name).getElements();
+		Collection<? extends CyIdentifiable> cyIds = setsMap.get(name).getElements();
 		CyNetwork network = networkSetNames.get(name);
 		CyTable table = null;
 		if (setType.get(name) == CyIdType.NODE) table = network.getDefaultNodeTable();
 		if (setType.get(name) == CyIdType.EDGE) table = network.getDefaultEdgeTable();
 		if (table != null) {
 			try {
-				while (cyIds.hasNext())
-					writer.write(table.getRow(cyIds.next().getSUID()).get(column, String.class) + "\n");
+				for (CyIdentifiable cyId: cyIds)
+					writer.write(table.getRow(cyId.getSUID()).get(column, String.class) + "\n");
 			} catch (IOException e) {
 				System.err.println("Cannot write to file: " + writer.toString());
 				e.printStackTrace();

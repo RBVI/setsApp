@@ -44,7 +44,7 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		SetsManager sets = null;
+		SetsManager sets = new SetsManager();
 		// See if we have a graphics console or not
 		boolean haveGUI = true;
 		CySwingApplication cyApplication = getService(bc, CySwingApplication.class);
@@ -67,8 +67,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
 		CyNetwork cyNetwork = networkViewSet.next().getModel(); */
-		SetsPane setsPanel = new SetsPane(bc);
-		sets = setsPanel.getSetsManager();
+		SetsPane setsPanel = new SetsPane(bc, sets);
 		NodeViewTaskFactory modifyNode = new AddNodeViewTaskFactory(sets);
 		Properties modifySetProperties = new Properties();
 		modifySetProperties.setProperty("title", "Add node to set");
