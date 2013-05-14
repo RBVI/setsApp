@@ -297,9 +297,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		add(selectNodes);
 		add(selectEdges);
 		add(importSet);
-		add(createSet);
-		add(newSetFromAttribute);
 		add(exportSet);
+		add(newSetFromAttribute);
 		add(scrollPane);
 		add(union);
 		add(intersection);
