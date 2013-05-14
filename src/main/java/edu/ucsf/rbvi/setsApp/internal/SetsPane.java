@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.setsApp.internal;
 
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
@@ -67,12 +69,13 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
 	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
+	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private ButtonGroup select;
 	private JRadioButton selectNodes, selectEdges;
-	private JTree setsTree;
-	private DefaultTreeModel treeModel;
-	private DefaultMutableTreeNode sets;
-	private JScrollPane scrollPane;
+	private JTree setsTree, nodesTree, edgesTree;
+	private DefaultTreeModel treeModel, nodesTreeModel, edgesTreeModel;
+	private DefaultMutableTreeNode sets, nodesSet, edgesSet;
+	private JScrollPane scrollPane, nodesPane, edgesPane;
 	private BundleContext bundleContext;
 	private SetsManager mySets;
 	private CyNetworkManager networkManager;
@@ -168,7 +171,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
 			}
 		});
-		exportSet = new JButton("Export Set");
+		exportSet = new JButton("Export Set to File");
 		exportSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -274,16 +277,33 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		setsNode = new HashMap<String, DefaultMutableTreeNode>();
 		cyIdNode = new HashMap<String, HashMap<Long, DefaultMutableTreeNode>>();
 		
+		nodesSet = new DefaultMutableTreeNode("Nodes");
+		edgesSet = new DefaultMutableTreeNode("Edges");
+		nodesTree = new JTree(nodesSet);
+		nodesTree.setCellRenderer(new SetIconRenderer());
+		edgesTree = new JTree(edgesSet);
+		edgesTree.setCellRenderer(new SetIconRenderer());
+		nodesTreeModel = (DefaultTreeModel) nodesTree.getModel();
+		edgesTreeModel = (DefaultTreeModel) edgesTree.getModel();
+		nodesPane = new JScrollPane(nodesTree);
+		edgesPane = new JScrollPane(edgesTree);
+
+		modePanel = new JPanel();
+		modePanel.setLayout(new BoxLayout(modePanel, BoxLayout.X_AXIS));
+		modePanel.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+		modePanel.add(selectNodes);
+		modePanel.add(selectEdges);
+		
 		add(selectNodes);
 		add(selectEdges);
 		add(importSet);
 		add(createSet);
 		add(newSetFromAttribute);
+		add(exportSet);
 		add(scrollPane);
 		add(union);
 		add(intersection);
 		add(difference);
-		add(exportSet);
 	}
 	
 	public SetsManager getSetsManager() {return mySets;}

@@ -53,6 +53,15 @@ public class CyActivator extends AbstractCyActivator {
 			haveGUI = false;
 			// Issue error and return
 		}
+		else {
+			SetsPane setsPanel = new SetsPane(bc, sets);
+			NodeViewTaskFactory modifyNode = new AddNodeViewTaskFactory(sets);
+			Properties modifySetProperties = new Properties();
+			modifySetProperties.setProperty("title", "Add node to set");
+			registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
+			registerService(bc,setsPanel,SessionLoadedListener.class, new Properties());
+			registerService(bc,modifyNode,NodeViewTaskFactory.class,modifySetProperties);
+		}
 
 	/*	TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
 		Properties createSetTaskProps = new Properties();
@@ -67,16 +76,9 @@ public class CyActivator extends AbstractCyActivator {
 		
 		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
 		CyNetwork cyNetwork = networkViewSet.next().getModel(); */
-		SetsPane setsPanel = new SetsPane(bc, sets);
-		NodeViewTaskFactory modifyNode = new AddNodeViewTaskFactory(sets);
-		Properties modifySetProperties = new Properties();
-		modifySetProperties.setProperty("title", "Add node to set");
 	/*	TaskManager task = getService(bc, TaskManager.class);
 		task.execute(createSetTaskFactory.createTaskIterator()); */
 		
-		registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
-		registerService(bc,setsPanel,SessionLoadedListener.class, new Properties());
-		registerService(bc,modifyNode,NodeViewTaskFactory.class,modifySetProperties);
 	/*	registerService(bc, createSetTaskFactory, NetworkTaskFactory.class, createSetTaskProps); */
 	}
 }
