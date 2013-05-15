@@ -53,6 +53,7 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
+import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
@@ -85,6 +86,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private HashMap<String, DefaultMutableTreeNode> setsNode;
 	private HashMap<String, HashMap<Long, DefaultMutableTreeNode>> cyIdNode;
 	private JFileChooser chooseImport;
+	private String set1, set2;
 	public static final String tablePrefix = "setsApp:";
 	
 	public SetsPane(BundleContext bc, SetsManager thisSet) {
@@ -154,23 +156,29 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.UNION));
+				mySets.union(set1 + " union " + set2, set1, set2);
+			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.UNION));
 			}
 		});
+		union.setEnabled(false);
 		intersection = new JButton("Intersection");
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.INTERSECT));
+				mySets.intersection(set1 + " intersection " + set2, set1, set2);
+			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.INTERSECT));
 			}
 		});
+		intersection.setEnabled(false);
 		difference = new JButton("Set Difference");
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
+				mySets.difference(set1 + " difference " + set2, set1, set2);
+			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
 			}
 		});
+		difference.setEnabled(false);
 		exportSet = new JButton("Export Set to File");
 		exportSet.addActionListener(new ActionListener() {
 			
@@ -204,7 +212,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				JTree tree = (JTree)e.getSource();
 				TreePath path = tree.getPathForLocation(x, y);
 				if (path == null)
-					return;	
+					return;
 
 				tree.setSelectionPath(path);
 				path.getLastPathComponent();
@@ -229,7 +237,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						
 						public void actionPerformed(ActionEvent e) {
 							taskManager.execute(new TaskIterator(new MoveCyIdTask(mySets, thisSetName, selectecCyId)));
-						//	mySets.removeFromSet(thisSetName, selectecCyId);
 						}
 					});
 					delete.addActionListener(new ActionListener() {
@@ -243,9 +250,29 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					popup.add(delete);
 				}
 				else if (!node.isRoot()) {
+					JMenuItem select = new JMenuItem("Select");
 					JMenuItem delete = new JMenuItem("Remove Set");
 					JMenuItem rename = new JMenuItem("Rename");
 
+					select.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							String setName = node.getUserObject().toString();
+							CyNetwork curNetwork = mySets.getCyNetwork(setName);
+							CyTable curTable = null;
+							if (mySets.getType(setName) == CyIdType.NODE)
+								curTable = curNetwork.getDefaultNodeTable();
+							if (mySets.getType(setName) == CyIdType.EDGE)
+								curTable = curNetwork.getDefaultEdgeTable();
+							if (curTable != null)
+								for (Long suid: curTable.getPrimaryKey().getValues(Long.class))
+									curTable.getRow(suid).set(CyNetwork.SELECTED, mySets.isInSet(setName, suid));
+							CyNetworkViewManager nvm = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
+							for (CyNetworkView networkView: nvm.getNetworkViewSet())
+								if (networkView.getModel() == curNetwork)
+									networkView.updateView();
+						}
+					});
 					rename.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
@@ -258,17 +285,49 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							mySets.removeSet(node.getUserObject().toString());
 						}
 					});
-					
+					popup.add(select);
 					popup.add(delete);
 					popup.add(rename);
 				}
 				popup.show(tree, x, y);
 			}
+			public void enableOperationsButton(boolean b) {
+				intersection.setEnabled(b);
+				union.setEnabled(b);
+				difference.setEnabled(b);
+			}
 			public void mousePressed(MouseEvent e) {
 				if (e.isPopupTrigger()) popupEvent(e);
+				else {
+					if (getSetsSelectedFromTree(e))
+						enableOperationsButton(true);
+					else enableOperationsButton(false);
+				}
 			}
 			public void mouseReleased(MouseEvent e) {
 				if (e.isPopupTrigger()) popupEvent(e);
+				else {
+					if (getSetsSelectedFromTree(e))
+						enableOperationsButton(true);
+					else enableOperationsButton(false);
+				}
+			}
+			private boolean getSetsSelectedFromTree(MouseEvent e) {
+				JTree tree = (JTree) e.getSource();
+				TreePath path[] = tree.getSelectionPaths();
+				if (path.length == 2) {
+					DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path[0].getLastPathComponent();
+					DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) path[1].getLastPathComponent();
+					if (! node1.isLeaf() && ! node2.isLeaf() && ! node1.isRoot() && ! node2.isRoot()) {
+						set1 = (String) node1.getUserObject();
+						set2 = (String) node2.getUserObject();
+						if (mySets.getType(set1) == mySets.getType(set2))
+							return true;
+						else return false;
+					}
+					else return false;
+				}
+				else return false;
 			}
 		});
 		treeModel = (DefaultTreeModel) setsTree.getModel();
