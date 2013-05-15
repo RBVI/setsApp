@@ -38,6 +38,7 @@ public class SetsManager {
 	public SetsManager() {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		this.networkSetNames = new ConcurrentHashMap<String, CyNetwork>();
+		this.setType = new ConcurrentHashMap<String, CyIdType>();
 	}
 	
 	public SetsManager(SetChangedListener s) {
