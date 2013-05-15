@@ -4,6 +4,8 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -26,6 +28,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
@@ -34,6 +37,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
+import javax.swing.border.TitledBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -108,6 +112,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		select.add(selectNodes);
 		select.add(selectEdges);
 		importSet = new JButton("Import Set From File");
+		importSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		importSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -152,6 +157,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 		union = new JButton("Union");
+		union.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -161,6 +167,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		union.setEnabled(false);
 		intersection = new JButton("Intersection");
+		intersection.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -170,6 +177,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		intersection.setEnabled(false);
 		difference = new JButton("Set Difference");
+		difference.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -179,6 +187,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		difference.setEnabled(false);
 		exportSet = new JButton("Export Set to File");
+		exportSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		exportSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -392,19 +401,44 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		modePanel.setBorder(BorderFactory.createEmptyBorder(BS, BS, BS, BS));
 		
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		topPanel.add(createSet);
+		topPanel.setBorder(BorderFactory.createTitledBorder("Create Set from Selected Nodes/Edges"));
+		final String noneSelected = "none", selectNodes = "Create set from nodes", selectEdges = "Create set from edges";
+		JComboBox createSetsFromSelected = new JComboBox(new String[] {noneSelected, selectNodes, selectEdges});
+		createSetsFromSelected.setSelectedIndex(0);
+		createSetsFromSelected.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				JComboBox selectedStuff = (JComboBox) e.getSource();
+				String selectedType = (String) selectedStuff.getSelectedItem();
+				selectedStuff.setPopupVisible(false);
+				if (selectedType.equals(selectNodes))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
+				if (selectedType.equals(selectEdges))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
+			}
+		});
+		topPanel.add(new Label("Select:"));
+		topPanel.add(createSetsFromSelected);
+	//	topPanel.add(createSet);
+		
 		JPanel btmPanel = new JPanel(new BorderLayout(BS, BS));
+
 		JPanel buttons1 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		buttons1.setBorder(BorderFactory.createTitledBorder("Set Operations"));
 		adjustWidth(new JButton[] {union, intersection, difference});
 		buttons1.add(union);
 		buttons1.add(intersection);
 		buttons1.add(difference);
+
 		JPanel buttons2 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		buttons2.setBorder(BorderFactory.createTitledBorder("Import/Export Sets to File"));
 		adjustWidth(new JButton[] {importSet, exportSet});
 		buttons2.add(importSet);
 		buttons2.add(exportSet);
+
 		btmPanel.add(buttons1, BorderLayout.NORTH);
 		btmPanel.add(buttons2, BorderLayout.SOUTH);
+
 		modePanel.add(topPanel, BorderLayout.NORTH);
 		modePanel.add(scrollPane, BorderLayout.CENTER);
 		modePanel.add(btmPanel, BorderLayout.SOUTH);
