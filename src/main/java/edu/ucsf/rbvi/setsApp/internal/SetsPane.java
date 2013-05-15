@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.setsApp.internal;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -8,17 +9,15 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -27,6 +26,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -50,7 +50,6 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
-import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -371,22 +370,65 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		nodesPane = new JScrollPane(nodesTree);
 		edgesPane = new JScrollPane(edgesTree);
 
-		modePanel = new JPanel();
-		modePanel.setLayout(new BoxLayout(modePanel, BoxLayout.X_AXIS));
-		modePanel.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
-		modePanel.add(selectNodes);
-		modePanel.add(selectEdges);
+//		modePanel = new JPanel();
+//		modePanel.setLayout(new BoxLayout(modePanel, BoxLayout.X_AXIS));
+//		modePanel.setBorder(BorderFactory.createEmptyBorder(0,10,10,10));
+//		modePanel.add(selectNodes);
+//		modePanel.add(selectEdges);
+//		
+//		add(selectNodes);
+//		add(selectEdges);
+//		add(importSet);
+//		add(exportSet);
+//		add(newSetFromAttribute);
+//		add(scrollPane);
+//		add(union);
+//		add(intersection);
+//		add(difference);
+
+		final int BS = 8;
+		modePanel = new JPanel(new BorderLayout(BS, BS));
+		//modePanel.setLayout(new BoxLayout(modePanel, BoxLayout.X_AXIS));
+		modePanel.setBorder(BorderFactory.createEmptyBorder(BS, BS, BS, BS));
 		
-		add(selectNodes);
-		add(selectEdges);
-		add(importSet);
-		add(exportSet);
-		add(newSetFromAttribute);
-		add(scrollPane);
-		add(union);
-		add(intersection);
-		add(difference);
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		topPanel.add(createSet);
+		JPanel btmPanel = new JPanel(new BorderLayout(BS, BS));
+		JPanel buttons1 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		adjustWidth(new JButton[] {union, intersection, difference});
+		buttons1.add(union);
+		buttons1.add(intersection);
+		buttons1.add(difference);
+		JPanel buttons2 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		adjustWidth(new JButton[] {importSet, exportSet});
+		buttons2.add(importSet);
+		buttons2.add(exportSet);
+		btmPanel.add(buttons1, BorderLayout.NORTH);
+		btmPanel.add(buttons2, BorderLayout.SOUTH);
+		modePanel.add(topPanel, BorderLayout.NORTH);
+		modePanel.add(scrollPane, BorderLayout.CENTER);
+		modePanel.add(btmPanel, BorderLayout.SOUTH);
+		add(modePanel);
+
 	}
+
+	private void adjustWidth(JComponent[] components) {
+		Dimension dim = components[0].getPreferredSize();
+		int width = dim.width;
+		for (int i = 1; i < components.length; i++) {
+			dim = components[i].getPreferredSize();
+			if (dim.width > width) {
+				width = dim.width;
+			}
+		}
+		for (final JComponent cbx : components) {
+			dim = cbx.getPreferredSize();
+			dim.width = width;
+			cbx.setPreferredSize(dim);
+		}
+	}
+
+	
 	
 	public SetsManager getSetsManager() {return mySets;}
 	
