@@ -174,7 +174,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				mySets.difference(set1 + " difference " + set2, set1, set2);
+				mySets.difference(set1 + " difference " + set2, set2, set1);
 			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
 			}
 		});
@@ -224,9 +224,16 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					final CyIdentifiable selectecCyId = ((NodeInfo) node.getUserObject()).cyId;
 					final String thisSetName = setNode.getUserObject().toString();
 					
+					JMenuItem select = new JMenuItem("Select");
 					JMenuItem copy = new JMenuItem("Copy to...");
 					JMenuItem move = new JMenuItem("Move to...");
 					JMenuItem delete = new JMenuItem("Remove from Set");
+					select.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							displaySelectedCyIds(thisSetName, selectecCyId.getSUID());
+						}
+					});
 					copy.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
@@ -245,6 +252,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 							mySets.removeFromSet(thisSetName, selectecCyId);
 						}
 					});
+					popup.add(select);
 					popup.add(copy);
 					popup.add(move);
 					popup.add(delete);
@@ -258,19 +266,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						
 						public void actionPerformed(ActionEvent e) {
 							String setName = node.getUserObject().toString();
-							CyNetwork curNetwork = mySets.getCyNetwork(setName);
-							CyTable curTable = null;
-							if (mySets.getType(setName) == CyIdType.NODE)
-								curTable = curNetwork.getDefaultNodeTable();
-							if (mySets.getType(setName) == CyIdType.EDGE)
-								curTable = curNetwork.getDefaultEdgeTable();
-							if (curTable != null)
-								for (Long suid: curTable.getPrimaryKey().getValues(Long.class))
-									curTable.getRow(suid).set(CyNetwork.SELECTED, mySets.isInSet(setName, suid));
-							CyNetworkViewManager nvm = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
-							for (CyNetworkView networkView: nvm.getNetworkViewSet())
-								if (networkView.getModel() == curNetwork)
-									networkView.updateView();
+							displaySelectedCyIds(setName, null);
 						}
 					});
 					rename.addActionListener(new ActionListener() {
@@ -315,12 +311,24 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			private boolean getSetsSelectedFromTree(MouseEvent e) {
 				JTree tree = (JTree) e.getSource();
 				TreePath path[] = tree.getSelectionPaths();
-				if (path.length == 2) {
+				if (path != null && path.length == 1) {
+					DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path[0].getLastPathComponent();
+					if (! node1.isLeaf() && ! node1.isRoot())
+						set1 = (String) node1.getUserObject();
+					return false;
+				}
+				else if (path != null && path.length == 2) {
 					DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path[0].getLastPathComponent();
 					DefaultMutableTreeNode node2 = (DefaultMutableTreeNode) path[1].getLastPathComponent();
 					if (! node1.isLeaf() && ! node2.isLeaf() && ! node1.isRoot() && ! node2.isRoot()) {
-						set1 = (String) node1.getUserObject();
-						set2 = (String) node2.getUserObject();
+						if (set1.equals((String) node1.getUserObject())) {
+							set1 = (String) node1.getUserObject();
+							set2 = (String) node2.getUserObject();
+						}
+						else {
+							set1 = (String) node2.getUserObject();
+							set2 = (String) node1.getUserObject();
+						}
 						if (mySets.getType(set1) == mySets.getType(set2))
 							return true;
 						else return false;
@@ -328,6 +336,22 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					else return false;
 				}
 				else return false;
+			}
+			private void displaySelectedCyIds(String setName, Long cyId) {
+				CyNetwork curNetwork = mySets.getCyNetwork(setName);
+				CyTable curTable = null;
+				if (mySets.getType(setName) == CyIdType.NODE)
+					curTable = curNetwork.getDefaultNodeTable();
+				if (mySets.getType(setName) == CyIdType.EDGE)
+					curTable = curNetwork.getDefaultEdgeTable();
+				if (curTable != null)
+					for (Long suid: curTable.getPrimaryKey().getValues(Long.class))
+						curTable.getRow(suid).set(CyNetwork.SELECTED, 
+								cyId == null ? mySets.isInSet(setName, suid): suid == cyId);
+				CyNetworkViewManager nvm = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
+				for (CyNetworkView networkView: nvm.getNetworkViewSet())
+					if (networkView.getModel() == curNetwork)
+						networkView.updateView();
 			}
 		});
 		treeModel = (DefaultTreeModel) setsTree.getModel();
