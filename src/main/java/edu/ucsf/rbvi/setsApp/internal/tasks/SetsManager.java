@@ -86,9 +86,10 @@ public class SetsManager {
 			listener.setRenamed(event);
 	}
 	
-	private void fireSetRemovedEvent(String setName) {
+	private void fireSetRemovedEvent(String setName, CyNetwork c) {
 		SetChangedEvent event = new SetChangedEvent(setName);
 		event.setSetName(setName);
+		event.setCyNetwork(c);
 		for (SetChangedListener listener: setChangedListener)
 			listener.setRemoved(event);
 	}
@@ -328,10 +329,11 @@ public class SetsManager {
 	}
 	
 	public void removeSet(String name) {
+		CyNetwork c = networkSetNames.get(name);
 		setsMap.remove(name);
 		networkSetNames.remove(name);
 		setType.remove(name);
-		fireSetRemovedEvent(name);
+		fireSetRemovedEvent(name, c);
 	}
 	
 	public boolean union(String newName, String set1, String set2) {

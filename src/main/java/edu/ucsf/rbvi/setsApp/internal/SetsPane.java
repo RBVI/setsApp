@@ -44,6 +44,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreePath;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.application.swing.CytoPanelName;
 import org.cytoscape.model.CyColumn;
@@ -402,7 +403,11 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
 		topPanel.setBorder(BorderFactory.createTitledBorder("Create Set from Selected Nodes/Edges"));
-		final String noneSelected = "none", selectNodes = "Create set from nodes", selectEdges = "Create set from edges";
+		final String noneSelected = "none", 
+				selectNodes = "Create node set", 
+				selectEdges = "Create edge set",
+				attrNodes = "Create node set from attributes",
+				attrEdges = "Create node set from edges";
 		JComboBox createSetsFromSelected = new JComboBox(new String[] {noneSelected, selectNodes, selectEdges});
 		createSetsFromSelected.setSelectedIndex(0);
 		createSetsFromSelected.addActionListener(new ActionListener() {
@@ -411,10 +416,15 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				JComboBox selectedStuff = (JComboBox) e.getSource();
 				String selectedType = (String) selectedStuff.getSelectedItem();
 				selectedStuff.setPopupVisible(false);
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 				if (selectedType.equals(selectNodes))
 					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
 				if (selectedType.equals(selectEdges))
 					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
+				if (selectedType.equals(attrNodes))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
+				if (selectedType.equals(attrEdges))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.EDGE));
 			}
 		});
 		topPanel.add(new Label("Select:"));
@@ -546,7 +556,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				networkTable.deleteColumn(tablePrefix + event.getSetName());
 		} */
 		String setTableName = tablePrefix + event.getSetName();
-		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
+	//	CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
+		CyNetwork cyNetwork = event.getCyNetwork();
 		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
 		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
 		if (nodeTable.getColumn(setTableName) != null)

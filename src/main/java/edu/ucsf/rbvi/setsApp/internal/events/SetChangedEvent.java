@@ -4,6 +4,7 @@ import java.util.EventObject;
 import java.util.List;
 
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNetwork;
 
 public class SetChangedEvent extends EventObject {
 
@@ -13,6 +14,7 @@ public class SetChangedEvent extends EventObject {
 	private static final long serialVersionUID = -9100575041268798978L;
 	private String setName = null, oldSet = null;
 	private List<? extends CyIdentifiable> added = null, removed = null;
+	private CyNetwork setNetwork = null;
 	
 	public SetChangedEvent(Object source) {
 		super(source);
@@ -36,12 +38,20 @@ public class SetChangedEvent extends EventObject {
 		if (removed == null) removed = r;
 	}
 	
+	public void setCyNetwork(CyNetwork c) {
+		setNetwork = c;
+	}
+	
 	public String getSetName() {
 		return setName;
 	}
 	
 	public String getOldSetName() {
 		return oldSet;
+	}
+	
+	public CyNetwork getCyNetwork() {
+		return setNetwork;
 	}
 	
 	public List<? extends CyIdentifiable> getCyIdsAdded() {return added;}
