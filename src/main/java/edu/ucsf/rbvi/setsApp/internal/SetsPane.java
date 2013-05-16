@@ -409,7 +409,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				selectEdges = "Create edge set",
 				attrNodes = "Create node set from attributes",
 				attrEdges = "Create node set from edges";
-		JComboBox createSetsFromSelected = new JComboBox(new String[] {noneSelected, selectNodes, selectEdges});
+		JComboBox createSetsFromSelected = new JComboBox(new String[] {noneSelected, selectNodes, selectEdges, attrNodes, attrEdges});
 		createSetsFromSelected.setSelectedIndex(0);
 		createSetsFromSelected.addActionListener(new ActionListener() {
 			
@@ -422,6 +422,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
 				if (selectedType.equals(selectEdges))
 					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
+				if (selectedType.equals(attrNodes))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
+				if (selectedType.equals(attrEdges))
+					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.EDGE));
 				if (selectedType.equals(attrNodes))
 					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
 				if (selectedType.equals(attrEdges))
