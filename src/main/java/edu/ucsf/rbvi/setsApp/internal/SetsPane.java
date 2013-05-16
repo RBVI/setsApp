@@ -504,9 +504,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		CyNetwork network = mySets.getCyNetwork(name);
 		String colName = tablePrefix + name;
 		if (mySets.getType(name) == CyIdType.NODE)
-			table = network.getDefaultNodeTable();
+			table = network.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 		if (mySets.getType(name) == CyIdType.EDGE)
-			table = network.getDefaultEdgeTable();
+			table = network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		if (table != null && table.getColumn(colName) == null) {
 			table.createColumn(colName, Boolean.class, false);
 			for (Long cyId: table.getPrimaryKey().getValues(Long.class))
@@ -558,8 +558,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		String setTableName = tablePrefix + event.getSetName();
 	//	CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyNetwork cyNetwork = event.getCyNetwork();
-		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
-		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
+		CyTable nodeTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable edgeTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		if (nodeTable.getColumn(setTableName) != null)
 			nodeTable.deleteColumn(setTableName);
 		if (edgeTable.getColumn(setTableName) != null)
@@ -579,7 +579,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		CyTable cyTable;
 		Collection<CyColumn> cyColumns;
 		for (CyNetwork cyNetwork: networks) {
-			cyTable = cyNetwork.getDefaultNodeTable();
+			cyTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 			cyColumns = cyTable.getColumns();
 			for (CyColumn c: cyColumns) {
 				String colName = c.getName();
@@ -591,7 +591,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					mySets.createSet(loadedSetName, cyNetwork, cyNodes, null);
 				}
 			}
-			cyTable = cyNetwork.getDefaultEdgeTable();
+			cyTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 			cyColumns = cyTable.getColumns();
 			for (CyColumn c: cyColumns) {
 				String colName = c.getName();
@@ -674,8 +674,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		List<CyIdentifiable> added = (List<CyIdentifiable>) event.getCyIdsAdded(),
 				removed = (List<CyIdentifiable>) event.getCyIdsRemoved();
 		DefaultMutableTreeNode setNode = setsNode.get(event.getSetName());
-		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
-		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
+		CyTable nodeTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable edgeTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		String setTableName = tablePrefix + event.getSetName();
 		if (added != null)
 			for (CyIdentifiable node: added) {
@@ -734,9 +734,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
 		CyTable networkTable = null;
 		if (mySets.getType(event.getSetName()) == CyIdType.NODE)
-			networkTable = cyNetwork.getDefaultNodeTable();
+			networkTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 		if (mySets.getType(event.getSetName()) == CyIdType.EDGE)
-			networkTable = cyNetwork.getDefaultEdgeTable();
+			networkTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		if (networkTable != null) {
 			networkTable.deleteColumn(tablePrefix + event.getOldSetName());
 			networkTable.createColumn(tablePrefix + event.getSetName(), Boolean.class, false);
