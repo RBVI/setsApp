@@ -18,6 +18,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -509,8 +510,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			table = network.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		if (table != null && table.getColumn(colName) == null) {
 			table.createColumn(colName, Boolean.class, false);
-			for (Long cyId: table.getPrimaryKey().getValues(Long.class))
-				table.getRow(cyId).set(colName, mySets.isInSet(name, cyId));
+			for (CyIdentifiable cyId: mySets.getSet(name).getElements())
+				table.getRow(cyId.getSUID()).set(colName, true);
 		}
 	}
 	
@@ -585,8 +586,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				String colName = c.getName();
 				if (colName.length() >= 9 && colName.substring(0, 8).equals(tablePrefix)) {
 					String loadedSetName = colName.substring(8);
-					List<CyNode> cyNodes = null;
-					cyNodes = CyTableUtil.getNodesInState(cyNetwork, c.getName(), true);
+					List<CyNode> cyNodes = new ArrayList<CyNode>();
+					for (Long suid: cyTable.getPrimaryKey().getValues(Long.class))
+						if (cyTable.getRow(suid).get(colName, Boolean.class))
+							cyNodes.add(cyNetwork.getNode(suid));
 					if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
 					mySets.createSet(loadedSetName, cyNetwork, cyNodes, null);
 				}
@@ -597,8 +600,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				String colName = c.getName();
 				if (colName.length() >= 9 && colName.substring(0, 8).equals(tablePrefix)) {
 					String loadedSetName = colName.substring(8);
-					List<CyEdge> cyEdges = null;
-					cyEdges = CyTableUtil.getEdgesInState(cyNetwork, c.getName(), true);
+					List<CyEdge> cyEdges = new ArrayList<CyEdge>();
+					for (Long suid: cyTable.getPrimaryKey().getValues(Long.class))
+						if (cyTable.getRow(suid).get(colName, Boolean.class))
+							cyEdges.add(cyNetwork.getEdge(suid));
 					if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
 					mySets.createSet(loadedSetName, cyNetwork, null, cyEdges);
 				}
@@ -674,19 +679,21 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		List<CyIdentifiable> added = (List<CyIdentifiable>) event.getCyIdsAdded(),
 				removed = (List<CyIdentifiable>) event.getCyIdsRemoved();
 		DefaultMutableTreeNode setNode = setsNode.get(event.getSetName());
-		CyTable nodeTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
-		CyTable edgeTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
+		CyTable nodeTable = cyNetwork.getDefaultNodeTable(),
+				edgeTable = cyNetwork.getDefaultEdgeTable(),
+				nodeHiddenTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS),
+				edgeHiddenTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		String setTableName = tablePrefix + event.getSetName();
 		if (added != null)
 			for (CyIdentifiable node: added) {
 				String cyIdName = null;
-				if (nodeTable.rowExists(node.getSUID())) {
+				if (cyNetwork.getNode(node.getSUID()) != null) {
 					cyIdName = nodeTable.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
-					nodeTable.getRow(node.getSUID()).set(setTableName, true);
+					nodeHiddenTable.getRow(node.getSUID()).set(setTableName, true);
 				}
-				if (edgeTable.rowExists(node.getSUID())) {
+				if (cyNetwork.getEdge(node.getSUID()) != null) {
 					cyIdName = edgeTable.getRow(node.getSUID()).get(CyNetwork.NAME, String.class);
-					edgeTable.getRow(node.getSUID()).set(setTableName, true);
+					edgeHiddenTable.getRow(node.getSUID()).set(setTableName, true);
 				}
 				DefaultMutableTreeNode newTreeNode = new DefaultMutableTreeNode(new NodeInfo(cyIdName, node));
 				cyIdNode.get(event.getSetName()).put(node.getSUID(), newTreeNode);
@@ -694,10 +701,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		if (removed != null)
 			for (CyIdentifiable node: removed) {
-				if (nodeTable.rowExists(node.getSUID()))
-					nodeTable.getRow(node.getSUID()).set(setTableName, false);
-				if (edgeTable.rowExists(node.getSUID()))
-					edgeTable.getRow(node.getSUID()).set(setTableName, false);
+				if (cyNetwork.getNode(node.getSUID()) != null)
+					nodeHiddenTable.getRow(node.getSUID()).set(setTableName, false);
+				if (cyNetwork.getEdge(node.getSUID()) != null)
+					edgeHiddenTable.getRow(node.getSUID()).set(setTableName, false);
 				treeModel.removeNodeFromParent(cyIdNode.get(event.getSetName()).get(node.getSUID()));
 				cyIdNode.get(event.getSetName()).remove(node.getSUID());
 			}

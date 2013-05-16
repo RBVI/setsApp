@@ -384,7 +384,7 @@ public class SetsManager {
 			else return false;
 		}
 		catch (Exception E) {
-			System.err.println("Unsupported operation: Trying to insert node into a different network.");
+			E.printStackTrace();
 		}
 		return false;
 	}
