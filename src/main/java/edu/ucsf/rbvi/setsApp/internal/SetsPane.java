@@ -8,8 +8,11 @@ import java.awt.Font;
 import java.awt.Label;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -32,6 +35,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -39,6 +43,9 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTree;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
+import javax.swing.plaf.basic.BasicComboBoxRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -82,6 +89,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private DefaultTreeModel treeModel, nodesTreeModel, edgesTreeModel;
 	private DefaultMutableTreeNode sets, nodesSet, edgesSet;
 	private JScrollPane scrollPane, nodesPane, edgesPane;
+	private JPopupMenu selectSetCreation;
+	private JMenuItem setsFNodes, setsFEdges, setsFNodeA, setsFEdgeA;
 	private BundleContext bundleContext;
 	private SetsManager mySets;
 	private CyNetworkManager networkManager;
@@ -93,6 +102,85 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private JFileChooser chooseImport;
 	private String set1, set2;
 	public static final String tablePrefix = "setsApp:";
+	
+	private class PartialDisableComboBox extends JComboBox {
+		 private static final long serialVersionUID = -1690671707274328126L;
+		 
+		 private ArrayList<Boolean> itemsState = new ArrayList<Boolean>();
+		 
+		 public PartialDisableComboBox() {
+		  super();
+		  this.setRenderer(new BasicComboBoxRenderer() {
+		   private static final long serialVersionUID = -2774241371293899669L;
+		   @Override
+		   public Component getListCellRendererComponent(JList list, Object value, 
+		     int index, boolean isSelected, boolean cellHasFocus) {
+		    Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+		    boolean disabled = index >= 0 && index < itemsState.size() && !itemsState.get(index);
+		    c.setEnabled(!disabled);
+		    c.setFocusable(!disabled);
+		    return c;
+		   }
+		  });
+		 }
+		 
+		 @Override
+		 public void addItem(Object item) {
+		  this.addItem(item, true);
+		 }
+		 
+		 public void addItem(Object item, boolean enabled) {
+		  super.addItem(item);
+		  itemsState.add(enabled);
+		 }
+		 
+		 @Override
+		 public void insertItemAt(Object item, int index) {
+		  this.insertItemAt(item, index, true);
+		 }
+
+		 public void insertItemAt(Object item, int index, boolean enabled) {
+		  super.insertItemAt(item, index);
+		  itemsState.add(index, enabled);
+		 }
+		 
+		 @Override
+		 public void removeAllItems() {
+		  super.removeAllItems();
+		  itemsState.clear();
+		 }
+		 
+		 @Override
+		 public void removeItemAt(int index) {
+		  if (index < 0 || index >= itemsState.size()) throw new IllegalArgumentException("Item Index out of Bounds!");
+		  super.removeItemAt(index);
+		  itemsState.remove(index);
+		 }
+		 
+		 @Override
+		 public void removeItem(Object item) {
+		  for (int q = 0; q < this.getItemCount(); q++) {
+		   if (this.getItemAt(q) == item) itemsState.remove(q);
+		  }
+		  super.removeItem(item);
+		 }
+		 
+		 @Override
+		 public void setSelectedIndex(int index) {
+		  if (index < 0 || index >= itemsState.size()) throw new IllegalArgumentException("Item Index out of Bounds!");
+		  if (itemsState.get(index)) super.setSelectedIndex(index);
+		 }
+		 
+		 public void setItemEnabled(int index, boolean enabled) {
+		  if (index < 0 || index >= itemsState.size()) throw new IllegalArgumentException("Item Index out of Bounds!");
+		  itemsState.set(index, enabled);
+		 }
+		 
+		 public boolean isItemEnabled(int index) {
+		  if (index < 0 || index >= itemsState.size()) throw new IllegalArgumentException("Item Index out of Bounds!");
+		  return itemsState.get(index);
+		 }
+		}
 	
 	public SetsPane(BundleContext bc, SetsManager thisSet) {
 		bundleContext = bc;
@@ -131,16 +219,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						e1.printStackTrace();
 					}
 				}
-			}
-		});
-		createSet = new JButton("Create Set");
-		createSet.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				if (selectNodes.isSelected())
-					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
-				if (selectEdges.isSelected())
-					taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
 			}
 		});
 		newSetFromAttribute = new JButton("Create Set From Attributes");
@@ -404,16 +482,62 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
 		topPanel.setBorder(BorderFactory.createTitledBorder("Create Set from Selected Nodes/Edges"));
-		final String noneSelected = "none", 
-				selectNodes = "Create node set", 
-				selectEdges = "Create edge set",
+		final String noneSelected = "none",
+				selectNodes = "Create set from selected nodes",
+				selectEdges = "Create set from selected edges",
 				attrNodes = "Create node set from attributes",
-				attrEdges = "Create node set from edges";
-		JComboBox createSetsFromSelected = new JComboBox(new String[] {noneSelected, selectNodes, selectEdges, attrNodes, attrEdges});
+				attrEdges = "Create edge set from attributes";
+		final String [] selectOptions = {noneSelected, selectNodes, selectEdges, attrNodes, attrEdges};
+		final PartialDisableComboBox createSetsFromSelected = new PartialDisableComboBox();
+		createSetsFromSelected.addItem(selectOptions[0], false);
+		createSetsFromSelected.addItem(selectOptions[1], false);
+		createSetsFromSelected.addItem(selectOptions[2], false);
+		createSetsFromSelected.addItem(selectOptions[3], false);
+		createSetsFromSelected.addItem(selectOptions[4], false);
 		createSetsFromSelected.setSelectedIndex(0);
+		createSetsFromSelected.addPopupMenuListener(new PopupMenuListener() {
+			
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				CyNetwork curNetwork = appManager.getCurrentNetwork();
+				if (curNetwork != null) {
+					List<CyNode> nodes = CyTableUtil.getNodesInState(curNetwork, CyNetwork.SELECTED, true);
+					List<CyEdge> edges = CyTableUtil.getEdgesInState(curNetwork, CyNetwork.SELECTED, true);
+					if (!nodes.isEmpty())
+						createSetsFromSelected.setItemEnabled(1, true);
+					else
+						createSetsFromSelected.setItemEnabled(1, false);
+					if (!edges.isEmpty())
+						createSetsFromSelected.setItemEnabled(2, true);
+					else
+						createSetsFromSelected.setItemEnabled(2, false);
+					CyTable nodesTable = curNetwork.getDefaultNodeTable(),
+							edgesTable = curNetwork.getDefaultEdgeTable();
+					if (!nodesTable.getColumns().isEmpty())
+						createSetsFromSelected.setItemEnabled(3, true);
+					if (!edgesTable.getColumns().isEmpty())
+						createSetsFromSelected.setItemEnabled(4, true);
+				}
+				else {
+					for (int i = 1; i < selectOptions.length; i++)
+						createSetsFromSelected.setItemEnabled(i, false);
+				}
+			}
+			
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		createSetsFromSelected.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
+				System.out.println("Item selected");
 				JComboBox selectedStuff = (JComboBox) e.getSource();
 				String selectedType = (String) selectedStuff.getSelectedItem();
 				selectedStuff.setPopupVisible(false);
@@ -426,12 +550,51 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
 				if (selectedType.equals(attrEdges))
 					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.EDGE));
-				if (selectedType.equals(attrNodes))
-					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
-				if (selectedType.equals(attrEdges))
-					taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.EDGE));
 			}
 		});
+		
+	/*	createSet = new JButton("Create Set");
+		selectSetCreation = new JPopupMenu();
+		final CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+		setsFNodes = new JMenuItem(selectNodes);
+		setsFNodes.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.NODE));
+			}
+		});
+		setsFEdges = new JMenuItem(selectEdges);
+		setsFEdges.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(null, networkViewManager, CyIdType.EDGE));
+			}
+		});
+		setsFNodeA = new JMenuItem(attrNodes);
+		setsFNodeA.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.NODE));
+			}
+		});
+		setsFEdgeA = new JMenuItem(attrEdges);
+		setsFEdgeA.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(createSetTaskFactory.createTaskIterator(appManager.getCurrentNetwork(), CyIdType.EDGE));
+			}
+		});
+		selectSetCreation.add(setsFNodes);
+		selectSetCreation.add(setsFEdges);
+		selectSetCreation.add(setsFNodeA);
+		selectSetCreation.add(setsFEdgeA);
+		createSet.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				selectSetCreation.show(createSet, createSet.getBounds().x, createSet.getBounds().y - SetsPane.this.getBounds().y + createSet.getBounds().height);
+			}
+		}); */
+
 		topPanel.add(new Label("Select:"));
 		topPanel.add(createSetsFromSelected);
 	//	topPanel.add(createSet);
