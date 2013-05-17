@@ -79,6 +79,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
 	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
@@ -210,10 +211,11 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					BufferedReader reader;
 					try {
 						reader = new BufferedReader(new FileReader(chooseImport.getSelectedFile()));
-						if (selectNodes.isSelected())
+					/*	if (selectNodes.isSelected())
 							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.NODE));
 						if (selectEdges.isSelected())
-							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.EDGE));
+							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.EDGE)); */
+						taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader));
 					} catch (FileNotFoundException e1) {
 						System.err.println("Couldn't open file: " + chooseImport.getSelectedFile().getName());
 						e1.printStackTrace();
@@ -276,20 +278,22 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					if (!f.exists()) {
 						try {
 							f.createNewFile();
-							if (selectNodes.isSelected())
+						/*	if (selectNodes.isSelected())
 								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.NODE)));
 							if (selectEdges.isSelected())
-								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.EDGE)));
+								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.EDGE))); */
+							taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1,new BufferedWriter(new FileWriter(f.getAbsolutePath())))));
 						} catch (IOException e1) {
 							System.err.println("Unable to create file: " + f.getName());
 							e1.printStackTrace();
 						}
 					}
 					else
-						System.out.println("File already exist, choose another file name/directory.");
+						System.err.println("File already exist, choose another file name/directory.");
 				}
 			}
 		});
+		exportSet.setEnabled(false);
 		
 		sets = new DefaultMutableTreeNode("Sets");
 		setsTree = new JTree(sets);
@@ -386,6 +390,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					if (getSetsSelectedFromTree(e))
 						enableOperationsButton(true);
 					else enableOperationsButton(false);
+					if (singleSetSelected(e))
+						exportSet.setEnabled(true);
+					else exportSet.setEnabled(false);
 				}
 			}
 			public void mouseReleased(MouseEvent e) {
@@ -394,7 +401,20 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					if (getSetsSelectedFromTree(e))
 						enableOperationsButton(true);
 					else enableOperationsButton(false);
+					if (singleSetSelected(e))
+						exportSet.setEnabled(true);
+					else exportSet.setEnabled(false);
 				}
+			}
+			private boolean singleSetSelected(MouseEvent e) {
+				JTree tree = (JTree) e.getSource();
+				TreePath path[] = tree.getSelectionPaths();
+				if (path != null && path.length == 1) {
+					DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path[0].getLastPathComponent();
+					if (! node1.isLeaf() && ! node1.isRoot()) return true;
+					return false;
+				}
+				else return false;
 			}
 			private boolean getSetsSelectedFromTree(MouseEvent e) {
 				JTree tree = (JTree) e.getSource();
@@ -537,7 +557,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		createSetsFromSelected.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Item selected");
 				JComboBox selectedStuff = (JComboBox) e.getSource();
 				String selectedType = (String) selectedStuff.getSelectedItem();
 				selectedStuff.setPopupVisible(false);

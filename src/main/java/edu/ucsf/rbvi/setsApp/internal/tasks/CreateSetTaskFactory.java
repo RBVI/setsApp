@@ -1,6 +1,8 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 import edu.ucsf.rbvi.setsApp.internal.SetOperations;
+import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
 
 
 
@@ -53,5 +56,13 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 	
 	public TaskIterator createTaskIterator(CyNetworkManager cnm, BufferedReader stream, CyIdType t) {
 		return new TaskIterator(new CreateSetFromFileTask(setsManager, cnm, stream, t));
+	}
+	
+	public TaskIterator createTaskIterator(CyNetworkManager cnm, BufferedReader stream) {
+		return new TaskIterator(new CreateSetFromFileTask2(setsManager, cnm, stream));
+	}
+	
+	public TaskIterator createTaskIterator(String name, BufferedWriter writer) {
+		return new TaskIterator(new WriteSetToFileTask2(setsManager,name,writer));
 	}
 }
