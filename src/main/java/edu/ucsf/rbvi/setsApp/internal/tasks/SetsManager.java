@@ -118,14 +118,14 @@ public class SetsManager {
 			}
 	}
 	
-	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) {
+	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) throws IOException {
 		if (! setsMap.containsKey(name)) {
 			HashSet<String> inputSet = new HashSet<String>();
 			String curLine;
-			try {
+		//	try {
 				while ((curLine = reader.readLine()) != null) inputSet.add(curLine);
-			}
-			catch (IOException e) {e.printStackTrace();}
+		//	}
+		//	catch (IOException e) {e.printStackTrace();}
 			if (network != null) {
 				CyTable table = null;
 				if (type == CyIdType.NODE) {
@@ -137,7 +137,12 @@ public class SetsManager {
 						if (inputSet.contains(curCell))
 							cyNodes.add(network.getNode(cyId));
 					}
-					setsMap.put(name, new Set<CyNode>(name, cyNodes));
+					if (! cyNodes.isEmpty()) {
+						setsMap.put(name, new Set<CyNode>(name, cyNodes));
+						networkSetNames.put(name, network);
+						setType.put(name, type);
+						fireSetCreatedEvent(name);
+					}
 				}
 				if (type == CyIdType.EDGE) {
 					table = network.getDefaultEdgeTable();
@@ -148,11 +153,16 @@ public class SetsManager {
 						if (inputSet.contains(curCell))
 							cyEdges.add(network.getEdge(cyId));
 					}
-					setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+					if (! cyEdges.isEmpty()) {
+						setsMap.put(name, new Set<CyEdge>(name, cyEdges));
+						networkSetNames.put(name, network);
+						setType.put(name, type);
+						fireSetCreatedEvent(name);
+					}
 				}
-				networkSetNames.put(name, network);
+			/*	networkSetNames.put(name, network);
 				setType.put(name, type);
-				fireSetCreatedEvent(name);
+				fireSetCreatedEvent(name); */
 			}
 		}
 	}
@@ -338,36 +348,48 @@ public class SetsManager {
 	
 	public boolean union(String newName, String set1, String set2) {
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
-			setsMap.put(newName, setsMap.get(set1).unionGeneric(newName, setsMap.get(set2)));
-			networkSetNames.put(newName, networkSetNames.get(set1));
-			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-				setType.put(newName, setType.get(set1));
-			fireSetCreatedEvent(newName);
-			return true;
+			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).unionGeneric(newName, setsMap.get(set2));
+			if (!newSet.getElements().isEmpty()) {
+				setsMap.put(newName, newSet);
+				networkSetNames.put(newName, networkSetNames.get(set1));
+				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+					setType.put(newName, setType.get(set1));
+				fireSetCreatedEvent(newName);
+				return true;
+			}
+			else return false;
 		}
 		else return false;
 	}
 	
 	public boolean intersection(String newName, String set1, String set2) {
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
-			setsMap.put(newName, setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2)));
-			networkSetNames.put(newName, networkSetNames.get(set1));
-			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-				setType.put(newName, setType.get(set1));
-			fireSetCreatedEvent(newName);
-			return true;
+			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2));
+			if (!newSet.getElements().isEmpty()) {
+				setsMap.put(newName, newSet);
+				networkSetNames.put(newName, networkSetNames.get(set1));
+				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+					setType.put(newName, setType.get(set1));
+				fireSetCreatedEvent(newName);
+				return true;
+			}
+			else return false;
 		}
 		else return false;
 	}
 	
 	public boolean difference(String newName, String set1, String set2) {
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
-			setsMap.put(newName, setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2)));
-			networkSetNames.put(newName, networkSetNames.get(set1));
-			if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
-				setType.put(newName, setType.get(set1));
-			fireSetCreatedEvent(newName);
-			return true;
+			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2));
+			if (!newSet.getElements().isEmpty()) {
+				setsMap.put(newName, newSet);
+				networkSetNames.put(newName, networkSetNames.get(set1));
+				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
+					setType.put(newName, setType.get(set1));
+				fireSetCreatedEvent(newName);
+				return true;
+			}
+			else return false;
 		}
 		else return false;
 	}

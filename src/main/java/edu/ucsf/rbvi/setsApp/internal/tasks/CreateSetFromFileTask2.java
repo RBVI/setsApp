@@ -1,6 +1,8 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Set;
@@ -17,7 +19,7 @@ import org.cytoscape.work.util.ListSingleSelection;
 import edu.ucsf.rbvi.setsApp.internal.CyIdType;
 
 public class CreateSetFromFileTask2 extends AbstractTask {
-	@Tunable(description="Select column to create edge set from:")
+	@Tunable(description="Select column to use for ID:")
 	public ListSingleSelection<String> edgesColumn = null;
 	@Tunable(description="Select column to create node set from:",listenForChange="Select type:")
 	public ListSingleSelection<String> nodesColumn = null;
@@ -61,11 +63,11 @@ public class CreateSetFromFileTask2 extends AbstractTask {
 	
 	private SetsManager mgr;
 	private CyNetwork network = null;
-	private BufferedReader reader;
+	private File f;
 	
-	public CreateSetFromFileTask2(SetsManager setsManager, CyNetworkManager cnm, BufferedReader stream) {
+	public CreateSetFromFileTask2(SetsManager setsManager, CyNetworkManager cnm, File file) {
 		mgr = setsManager;
-		reader = stream;
+		f = file;
 		Set<CyNetwork> networkSet = cnm.getNetworkSet();
 		for (CyNetwork net: networkSet) {
 			if (net.getRow(net).get(CyNetwork.SELECTED, Boolean.class))
@@ -103,6 +105,7 @@ public class CreateSetFromFileTask2 extends AbstractTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		if (network != null && nodesColumn != null) {
+			BufferedReader reader = new BufferedReader(new FileReader(f));
 			if (! nodesColumn.getSelectedValue().equals("none") && edgesColumn.getSelectedValue().equals("none"))
 				mgr.createSetFromStream(name, nodesColumn.getSelectedValue(), network, reader, CyIdType.NODE);
 			if (! edgesColumn.getSelectedValue().equals("none") && nodesColumn.getSelectedValue().equals("none"))

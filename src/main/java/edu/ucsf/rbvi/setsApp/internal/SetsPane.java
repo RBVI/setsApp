@@ -80,6 +80,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
+import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTask2;
 
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SessionLoadedListener {
 	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
@@ -208,18 +209,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			
 			public void actionPerformed(ActionEvent e) {
 				if (JFileChooser.APPROVE_OPTION == chooseImport.showOpenDialog(SetsPane.this)){
-					BufferedReader reader;
-					try {
-						reader = new BufferedReader(new FileReader(chooseImport.getSelectedFile()));
+					File f = chooseImport.getSelectedFile();
+				//	try {
+				//		reader = new BufferedReader(new FileReader(chooseImport.getSelectedFile()));
 					/*	if (selectNodes.isSelected())
 							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.NODE));
 						if (selectEdges.isSelected())
 							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.EDGE)); */
-						taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader));
-					} catch (FileNotFoundException e1) {
-						System.err.println("Couldn't open file: " + chooseImport.getSelectedFile().getName());
-						e1.printStackTrace();
-					}
+						taskManager.execute(new TaskIterator(new CreateSetFromFileTask2(mySets,networkManager, f)));
+				//	} catch (FileNotFoundException e1) {
+				//		System.err.println("Couldn't open file: " + chooseImport.getSelectedFile().getName());
+				//		e1.printStackTrace();
+				//	}
 				}
 			}
 		});
@@ -258,7 +259,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 		intersection.setEnabled(false);
-		difference = new JButton("Set Difference");
+		difference = new JButton("Difference");
 		difference.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		difference.addActionListener(new ActionListener() {
 			
@@ -275,21 +276,21 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			public void actionPerformed(ActionEvent e) {
 				if (JFileChooser.APPROVE_OPTION == chooseImport.showSaveDialog(SetsPane.this)) {
 					File f = chooseImport.getSelectedFile();
-					if (!f.exists()) {
-						try {
-							f.createNewFile();
+				//	if (!f.exists()) {
+					//	try {
+					//		f.createNewFile();
 						/*	if (selectNodes.isSelected())
 								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.NODE)));
 							if (selectEdges.isSelected())
 								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.EDGE))); */
-							taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1,new BufferedWriter(new FileWriter(f.getAbsolutePath())))));
-						} catch (IOException e1) {
-							System.err.println("Unable to create file: " + f.getName());
-							e1.printStackTrace();
-						}
-					}
-					else
-						System.err.println("File already exist, choose another file name/directory.");
+							taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1,f)));
+					//	} catch (IOException e1) {
+					//		System.err.println("Unable to create file: " + f.getName());
+					//		e1.printStackTrace();
+					//	}
+				//	}
+				//	else
+				//		System.err.println("File already exist, choose another file name/directory.");
 				}
 			}
 		});
@@ -297,6 +298,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		sets = new DefaultMutableTreeNode("Sets");
 		setsTree = new JTree(sets);
+		setsTree.setRootVisible(false);
+		setsTree.setShowsRootHandles(true);
 		setsTree.addMouseListener(new MouseAdapter() {
 			private void popupEvent(MouseEvent e) {
 				int x = e.getX();
@@ -501,12 +504,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		modePanel.setBorder(BorderFactory.createEmptyBorder(BS, BS, BS, BS));
 		
 		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		topPanel.setBorder(BorderFactory.createTitledBorder("Create Set from Selected Nodes/Edges"));
-		final String noneSelected = "none",
-				selectNodes = "Create set from selected nodes",
-				selectEdges = "Create set from selected edges",
-				attrNodes = "Create node set from attributes",
-				attrEdges = "Create edge set from attributes";
+		topPanel.setBorder(BorderFactory.createTitledBorder("New Sets"));
+		final String noneSelected = "",
+				selectNodes = "selected nodes",
+				selectEdges = "selected edges",
+				attrNodes = "node attributes",
+				attrEdges = "edge attributes";
 		final String [] selectOptions = {noneSelected, selectNodes, selectEdges, attrNodes, attrEdges};
 		final PartialDisableComboBox createSetsFromSelected = new PartialDisableComboBox();
 		createSetsFromSelected.addItem(selectOptions[0], false);
@@ -614,7 +617,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		}); */
 
-		topPanel.add(new Label("Select:"));
+		topPanel.add(new Label("Create set from:"));
 		topPanel.add(createSetsFromSelected);
 	//	topPanel.add(createSet);
 		
@@ -732,6 +735,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		setsNode.put(event.getSetName(), thisSet);
 		cyIdNode.put(event.getSetName(), setNodesMap);
 		treeModel.insertNodeInto(thisSet, sets, sets.getChildCount());
+		setsTree.expandPath(new TreePath(sets.getPath()));
 		exportToAttribute(event.getSetName());
 	}
 

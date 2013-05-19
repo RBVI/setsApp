@@ -2,6 +2,7 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,11 +59,11 @@ public class CreateSetTaskFactory extends AbstractTaskFactory {
 		return new TaskIterator(new CreateSetFromFileTask(setsManager, cnm, stream, t));
 	}
 	
-	public TaskIterator createTaskIterator(CyNetworkManager cnm, BufferedReader stream) {
-		return new TaskIterator(new CreateSetFromFileTask2(setsManager, cnm, stream));
+	public TaskIterator createTaskIterator(CyNetworkManager cnm, File file) {
+		return new TaskIterator(new CreateSetFromFileTask2(setsManager, cnm, file));
 	}
 	
-	public TaskIterator createTaskIterator(String name, BufferedWriter writer) {
-		return new TaskIterator(new WriteSetToFileTask2(setsManager,name,writer));
+	public TaskIterator createTaskIterator(String name, File file) {
+		return new TaskIterator(new WriteSetToFileTask2(setsManager,name,file));
 	}
 }
