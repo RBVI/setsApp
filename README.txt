@@ -19,7 +19,7 @@ There are three methods to create sets.
 Creating sets from selected nodes/edges:
 The first method is to create a set by selecting a set of nodes or edges in a network.
 First, select nodes and/or edges with the mouse, then go to the sets panel to the
-section "Create Sets from Selected Nodes/Edges." Select from the drop-down menu
+section "New Sets." Select from the drop-down menu
 "Create sets from selected nodes" or "Create sets from selected edges." A dialog box
 opens up to allow the user to enter the name for the set. A new set should appear in
 the "Sets" panel.
@@ -29,8 +29,8 @@ edges using the mouse, then right-click on a network and select Apps->setsApp->
 Create node set or Create edge set.
 
 Creating sets from attributes:
-Go to "Create Sets from Selected Nodes/Edges" on the "Sets" panel, and select "Create
-node set from attributes" or "Create edge set from attributes." A dialog box pops up
+Go to "New Sets" section on the "Sets" panel, and select "Create set from node attributes"
+or "Create set from edge attributes." A dialog box pops up
 to allow the user to choose which attribute column to create the set from. The program
 only will create a set for nodes/edges with the same attribute value. The current
 version of the program only uses String attributes, but support for other data types
