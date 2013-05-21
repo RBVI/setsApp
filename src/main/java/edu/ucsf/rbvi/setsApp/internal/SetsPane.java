@@ -210,17 +210,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			public void actionPerformed(ActionEvent e) {
 				if (JFileChooser.APPROVE_OPTION == chooseImport.showOpenDialog(SetsPane.this)){
 					File f = chooseImport.getSelectedFile();
-				//	try {
-				//		reader = new BufferedReader(new FileReader(chooseImport.getSelectedFile()));
-					/*	if (selectNodes.isSelected())
-							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.NODE));
-						if (selectEdges.isSelected())
-							taskManager.execute(createSetTaskFactory.createTaskIterator(networkManager, reader, CyIdType.EDGE)); */
-						taskManager.execute(new TaskIterator(new CreateSetFromFileTask2(mySets,networkManager, f)));
-				//	} catch (FileNotFoundException e1) {
-				//		System.err.println("Couldn't open file: " + chooseImport.getSelectedFile().getName());
-				//		e1.printStackTrace();
-				//	}
+					taskManager.execute(new TaskIterator(new CreateSetFromFileTask2(mySets,networkManager, f)));
 				}
 			}
 		});
@@ -276,21 +266,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			public void actionPerformed(ActionEvent e) {
 				if (JFileChooser.APPROVE_OPTION == chooseImport.showSaveDialog(SetsPane.this)) {
 					File f = chooseImport.getSelectedFile();
-				//	if (!f.exists()) {
-					//	try {
-					//		f.createNewFile();
-						/*	if (selectNodes.isSelected())
-								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.NODE)));
-							if (selectEdges.isSelected())
-								taskManager.execute(new TaskIterator(new WriteSetToFileTask(mySets, networkManager, new BufferedWriter(new FileWriter(f.getAbsolutePath())), CyIdType.EDGE))); */
-							taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1,f)));
-					//	} catch (IOException e1) {
-					//		System.err.println("Unable to create file: " + f.getName());
-					//		e1.printStackTrace();
-					//	}
-				//	}
-				//	else
-				//		System.err.println("File already exist, choose another file name/directory.");
+					taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1,f)));
 				}
 			}
 		});
@@ -770,9 +746,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					tree, value, sel,
 					expanded, leaf, row,
 					hasFocus);
+			CyIdType type = getCyIdType(value);
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 			if (iconsOk) {
-				CyIdType type = getCyIdType(value);
-				DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 				if (node.isRoot()) {setIcon(setsIcon);}
 				else if (((NodeInfo) node.getUserObject()).cyId != null) {
 					DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
@@ -787,6 +763,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					else if (type == CyIdType.EDGE) setIcon(edgeSetIcon);
 				}
 			}
+			setPreferredSize(new Dimension(600, getPreferredSize().height));
+			validate();
+			repaint();
 			return this;
 		}
 		
