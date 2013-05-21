@@ -48,6 +48,8 @@ public class SetsManager {
 			this.setChangedListener.add(s);
 	}
 	
+	public int setsCount() {return setsMap.size();}
+	
 	public void addSetChangedListener(SetChangedListener s) {
 		if (s != null)
 			this.setChangedListener.add(s);

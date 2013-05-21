@@ -15,6 +15,11 @@ public class AddEdgeViewTaskFactory extends AbstractEdgeViewTaskFactory {
 		mgr = manager;
 	}
 	
+	public boolean isReady(View<CyEdge> edgeView, CyNetworkView networkView) {
+		if (mgr.setsCount() == 0) return false;
+		else return true;
+	}
+	
 	public TaskIterator createTaskIterator(View<CyEdge> arg0, CyNetworkView arg1) {
 		return new TaskIterator(new AddEdgeTask(mgr, arg0.getModel()));
 	}
