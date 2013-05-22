@@ -39,6 +39,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.AddEdgeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributesTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
@@ -46,6 +47,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.AddNodeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
+import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTaskFactory;
 
 public class CyActivator extends AbstractCyActivator {
 	private static Logger logger = LoggerFactory
@@ -145,6 +147,22 @@ public class CyActivator extends AbstractCyActivator {
 		Properties removeSetProperties = new Properties();
 		setStandardProperties(removeSetProperties, "Remove Set", "removeSet", "4.0");
 		registerService(bc, removeSet, TaskFactory.class, removeSetProperties);
+		
+		NetworkTaskFactory createSetFromFile = new CreateSetFromFileTaskFactory(sets);
+		Properties setFromFileProperties = new Properties();
+		setStandardProperties(setFromFileProperties, "Create set from file", "createSetFromFile", "5.0");
+		registerService(bc, createSetFromFile, NetworkTaskFactory.class, setFromFileProperties);
+		
+		NetworkTaskFactory writeNodeSet = new WriteSetToFileTaskFactory(sets, CyIdType.NODE);
+		Properties writeNodeSetProperties = new Properties();
+		setStandardProperties(writeNodeSetProperties, "Write node set to file", "writeNodeSet", "6.0");
+		registerService(bc, writeNodeSet, NetworkTaskFactory.class, writeNodeSetProperties);
+		
+		NetworkTaskFactory writeEdgeSet = new WriteSetToFileTaskFactory(sets, CyIdType.EDGE);
+		Properties writeEdgeSetProperties = new Properties();
+		setStandardProperties(writeEdgeSetProperties, "Write edge set to file", "writeEdgeSet", "7.0");
+		registerService(bc, writeEdgeSet, NetworkTaskFactory.class, writeEdgeSetProperties);
+		
 	/*	TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
 		Properties createSetTaskProps = new Properties();
 		// These are just example properties for placing the factory in the apps menu

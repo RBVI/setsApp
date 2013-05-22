@@ -16,7 +16,7 @@ public class AddEdgeViewTaskFactory extends AbstractEdgeViewTaskFactory {
 	}
 	
 	public boolean isReady(View<CyEdge> edgeView, CyNetworkView networkView) {
-		if (mgr.setsCount() == 0) return false;
+		if (super.isReady(edgeView, networkView) && mgr.setsCount() == 0) return false;
 		else return true;
 	}
 	

@@ -4,25 +4,21 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
-
-public class CreateSetFromAttributesTaskFactory extends
-		AbstractNetworkTaskFactory {
+public class CreateSetFromFileTaskFactory extends AbstractNetworkTaskFactory {
 	private SetsManager mgr;
-	private CyIdType t;
 	
 	public boolean isReady(CyNetwork network) {
 		if (super.isReady(network) && mgr.setsCount() != 0)
 			return true;
 		else return false;
 	}
-	public CreateSetFromAttributesTaskFactory(SetsManager manager, CyIdType type) {
+	
+	public CreateSetFromFileTaskFactory(SetsManager manager) {
 		mgr = manager;
-		t = type;
 	}
 	
 	public TaskIterator createTaskIterator(CyNetwork arg0) {
-		return new TaskIterator(new CreateSetFromAttributeTask(mgr,arg0,t));
+		return new TaskIterator(new CreateSetFromFileTask3(mgr, arg0));
 	}
 
 }

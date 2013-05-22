@@ -14,8 +14,8 @@ public class AddNodeViewTaskFactory extends AbstractNodeViewTaskFactory {
 		mgr = manager;
 	}
 	
-	public boolean isReady(View<CyNode> edgeView, CyNetworkView networkView) {
-		if (mgr.setsCount() == 0) return false;
+	public boolean isReady(View<CyNode> nodeView, CyNetworkView networkView) {
+		if (super.isReady(nodeView, networkView) && mgr.setsCount() == 0) return false;
 		else return true;
 	}
 	

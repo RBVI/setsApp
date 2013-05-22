@@ -12,7 +12,7 @@ public class CreateEdgeSetTaskFactory extends AbstractNetworkViewTaskFactory {
 	
 	@Override
 	public boolean isReady(CyNetworkView networkView) {
-		if (networkView != null)
+		if (super.isReady(networkView))
 			if (!CyTableUtil.getEdgesInState(networkView.getModel(), CyNetwork.SELECTED, true).isEmpty())
 				return true;
 		return false;
