@@ -48,8 +48,8 @@ public class MoveCyIdTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		// TODO Auto-generated method stub
-		if (mgr.addToSet(sets.getSelectedValue(), cyId))
-			mgr.removeFromSet(setName, cyId);
+		mgr.addToSet(sets.getSelectedValue(), cyId);
+		mgr.removeFromSet(setName, cyId);
 	}
 
 }

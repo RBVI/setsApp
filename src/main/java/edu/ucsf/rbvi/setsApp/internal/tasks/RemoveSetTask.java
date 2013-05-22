@@ -9,15 +9,24 @@ public class RemoveSetTask extends AbstractTask {
 	private SetsManager mgr;
 	@Tunable(description="Select set to remove")
 	public ListSingleSelection<String> name;
+	public String setName;
 	
 	public RemoveSetTask(SetsManager manager) {
 		mgr = manager;
 		name = new ListSingleSelection<String>(mgr.getSetNames());
 	}
 	
+	public RemoveSetTask(SetsManager manager, String name2) {
+		mgr = manager;
+		name = null;
+		setName = name2;
+	}
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		mgr.removeSet(name.getSelectedValue());
+		if (name != null)
+			mgr.removeSet(name.getSelectedValue());
+		else
+			mgr.removeSet(setName);
 	}
 
 }

@@ -20,12 +20,22 @@ public class SetOperationsTask extends AbstractTask {
 	public ListSingleSelection<String> seT1;
 	private SetsManager sm;
 	private SetOperations operation;
+	private String s1, s2;
 	
 	public SetOperationsTask(SetsManager setsManager, CyIdType type, SetOperations s) {
 		sm = setsManager;
 		List<String> attr = getSelectedSets(type); 
 		seT1 = new ListSingleSelection<String>(attr);
 		seT2 = new ListSingleSelection<String>(attr);
+		operation = s;
+	}
+	
+	public SetOperationsTask(SetsManager setsManager, String set1, String set2, SetOperations s) {
+		sm = setsManager;
+		seT1 = null;
+		seT2 = null;
+		s1 = set1;
+		s2 = set2;
 		operation = s;
 	}
 	
@@ -47,8 +57,15 @@ public class SetOperationsTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		String set1 = seT1.getSelectedValue();
-		String set2 = seT2.getSelectedValue();
+		String set1, set2;
+		if (seT1 != null && seT2 != null) {
+			set1 = seT1.getSelectedValue();
+			set2 = seT2.getSelectedValue();
+		}
+		else {
+			set1 = s1;
+			set2 = s2;
+		}
 		switch (operation) {
 		case INTERSECT:
 			sm.intersection(setName, set1, set2);

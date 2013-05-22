@@ -96,7 +96,8 @@ public class SetsManager {
 			listener.setRemoved(event);
 	}
 	
-	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) {
+	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) throws Exception{
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name))
 			if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
 				if (cyNodes != null && ! cyNodes.isEmpty()) {
@@ -120,7 +121,8 @@ public class SetsManager {
 			}
 	}
 	
-	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) throws IOException {
+	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) throws Exception {
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name)) {
 			HashSet<String> inputSet = new HashSet<String>();
 			String curLine;
@@ -169,7 +171,8 @@ public class SetsManager {
 		}
 	}
 	
-	public void createSetFromAttributes(String name, String column, Object attribute, CyNetworkManager networkManager, String networkName, CyIdType type) {
+	public void createSetFromAttributes(String name, String column, Object attribute, CyNetworkManager networkManager, String networkName, CyIdType type) throws Exception {
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name)) {
 			CyNetwork network = null;
 			java.util.Set<CyNetwork> networkSet = networkManager.getNetworkSet();
@@ -215,7 +218,8 @@ public class SetsManager {
 		}
 	}
 	
-	public void createSetsFromAttributes(String name, String column, CyNetwork network, CyIdType type) {
+	public void createSetsFromAttributes(String name, String column, CyNetwork network, CyIdType type) throws Exception {
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name)) {
 			if (network != null) {
 				if (type == CyIdType.NODE) {
@@ -256,7 +260,8 @@ public class SetsManager {
 		}
 	}
 	
-	public void createSetFromNetworkView(String name, CyNetworkView cyNetworkView, CyIdType type) {
+	public void createSetFromNetworkView(String name, CyNetworkView cyNetworkView, CyIdType type) throws Exception {
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name)) {
 			List<CyNode> cyNodes = null;
 			List<CyEdge> cyEdges = null;
@@ -282,7 +287,8 @@ public class SetsManager {
 		}
 	}
 	
-	public void createSetFromSelectedNetwork(String name, CyNetworkViewManager networkViewManager, CyIdType type) {
+	public void createSetFromSelectedNetwork(String name, CyNetworkViewManager networkViewManager, CyIdType type) throws Exception {
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(name)) {
 			List<CyNode> cyNodes = null;
 			List<CyEdge> cyEdges = null;
@@ -322,7 +328,9 @@ public class SetsManager {
 		} */
 	}
 	
-	public void rename(String name, String newName) {
+	public void rename(String name, String newName) throws Exception {
+		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
 		if (setsMap.containsKey(name) && ! setsMap.containsKey(newName)) {
 			Set<? extends CyIdentifiable> oldSet = setsMap.get(name);
 			CyNetwork oldNetwork = networkSetNames.get(name);
@@ -340,7 +348,8 @@ public class SetsManager {
 		}
 	}
 	
-	public void removeSet(String name) {
+	public void removeSet(String name) throws Exception {
+		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		CyNetwork c = networkSetNames.get(name);
 		setsMap.remove(name);
 		networkSetNames.remove(name);
@@ -348,7 +357,11 @@ public class SetsManager {
 		fireSetRemovedEvent(name, c);
 	}
 	
-	public boolean union(String newName, String set1, String set2) {
+	public boolean union(String newName, String set1, String set2) throws Exception {
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
+		if (! setsMap.containsKey(set1)) throw new Exception("Set \"" + set1 + "\" does not exist.");
+		if (! setsMap.containsKey(set2)) throw new Exception("Set \"" + set2 + "\" does not exist.");
+		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).unionGeneric(newName, setsMap.get(set2));
 			if (!newSet.getElements().isEmpty()) {
@@ -364,7 +377,11 @@ public class SetsManager {
 		else return false;
 	}
 	
-	public boolean intersection(String newName, String set1, String set2) {
+	public boolean intersection(String newName, String set1, String set2) throws Exception {
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
+		if (! setsMap.containsKey(set1)) throw new Exception("Set \"" + set1 + "\" does not exist.");
+		if (! setsMap.containsKey(set2)) throw new Exception("Set \"" + set2 + "\" does not exist.");
+		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2));
 			if (!newSet.getElements().isEmpty()) {
@@ -380,7 +397,11 @@ public class SetsManager {
 		else return false;
 	}
 	
-	public boolean difference(String newName, String set1, String set2) {
+	public boolean difference(String newName, String set1, String set2) throws Exception {
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
+		if (! setsMap.containsKey(set1)) throw new Exception("Set \"" + set1 + "\" does not exist.");
+		if (! setsMap.containsKey(set2)) throw new Exception("Set \"" + set2 + "\" does not exist.");
+		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2));
 			if (!newSet.getElements().isEmpty()) {
@@ -396,21 +417,23 @@ public class SetsManager {
 		else return false;
 	}
 	
-	public boolean addToSet(String name, CyIdentifiable cyId) {
+	public void addToSet(String name, CyIdentifiable cyId) throws Exception {
+		if (!setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
+		if (networkSetNames.get(name).getRow(cyId) == null) throw new Exception(cyId + " is not in the network of set \"" + name + "\". Cannot perform operation.");
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
-		try {
+	//	try {
 			if (networkSetNames.get(name).getRow(cyId) != null && s.addCyId(cyId)) {
 				ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 				cyIdList.add(cyId);
 				fireSetAddedEvent(name, cyIdList);
-				return true;
+			//	return true;
 			}
-			else return false;
-		}
-		catch (Exception E) {
-			E.printStackTrace();
-		}
-		return false;
+			else throw new Exception("Node/Edge already in the set \"" + name + "\"");
+	//	}
+	//	catch (Exception E) {
+	//		E.printStackTrace();
+	//	}
+	//	return false;
 	}
 	
 	public boolean isInSet(String name, Long cyId) {
@@ -419,7 +442,8 @@ public class SetsManager {
 		else return false;
 	}
 	
-	public void removeFromSet(String name, CyIdentifiable cyId) {
+	public void removeFromSet(String name, CyIdentifiable cyId) throws Exception {
+		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
 		if (s.removeCyId(cyId)) {
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();

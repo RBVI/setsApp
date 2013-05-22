@@ -76,8 +76,10 @@ import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
+import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTask2;
@@ -234,7 +236,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				mySets.union(set1 + " union " + set2, set1, set2);
+				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.UNION)));
+			//	mySets.union(set1 + " union " + set2, set1, set2);
 			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.UNION));
 			}
 		});
@@ -244,7 +247,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				mySets.intersection(set1 + " intersection " + set2, set1, set2);
+				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.INTERSECT)));
+			//	mySets.intersection(set1 + " intersection " + set2, set1, set2);
 			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.INTERSECT));
 			}
 		});
@@ -254,7 +258,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				mySets.difference(set1 + " difference " + set2, set2, set1);
+				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set2,set1,SetOperations.DIFFERENCE)));
+			//	mySets.difference(set1 + " difference " + set2, set2, set1);
 			//	taskManager.execute(createSetTaskFactory.createTaskIterator(selectNodes.isSelected() ? CyIdType.NODE : CyIdType.EDGE, SetOperations.DIFFERENCE));
 			}
 		});
@@ -320,7 +325,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					delete.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							mySets.removeFromSet(thisSetName, selectecCyId);
+							try {
+								mySets.removeFromSet(thisSetName, selectecCyId);
+							} catch (Exception e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 					});
 					popup.add(select);
@@ -349,7 +359,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					delete.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
-							mySets.removeSet(((NodeInfo) node.getUserObject()).setName);
+							taskManager.execute(new TaskIterator(new RemoveSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
+						//	mySets.removeSet(((NodeInfo) node.getUserObject()).setName);
 						}
 					});
 					popup.add(select);
@@ -622,7 +633,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		}
 	}
 	
-	private void importFromAttribute(String loadedSetName) {
+/*	private void importFromAttribute(String loadedSetName) {
 		CyNetwork cyNetwork = mySets.getCyNetwork(loadedSetName);
 		List<CyNode> cyNodes = null;
 		List<CyEdge> cyEdges = null;
@@ -631,7 +642,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
 		if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
 		mySets.createSet(loadedSetName, cyNetwork, cyNodes, cyEdges);
-	}
+	} */
 	
 	public synchronized void setCreated(SetChangedEvent event) {
 		DefaultMutableTreeNode thisSet = new DefaultMutableTreeNode(event.getSetName());
@@ -674,6 +685,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 	public void handleEvent(SessionLoadedEvent event) {
 		mySets.reset();
+		exportSet.setEnabled(false);
 		while (sets.getChildCount() > 0) {
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
@@ -693,7 +705,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						if (cyTable.getRow(suid).get(colName, Boolean.class))
 							cyNodes.add(cyNetwork.getNode(suid));
 					if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
-					mySets.createSet(loadedSetName, cyNetwork, cyNodes, null);
+					try {
+						mySets.createSet(loadedSetName, cyNetwork, cyNodes, null);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 			cyTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
@@ -707,7 +724,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						if (cyTable.getRow(suid).get(colName, Boolean.class))
 							cyEdges.add(cyNetwork.getEdge(suid));
 					if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
-					mySets.createSet(loadedSetName, cyNetwork, null, cyEdges);
+					try {
+						mySets.createSet(loadedSetName, cyNetwork, null, cyEdges);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
 			}
 		}
