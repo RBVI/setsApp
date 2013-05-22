@@ -39,6 +39,8 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.AddEdgeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributesTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
 //import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
@@ -90,12 +92,12 @@ public class CyActivator extends AbstractCyActivator {
 		}
 		NetworkTaskFactory createNodeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyIdType.NODE);
 		Properties createNodeSetFromAttributesProperties = new Properties();
-		setStandardProperties(createNodeSetFromAttributesProperties, "Create node set from attributes", "createNodeSetFromAttributes", "8.0");
+		setStandardProperties(createNodeSetFromAttributesProperties, "Create node set from attributes", "createNodeSetFromAttributes", "1.0");
 		registerService(bc, createNodeSetFromAttributes, NetworkTaskFactory.class, createNodeSetFromAttributesProperties);
 		
 		NetworkTaskFactory createEdgeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyIdType.EDGE);
 		Properties createEdgeSetFromAttributesProperties = new Properties();
-		setStandardProperties(createEdgeSetFromAttributesProperties, "Create node set from attributes", "createNodeSetFromAttributes", "9.0");
+		setStandardProperties(createEdgeSetFromAttributesProperties, "Create edge set from attributes", "createEdgeSetFromAttributes", "2.0");
 		registerService(bc, createEdgeSetFromAttributes, NetworkTaskFactory.class, createEdgeSetFromAttributesProperties);
 		
 		TaskFactory nodeUnion = new SetOperationsTaskFactory(sets, CyIdType.NODE, SetOperations.UNION);
@@ -133,6 +135,16 @@ public class CyActivator extends AbstractCyActivator {
 		setStandardProperties(edgeDifferenceProperties, "Difference", "edgeDifference", "3.0");
 		edgeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
 		registerService(bc,edgeDifference, TaskFactory.class, edgeDifferenceProperties);
+		
+		TaskFactory renameSet = new RenameSetTaskFactory(sets);
+		Properties renameSetProperties = new Properties();
+		setStandardProperties(renameSetProperties, "Rename Set", "renameSet", "3.0");
+		registerService(bc, renameSet, TaskFactory.class, renameSetProperties);
+		
+		TaskFactory removeSet = new RemoveSetTaskFactory(sets);
+		Properties removeSetProperties = new Properties();
+		setStandardProperties(removeSetProperties, "Remove Set", "removeSet", "4.0");
+		registerService(bc, removeSet, TaskFactory.class, removeSetProperties);
 	/*	TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
 		Properties createSetTaskProps = new Properties();
 		// These are just example properties for placing the factory in the apps menu
