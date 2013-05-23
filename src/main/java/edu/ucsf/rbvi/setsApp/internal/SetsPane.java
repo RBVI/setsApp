@@ -76,6 +76,7 @@ import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.MoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
@@ -301,6 +302,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					final String thisSetName = ((NodeInfo) setNode.getUserObject()).setName;
 					
 					JMenuItem select = new JMenuItem("Select");
+					JMenuItem unselect = new JMenuItem("Unselect");
 					JMenuItem copy = new JMenuItem("Copy to...");
 					JMenuItem move = new JMenuItem("Move to...");
 					JMenuItem delete = new JMenuItem("Remove from Set");
@@ -308,6 +310,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						
 						public void actionPerformed(ActionEvent e) {
 							displaySelectedCyIds(thisSetName, selectecCyId.getSUID());
+						}
+					});
+					unselect.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							unDisplaySelectedCyIds(thisSetName, selectecCyId.getSUID());
 						}
 					});
 					copy.addActionListener(new ActionListener() {
@@ -334,20 +342,30 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						}
 					});
 					popup.add(select);
+					popup.add(unselect);
 					popup.add(copy);
 					popup.add(move);
 					popup.add(delete);
 				}
 				else {
 					JMenuItem select = new JMenuItem("Select");
+					JMenuItem unselect = new JMenuItem("Unselect");
 					JMenuItem delete = new JMenuItem("Remove Set");
 					JMenuItem rename = new JMenuItem("Rename");
+					JMenuItem move = new JMenuItem("Move set to different network");
 
 					select.addActionListener(new ActionListener() {
 						
 						public void actionPerformed(ActionEvent e) {
 							String setName = ((NodeInfo) node.getUserObject()).setName;
 							displaySelectedCyIds(setName, null);
+						}
+					});
+					unselect.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							String setName = ((NodeInfo) node.getUserObject()).setName;
+							unDisplaySelectedCyIds(setName, null);
 						}
 					});
 					rename.addActionListener(new ActionListener() {
@@ -363,9 +381,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 						//	mySets.removeSet(((NodeInfo) node.getUserObject()).setName);
 						}
 					});
+					move.addActionListener(new ActionListener() {
+						
+						public void actionPerformed(ActionEvent e) {
+							CyNetworkManager networkManager = (CyNetworkManager) getService(CyNetworkManager.class);
+							taskManager.execute(new TaskIterator(new MoveSetTask(mySets, networkManager.getNetworkSet(), ((NodeInfo) node.getUserObject()).setName)));
+						}
+					});
 					popup.add(select);
+					popup.add(unselect);
 					popup.add(delete);
 					popup.add(rename);
+					popup.add(move);
 				}
 				popup.show(tree, x, y);
 			}
@@ -446,6 +473,25 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 					for (Long suid: curTable.getPrimaryKey().getValues(Long.class))
 						curTable.getRow(suid).set(CyNetwork.SELECTED, 
 								cyId == null ? mySets.isInSet(setName, suid): suid == cyId);
+				CyNetworkViewManager nvm = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
+				for (CyNetworkView networkView: nvm.getNetworkViewSet())
+					if (networkView.getModel() == curNetwork)
+						networkView.updateView();
+			}
+			private void unDisplaySelectedCyIds(String setName, Long cyId) {
+				CyNetwork curNetwork = mySets.getCyNetwork(setName);
+				CyTable curTable = null;
+				if (mySets.getType(setName) == CyIdType.NODE)
+					curTable = curNetwork.getDefaultNodeTable();
+				if (mySets.getType(setName) == CyIdType.EDGE)
+					curTable = curNetwork.getDefaultEdgeTable();
+				if (curTable != null) {
+					if (cyId != null)
+						curTable.getRow(cyId).set(CyNetwork.SELECTED, false);
+					else
+						for (CyIdentifiable suid: mySets.getSet(setName).getElements())
+								curTable.getRow(suid.getSUID()).set(CyNetwork.SELECTED, false);
+				}
 				CyNetworkViewManager nvm = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
 				for (CyNetworkView networkView: nvm.getNetworkViewSet())
 					if (networkView.getModel() == curNetwork)

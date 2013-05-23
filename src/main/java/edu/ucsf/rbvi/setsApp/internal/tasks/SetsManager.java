@@ -436,6 +436,27 @@ public class SetsManager {
 	//	return false;
 	}
 	
+	public void moveSet(String name, String newName, CyNetwork cyNetwork) throws Exception {
+		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exist. Choose a different name.");
+		if (setType.get(name) == CyIdType.NODE) {
+			List<CyNode> cyNodes = new ArrayList<CyNode>();
+			CyNode thisNode;
+			for (CyIdentifiable cyId: setsMap.get(name).getElements())
+				if ((thisNode = cyNetwork.getNode(cyId.getSUID())) != null)
+					cyNodes.add(thisNode);
+			createSet(newName, cyNetwork, cyNodes, null);
+		}
+		if (setType.get(name) == CyIdType.EDGE) {
+			List<CyEdge> cyEdges = new ArrayList<CyEdge>();
+			CyEdge thisEdge;
+			for (CyIdentifiable cyId: setsMap.get(name).getElements())
+				if ((thisEdge = cyNetwork.getEdge(cyId.getSUID())) != null)
+					cyEdges.add(thisEdge);
+			createSet(newName, cyNetwork, null, cyEdges);
+		}
+	}
+	
 	public boolean isInSet(String name, Long cyId) {
 		Set<? extends CyIdentifiable> thisSet;
 		if ((thisSet = setsMap.get(name)) != null) return  thisSet.hasCyId(cyId);

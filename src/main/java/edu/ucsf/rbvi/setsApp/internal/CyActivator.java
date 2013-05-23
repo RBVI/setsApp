@@ -23,6 +23,7 @@ import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.task.EdgeViewTaskFactory;
+import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
@@ -40,6 +41,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.AddEdgeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributesTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.MoveSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
@@ -162,6 +164,11 @@ public class CyActivator extends AbstractCyActivator {
 		Properties writeEdgeSetProperties = new Properties();
 		setStandardProperties(writeEdgeSetProperties, "Write edge set to file", "writeEdgeSet", "7.0");
 		registerService(bc, writeEdgeSet, NetworkTaskFactory.class, writeEdgeSetProperties);
+		
+		NetworkCollectionTaskFactory moveSet = new MoveSetTaskFactory(sets);
+		Properties moveSetProperties = new Properties();
+		setStandardProperties(moveSetProperties, "Move set to another network", "moveSet", "4.5");
+		registerService(bc, moveSet, NetworkCollectionTaskFactory.class, moveSetProperties);
 		
 	/*	TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
 		Properties createSetTaskProps = new Properties();
