@@ -59,6 +59,7 @@ public class WriteSetToFileTask3 extends AbstractTask {
 				for (CyColumn c: cyColumns) 
 					if (c.getType() == String.class) columnNames.add(c.getName());
 				column = new ListSingleSelection<String>(columnNames);
+				column.setSelectedValue(CyNetwork.NAME);
 			}
 		}
 	}
