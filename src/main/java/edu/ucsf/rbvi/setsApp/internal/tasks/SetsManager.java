@@ -98,7 +98,7 @@ public class SetsManager {
 	
 	public void createSet(String name, CyNetwork cyNetwork, List<CyNode> cyNodes, List<CyEdge> cyEdges) throws Exception{
 		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
-		if (! setsMap.containsKey(name))
+		if (! setsMap.containsKey(name)) {
 			if ((cyNodes != null && ! cyNodes.isEmpty()) || (cyEdges != null && ! cyEdges.isEmpty())) {
 				if (cyNodes != null && ! cyNodes.isEmpty()) {
 					List<CyNode> filteredNodes = new ArrayList<CyNode>();
@@ -119,6 +119,8 @@ public class SetsManager {
 				networkSetNames.put(name, cyNetwork);
 				fireSetCreatedEvent(name);
 			}
+			else throw new Exception("Trying to create an empty set.");
+		}
 	}
 	
 	public void createSetFromStream(String name, String column, CyNetwork network, BufferedReader reader, CyIdType type) throws Exception {
@@ -147,6 +149,7 @@ public class SetsManager {
 						setType.put(name, type);
 						fireSetCreatedEvent(name);
 					}
+					else throw new Exception("Trying to create an empty set.");
 				}
 				if (type == CyIdType.EDGE) {
 					table = network.getDefaultEdgeTable();
@@ -163,6 +166,7 @@ public class SetsManager {
 						setType.put(name, type);
 						fireSetCreatedEvent(name);
 					}
+					else throw new Exception("Trying to create an empty set.");
 				}
 			/*	networkSetNames.put(name, network);
 				setType.put(name, type);
@@ -274,6 +278,7 @@ public class SetsManager {
 					setType.put(name, type);
 					fireSetCreatedEvent(name);
 				}
+				else throw new Exception("Trying to create an empty set.");
 			}
 			else if (type == CyIdType.EDGE) {
 				cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
@@ -283,6 +288,7 @@ public class SetsManager {
 					setType.put(name, type);
 					fireSetCreatedEvent(name);
 				}
+				else throw new Exception("Trying to create an empty set.");
 			}
 		}
 	}
@@ -304,6 +310,7 @@ public class SetsManager {
 							setType.put(name, type);
 							fireSetCreatedEvent(name);
 						}
+						else throw new Exception("Trying to create an empty set.");;
 					}
 					else if (type == CyIdType.EDGE) {
 						cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
@@ -313,6 +320,7 @@ public class SetsManager {
 							setType.put(name, type);
 							fireSetCreatedEvent(name);
 						}
+						else throw new Exception("Trying to create an empty set.");
 					}
 				}
 			}
@@ -364,15 +372,15 @@ public class SetsManager {
 		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).unionGeneric(newName, setsMap.get(set2));
-			if (!newSet.getElements().isEmpty()) {
+		//	if (!newSet.getElements().isEmpty()) {
 				setsMap.put(newName, newSet);
 				networkSetNames.put(newName, networkSetNames.get(set1));
 				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
 					setType.put(newName, setType.get(set1));
 				fireSetCreatedEvent(newName);
 				return true;
-			}
-			else return false;
+		//	}
+		//	else return false;
 		}
 		else return false;
 	}
@@ -384,15 +392,15 @@ public class SetsManager {
 		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).intersectionGeneric(newName, setsMap.get(set2));
-			if (!newSet.getElements().isEmpty()) {
+		//	if (!newSet.getElements().isEmpty()) {
 				setsMap.put(newName, newSet);
 				networkSetNames.put(newName, networkSetNames.get(set1));
 				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
 					setType.put(newName, setType.get(set1));
 				fireSetCreatedEvent(newName);
 				return true;
-			}
-			else return false;
+		//	}
+		//	else return false;
 		}
 		else return false;
 	}
@@ -404,15 +412,15 @@ public class SetsManager {
 		if (networkSetNames.get(set1).getSUID() != networkSetNames.get(set2).getSUID()) throw new Exception("\"" + set1 + "\"" + "\"" + set2 + "\" not in the same network. Cannot perform operation.");
 		if (! setsMap.containsKey(newName) && networkSetNames.get(set1).getSUID() == networkSetNames.get(set2).getSUID()) {
 			Set<? extends CyIdentifiable> newSet = setsMap.get(set1).differenceGeneric(newName, setsMap.get(set2));
-			if (!newSet.getElements().isEmpty()) {
+		//	if (!newSet.getElements().isEmpty()) {
 				setsMap.put(newName, newSet);
 				networkSetNames.put(newName, networkSetNames.get(set1));
 				if (setType.get(set1) != null && setType.get(set2) != null && setType.get(set1) == setType.get(set2))
 					setType.put(newName, setType.get(set1));
 				fireSetCreatedEvent(newName);
 				return true;
-			}
-			else return false;
+		//	}
+		//	else return false;
 		}
 		else return false;
 	}
@@ -428,7 +436,7 @@ public class SetsManager {
 				fireSetAddedEvent(name, cyIdList);
 			//	return true;
 			}
-			else throw new Exception("Node/Edge already in the set \"" + name + "\"");
+			else throw new Exception("Node/Edge already in the set \"" + name + "\" or not in network.");
 	//	}
 	//	catch (Exception E) {
 	//		E.printStackTrace();
