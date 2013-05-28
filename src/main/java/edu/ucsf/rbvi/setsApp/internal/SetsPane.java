@@ -735,6 +735,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		while (sets.getChildCount() > 0) {
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
+		setsNode = new HashMap<String, DefaultMutableTreeNode>();
+		cyIdNode = new HashMap<String, HashMap<Long, DefaultMutableTreeNode>>();
 		CyNetworkManager nm = (CyNetworkManager) getService(CyNetworkManager.class);
 		java.util.Set<CyNetwork> networks = nm.getNetworkSet();
 		CyTable cyTable;
