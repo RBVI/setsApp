@@ -77,6 +77,13 @@ Right-click on a node/edge in the "Sets" panel to bring up the context menu, and
 select "Remove from set." The operation for removing a set is very similar to this
 one.
 
+4.4 Moving a set to a different network:
+You can move the nodes/edges of a set from one network to another. Currently, this
+can only be done for nodes/edges that belong both to the source and target network.
+Right-click on a set, then select "Move set to different network." When a dialog
+box pops up, choose which network to move nodes/edges to and enter a name for the
+new set.
+
 5. Saving the nodes in the current session:
 The sets are automatically saved to the current session upon creation, and
 automatically removed from the session when removed. Any changes made to the set
