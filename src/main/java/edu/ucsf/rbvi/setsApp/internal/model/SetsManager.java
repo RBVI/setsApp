@@ -185,33 +185,6 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
-	public void createSetFromSelectedNetwork(String name, CyNetworkViewManager networkViewManager, Class<? extends CyIdentifiable> type) throws Exception {
-		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
-		if (! setsMap.containsKey(name)) {
-			List<CyNode> cyNodes = null;
-			List<CyEdge> cyEdges = null;
-			CyNetwork cyNetwork = null;
-			for (CyNetworkView networkView: networkViewManager.getNetworkViewSet()) {
-				cyNetwork = networkView.getModel();
-				if (cyNetwork != null && cyNetwork.getRow(cyNetwork).get(CyNetwork.SELECTED, Boolean.class)) {
-					if (type == CyNode.class) {
-						cyNodes = CyTableUtil.getNodesInState(cyNetwork, CyNetwork.SELECTED, true);
-						if (! cyNodes.isEmpty()) {
-							addSet(new Set<CyNode>(name, cyNetwork, CyNode.class, cyNodes));
-						}
-						else throw new Exception("Trying to create an empty set.");;
-					} else if (type == CyEdge.class) {
-						cyEdges = CyTableUtil.getEdgesInState(cyNetwork, CyNetwork.SELECTED, true);
-						if (! cyEdges.isEmpty()) {
-							addSet(new Set<CyEdge>(name, cyNetwork, CyEdge.class, cyEdges));
-						}
-						else throw new Exception("Trying to create an empty set.");
-					}
-				}
-			}
-		}
-	}
-	
 	public void rename(String name, String newName) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
