@@ -1,58 +1,48 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.cytoscape.model.CyColumn;
+import org.cytoscape.model.CyEdge;
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class WriteSetToFileTask2 extends AbstractTask {
+public class WriteSetToFileTask2 extends AbstractExportSetTask {
+	@ProvidesTitle
+	public String getTitle() { return "Export set to file"; }
 	@Tunable(description="Select column to use for ID:")
 	public ListSingleSelection<String> column = null;
-	private SetsManager mgr;
-	private CyNetwork network = null;
-	private BufferedWriter writer;
+	@Tunable(description="File to write set data to", params="input=false;fileCategory=unspecified")
+	public File setFile;
 	private String name;
-	private CyIdType type;
-	private File f;
+	CyNetwork network;
 	
-	public WriteSetToFileTask2(SetsManager setsManager, String setName, File file) {
-		mgr = setsManager;
+	public WriteSetToFileTask2(SetsManager setsManager, String setName) {
+		super(setsManager);
 		name = setName;
 		network = setsManager.getCyNetwork(setName);
-		type = setsManager.getType(setName);
-		f = file;
+		Class<? extends CyIdentifiable> type = setsManager.getType(setName);
 		if (network != null) {
 			List<String> setNames = setsManager.getSetNames(), networkSetNames = new ArrayList<String>();
 			CyTable table = null;
-			if (type == CyIdType.NODE) {
+			if (type.equals(CyNode.class)) {
 				table = network.getDefaultNodeTable();
-			/*	for (String s: setNames)
-					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s) == CyIdType.NODE) 
-						networkSetNames.add(s);
-				selectSet = new ListSingleSelection<String>(networkSetNames); */
-			}
-			if (type == CyIdType.EDGE) {
+			} else if (type.equals(CyEdge.class)) {
 				table = network.getDefaultEdgeTable();
-			/*	for (String s: setNames)
-					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s) == CyIdType.EDGE) 
-						networkSetNames.add(s);
-				selectSet = new ListSingleSelection<String>(networkSetNames); */
 			}
 			if (table != null) {
 				Collection<CyColumn> cyColumns = table.getColumns();
@@ -68,13 +58,10 @@ public class WriteSetToFileTask2 extends AbstractTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		if (network != null && column != null) {
-			if (!f.exists()) {
-				f.createNewFile();
-				writer = new BufferedWriter(new FileWriter(f.getAbsolutePath()));
-				mgr.exportSetToStream(name, column.getSelectedValue(), writer);
+			if (!setFile.exists()) {
+				exportSetToStream(name, column.getSelectedValue(), setFile);
 			}
-			else throw new IOException("File " + f.getName() + " already exists.");
+			else throw new IOException("File " + setFile.getName() + " already exists.");
 		}
 	}
-
 }

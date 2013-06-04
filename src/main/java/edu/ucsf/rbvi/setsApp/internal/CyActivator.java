@@ -19,6 +19,9 @@ import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.service.util.AbstractCyActivator;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
@@ -36,20 +39,22 @@ import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+import edu.ucsf.rbvi.setsApp.internal.tasks.CopySetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.AddEdgeViewTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.AddNodeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributesTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTaskFactory;
-import edu.ucsf.rbvi.setsApp.internal.tasks.MoveSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveEdgeViewTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveNodeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
-//import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTaskFactory;
-import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
-import edu.ucsf.rbvi.setsApp.internal.tasks.AddNodeViewTaskFactory;
-import edu.ucsf.rbvi.setsApp.internal.tasks.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.ui.SetsPane;
 
 public class CyActivator extends AbstractCyActivator {
 	private static Logger logger = LoggerFactory
@@ -60,141 +65,141 @@ public class CyActivator extends AbstractCyActivator {
 	}
 
 	public void start(BundleContext bc) {
-		SetsManager sets = new SetsManager();
 		// See if we have a graphics console or not
 		boolean haveGUI = true;
 		CySwingApplication cyApplication = getService(bc, CySwingApplication.class);
-	/*	CyNetworkViewManager networkViewManager = getService(bc, CyNetworkViewManager.class); */
+		CyNetworkManager networkManager = (CyNetworkManager) getService(bc, CyNetworkManager.class);
+		SetsManager sets = new SetsManager(networkManager);
+
 		if (cyApplication == null) {
 			haveGUI = false;
-			// Issue error and return
-		}
-		else {
-			NodeViewTaskFactory addNode = new AddNodeViewTaskFactory(sets);
-			Properties addNodeToSetProperties = new Properties();
-			setStandardProperties(addNodeToSetProperties, "Add node to set", "addNode", "3.0");
-			registerService(bc,addNode,NodeViewTaskFactory.class,addNodeToSetProperties);
-			
-			EdgeViewTaskFactory addEdge = new AddEdgeViewTaskFactory(sets);
-			Properties addEdgeToSetProperties = new Properties();
-			setStandardProperties(addEdgeToSetProperties, "Add edge to set", "addEdge", "4.0");
-			registerService(bc, addEdge, EdgeViewTaskFactory.class, addEdgeToSetProperties);
-			
-			NetworkViewTaskFactory createNodeSetTaskFactory = new CreateNodeSetTaskFactory(sets);
-			Properties createNodeSetProperties = new Properties();
-			setStandardProperties(createNodeSetProperties, "Create node set", "createNodeSet", "1.0");
-			registerService(bc, createNodeSetTaskFactory, NetworkViewTaskFactory.class, createNodeSetProperties);
-			
-			NetworkViewTaskFactory createEdgeSetTaskFactory = new CreateEdgeSetTaskFactory(sets);
-			Properties createEdgeSetProperties = new Properties();
-			setStandardProperties(createEdgeSetProperties, "Create edge set", "createEdgeSet", "2.0");
-			registerService(bc, createEdgeSetTaskFactory, NetworkViewTaskFactory.class, createEdgeSetProperties);
-			
+		} else {
 			SetsPane setsPanel = new SetsPane(bc, sets);
 			registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
-			registerService(bc,setsPanel,SessionLoadedListener.class, new Properties());
 		}
-		NetworkTaskFactory createNodeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyIdType.NODE);
+
+		registerService(bc,sets,SessionLoadedListener.class, new Properties());
+
+		NodeViewTaskFactory addNode = new AddNodeViewTaskFactory(sets);
+		Properties addNodeToSetProperties = new Properties();
+		setStandardProperties(addNodeToSetProperties, "Add node to set", "addNode", "3.0");
+		registerService(bc,addNode,NodeViewTaskFactory.class,addNodeToSetProperties);
+
+		NodeViewTaskFactory removeNode = new RemoveNodeViewTaskFactory(sets);
+		Properties removeNodeFromSetProperties = new Properties();
+		setStandardProperties(removeNodeFromSetProperties, "Remove node from set", "removeNode", "4.0");
+		registerService(bc,removeNode,NodeViewTaskFactory.class,removeNodeFromSetProperties);
+			
+		EdgeViewTaskFactory addEdge = new AddEdgeViewTaskFactory(sets);
+		Properties addEdgeToSetProperties = new Properties();
+		setStandardProperties(addEdgeToSetProperties, "Add edge to set", "addEdge", "3.0");
+		registerService(bc, addEdge, EdgeViewTaskFactory.class, addEdgeToSetProperties);
+			
+		EdgeViewTaskFactory removeEdge = new RemoveEdgeViewTaskFactory(sets);
+		Properties removeEdgeFromSetProperties = new Properties();
+		setStandardProperties(removeEdgeFromSetProperties, "Remove edge from set", "removeEdge", "4.0");
+		registerService(bc, removeEdge, EdgeViewTaskFactory.class, removeEdgeFromSetProperties);
+			
+		NetworkViewTaskFactory createNodeSetTaskFactory = new CreateNodeSetTaskFactory(sets);
+		Properties createNodeSetProperties = new Properties();
+		setStandardProperties(createNodeSetProperties, "Create node set", "createNodeSet", "1.0");
+		registerService(bc, createNodeSetTaskFactory, NetworkViewTaskFactory.class, createNodeSetProperties);
+			
+		NetworkViewTaskFactory createEdgeSetTaskFactory = new CreateEdgeSetTaskFactory(sets);
+		Properties createEdgeSetProperties = new Properties();
+		setStandardProperties(createEdgeSetProperties, "Create edge set", "createEdgeSet", "2.0");
+		registerService(bc, createEdgeSetTaskFactory, NetworkViewTaskFactory.class, createEdgeSetProperties);
+			
+		NetworkTaskFactory createNodeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyNode.class);
 		Properties createNodeSetFromAttributesProperties = new Properties();
 		setStandardProperties(createNodeSetFromAttributesProperties, "Create node set from attributes", "createNodeSetFromAttributes", "1.0");
 		registerService(bc, createNodeSetFromAttributes, NetworkTaskFactory.class, createNodeSetFromAttributesProperties);
 		
-		NetworkTaskFactory createEdgeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyIdType.EDGE);
+		NetworkTaskFactory createEdgeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyEdge.class);
 		Properties createEdgeSetFromAttributesProperties = new Properties();
 		setStandardProperties(createEdgeSetFromAttributesProperties, "Create edge set from attributes", "createEdgeSetFromAttributes", "2.0");
 		registerService(bc, createEdgeSetFromAttributes, NetworkTaskFactory.class, createEdgeSetFromAttributesProperties);
 		
-		TaskFactory nodeUnion = new SetOperationsTaskFactory(sets, CyIdType.NODE, SetOperations.UNION);
+		TaskFactory nodeUnion = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.UNION);
 		Properties nodeUnionProperties = new Properties();
-		setStandardProperties(nodeUnionProperties, "Union", "nodeUnion", "1.0");
-		nodeUnionProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
+		setStandardProperties(nodeUnionProperties, null, "nodeUnion", "1.0");
+		// nodeUnionProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
 		registerService(bc,nodeUnion, TaskFactory.class, nodeUnionProperties);
 		
-		TaskFactory nodeIntersect = new SetOperationsTaskFactory(sets, CyIdType.NODE, SetOperations.INTERSECT);
+		TaskFactory nodeIntersect = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.INTERSECT);
 		Properties nodeIntersectProperties = new Properties();
-		setStandardProperties(nodeIntersectProperties, "Intersect", "nodeIntersect", "2.0");
-		nodeIntersectProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
+		setStandardProperties(nodeIntersectProperties, null, "nodeIntersect", "2.0");
+		// nodeIntersectProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
 		registerService(bc,nodeIntersect, TaskFactory.class, nodeIntersectProperties);
 		
-		TaskFactory nodeDifference = new SetOperationsTaskFactory(sets, CyIdType.NODE, SetOperations.DIFFERENCE);
+		TaskFactory nodeDifference = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.DIFFERENCE);
 		Properties nodeDifferenceProperties = new Properties();
-		setStandardProperties(nodeDifferenceProperties, "Difference", "nodeDifference", "3.0");
-		nodeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
+		setStandardProperties(nodeDifferenceProperties, null, "nodeDifference", "3.0");
+		// nodeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
 		registerService(bc,nodeDifference, TaskFactory.class, nodeDifferenceProperties);
 		
-		TaskFactory edgeUnion = new SetOperationsTaskFactory(sets, CyIdType.EDGE, SetOperations.UNION);
+		TaskFactory edgeUnion = new SetOperationsTaskFactory(sets, CyEdge.class, SetOperations.UNION);
 		Properties edgeUnionProperties = new Properties();
-		setStandardProperties(edgeUnionProperties, "Union", "edgeUnion", "1.0");
-		edgeUnionProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
+		setStandardProperties(edgeUnionProperties, null, "edgeUnion", "1.0");
+		// edgeUnionProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
 		registerService(bc,edgeUnion, TaskFactory.class, edgeUnionProperties);
 		
-		TaskFactory edgeIntersection = new SetOperationsTaskFactory(sets, CyIdType.EDGE, SetOperations.INTERSECT);
+		TaskFactory edgeIntersection = new SetOperationsTaskFactory(sets, CyEdge.class, SetOperations.INTERSECT);
 		Properties edgeIntersectProperties = new Properties();
-		setStandardProperties(edgeIntersectProperties, "Intersection", "edgeIntersect", "2.0");
-		edgeIntersectProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
+		setStandardProperties(edgeIntersectProperties, null, "edgeIntersect", "2.0");
+		// edgeIntersectProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
 		registerService(bc,edgeIntersection, TaskFactory.class, edgeIntersectProperties);
 		
-		TaskFactory edgeDifference = new SetOperationsTaskFactory(sets, CyIdType.EDGE, SetOperations.DIFFERENCE);
+		TaskFactory edgeDifference = new SetOperationsTaskFactory(sets, CyEdge.class, SetOperations.DIFFERENCE);
 		Properties edgeDifferenceProperties = new Properties();
-		setStandardProperties(edgeDifferenceProperties, "Difference", "edgeDifference", "3.0");
-		edgeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
+		setStandardProperties(edgeDifferenceProperties, null, "edgeDifference", "3.0");
+		// edgeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Edge");
 		registerService(bc,edgeDifference, TaskFactory.class, edgeDifferenceProperties);
 		
 		TaskFactory renameSet = new RenameSetTaskFactory(sets);
 		Properties renameSetProperties = new Properties();
-		setStandardProperties(renameSetProperties, "Rename Set", "renameSet", "3.0");
+		setStandardProperties(renameSetProperties, null, "renameSet", "3.0");
 		registerService(bc, renameSet, TaskFactory.class, renameSetProperties);
 		
 		TaskFactory removeSet = new RemoveSetTaskFactory(sets);
 		Properties removeSetProperties = new Properties();
-		setStandardProperties(removeSetProperties, "Remove Set", "removeSet", "4.0");
+		setStandardProperties(removeSetProperties, null, "removeSet", "4.0");
 		registerService(bc, removeSet, TaskFactory.class, removeSetProperties);
 		
-		NetworkTaskFactory createSetFromFile = new CreateSetFromFileTaskFactory(sets);
+		TaskFactory createNodeSetFromFile = new CreateSetFromFileTaskFactory(sets, networkManager);
 		Properties setFromFileProperties = new Properties();
-		setStandardProperties(setFromFileProperties, "Create set from file", "createSetFromFile", "5.0");
-		registerService(bc, createSetFromFile, NetworkTaskFactory.class, setFromFileProperties);
-		
-		NetworkTaskFactory writeNodeSet = new WriteSetToFileTaskFactory(sets, CyIdType.NODE);
+		setStandardProperties(setFromFileProperties, "Import set from file", "create", "5.0");
+		registerService(bc, createNodeSetFromFile, TaskFactory.class, setFromFileProperties);
+
+		NetworkTaskFactory writeNodeSet = new WriteSetToFileTaskFactory(sets, CyNode.class);
 		Properties writeNodeSetProperties = new Properties();
-		setStandardProperties(writeNodeSetProperties, "Write node set to file", "writeNodeSet", "6.0");
+		setStandardProperties(writeNodeSetProperties, null, "writeNodeSet", "6.0");
 		registerService(bc, writeNodeSet, NetworkTaskFactory.class, writeNodeSetProperties);
 		
-		NetworkTaskFactory writeEdgeSet = new WriteSetToFileTaskFactory(sets, CyIdType.EDGE);
+		NetworkTaskFactory writeEdgeSet = new WriteSetToFileTaskFactory(sets, CyEdge.class);
 		Properties writeEdgeSetProperties = new Properties();
-		setStandardProperties(writeEdgeSetProperties, "Write edge set to file", "writeEdgeSet", "7.0");
+		setStandardProperties(writeEdgeSetProperties, null, "writeEdgeSet", "7.0");
 		registerService(bc, writeEdgeSet, NetworkTaskFactory.class, writeEdgeSetProperties);
 		
-		NetworkCollectionTaskFactory moveSet = new MoveSetTaskFactory(sets);
-		Properties moveSetProperties = new Properties();
-		setStandardProperties(moveSetProperties, "Move set to another network", "moveSet", "4.5");
-		registerService(bc, moveSet, NetworkCollectionTaskFactory.class, moveSetProperties);
+		NetworkCollectionTaskFactory copySet = new CopySetTaskFactory(sets);
+		Properties copySetProperties = new Properties();
+		setStandardProperties(copySetProperties, null, "copySet", "4.5");
+		registerService(bc, copySet, NetworkCollectionTaskFactory.class, copySetProperties);
 		
-	/*	TaskFactory createSetTaskFactory = new CreateSetTaskFactory();
-		Properties createSetTaskProps = new Properties();
-		// These are just example properties for placing the factory in the apps menu
-		createSetTaskProps.setProperty(PREFERRED_MENU, "Apps.SetsApp");
-		createSetTaskProps.setProperty(TITLE, "Create set");
-		createSetTaskProps.setProperty(COMMAND, "createSet");
-		createSetTaskProps.setProperty(COMMAND_NAMESPACE, "setsApp");
-		createSetTaskProps.setProperty(ENABLE_FOR, "network");
-		createSetTaskProps.setProperty(IN_MENU_BAR, "true");
-		createSetTaskProps.setProperty(MENU_GRAVITY, "1.0");
-		
-		Iterator<CyNetworkView> networkViewSet = networkViewManager.getNetworkViewSet().iterator();
-		CyNetwork cyNetwork = networkViewSet.next().getModel(); */
-	/*	TaskManager task = getService(bc, TaskManager.class);
-		task.execute(createSetTaskFactory.createTaskIterator()); */
-		
-	/*	registerService(bc, createSetTaskFactory, NetworkTaskFactory.class, createSetTaskProps); */
+
+		// Now that everything is initialized, ask the SetsManager to look for any existing
+		// sets
+		sets.initialize();
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {
-		p.setProperty(TITLE, title);
-		p.setProperty(PREFERRED_MENU, "Apps.SetsApp");
+		if (title != null) {
+			p.setProperty(TITLE, title);
+			p.setProperty(PREFERRED_MENU, "Apps.SetsApp");
+			p.setProperty(IN_MENU_BAR,"false");
+			p.setProperty(MENU_GRAVITY, gravity);
+		}
 		p.setProperty(COMMAND,command);
 		p.setProperty(COMMAND_NAMESPACE,"setsApp");
-		p.setProperty(IN_MENU_BAR,"false");
-		p.setProperty(MENU_GRAVITY, gravity);
 	}
 }

@@ -6,6 +6,8 @@ import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
 public class CreateEdgeSetTaskFactory extends AbstractNetworkViewTaskFactory {
 	
 	private SetsManager mgr;

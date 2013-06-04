@@ -3,13 +3,14 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
-import edu.ucsf.rbvi.setsApp.internal.SetOperations;
+import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class SetOperationsTask extends AbstractTask {
 	@Tunable(description="Enter a name for the new set:")
@@ -22,9 +23,9 @@ public class SetOperationsTask extends AbstractTask {
 	private SetOperations operation;
 	private String s1, s2;
 	
-	public SetOperationsTask(SetsManager setsManager, CyIdType type, SetOperations s) {
+	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
-		List<String> attr = getSelectedSets(type); 
+		List<String> attr = sm.getSetNames(type); 
 		seT1 = new ListSingleSelection<String>(attr);
 		seT2 = new ListSingleSelection<String>(attr);
 		operation = s;
@@ -37,22 +38,6 @@ public class SetOperationsTask extends AbstractTask {
 		s1 = set1;
 		s2 = set2;
 		operation = s;
-	}
-	
-	private List<String> getSelectedSets(CyIdType type) {
-		ArrayList<String> selectSet = new ArrayList<String>();
-		List<String> mySetNames = sm.getSetNames();
-		if (type == CyIdType.NODE) {
-			for (String s: mySetNames)
-				if (sm.getType(s) == CyIdType.NODE)
-					selectSet.add(s);
-		}
-		if (type == CyIdType.EDGE) {
-			for (String s: mySetNames)
-				if (sm.getType(s) == CyIdType.EDGE)
-					selectSet.add(s);
-		}
-		return selectSet;
 	}
 	
 	@Override

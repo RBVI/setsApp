@@ -7,6 +7,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
 public class AddNodeViewTaskFactory extends AbstractNodeViewTaskFactory {
 	
 	private SetsManager mgr;

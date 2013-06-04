@@ -1,17 +1,18 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.task.AbstractNetworkTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 
 public class WriteSetToFileTaskFactory extends AbstractNetworkTaskFactory {
 	private SetsManager mgr;
-	private CyIdType type;
+	private Class<? extends CyIdentifiable> type;
 	
-	public WriteSetToFileTaskFactory(SetsManager manager, CyIdType t) {
+	public WriteSetToFileTaskFactory(SetsManager manager, Class<? extends CyIdentifiable> t) {
 		mgr = manager;
 		type = t;
 	}

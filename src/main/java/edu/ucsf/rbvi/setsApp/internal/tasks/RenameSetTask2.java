@@ -5,6 +5,8 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
 public class RenameSetTask2 extends AbstractTask {
 	@Tunable(description="Enter new name for set:")
 	public String newName;

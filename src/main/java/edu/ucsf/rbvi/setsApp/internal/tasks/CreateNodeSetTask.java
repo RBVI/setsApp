@@ -1,17 +1,26 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import java.util.List;
+
+import org.cytoscape.model.CyNode;
+import org.cytoscape.model.CyNetwork;
+import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class CreateNodeSetTask extends AbstractTask {
 	
-	@Tunable(description="Enter a name for the set:")
+	@Tunable(description="Enter a name for the set:",tooltip="The set name must be unique and will appear in the 'Sets' panel",gravity=1.0)
 	public String name;
+
+	@Tunable(description="List of nodes for selection",context="nogui",gravity=2.0)
+	public String nodeList;
+
 	private SetsManager mgr;
 	private CyNetworkView cnv;
 	
@@ -21,8 +30,8 @@ public class CreateNodeSetTask extends AbstractTask {
 	}
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		// TODO Auto-generated method stub
-		mgr.createSetFromNetworkView(name, cnv, CyIdType.NODE);
+		List<CyNode> nodes = CyTableUtil.getNodesInState(cnv.getModel(), CyNetwork.SELECTED, true);
+		mgr.createSet(name, cnv.getModel(), CyNode.class, nodes);
 	}
 
 }

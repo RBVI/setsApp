@@ -11,10 +11,10 @@ import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
 
-import edu.ucsf.rbvi.setsApp.internal.CyIdType;
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class CopyCyIdTask extends AbstractTask {
-	@Tunable(description="Select set to move/copy to:")
+	@Tunable(description="Select set to copy to:")
 	public ListSingleSelection<String> sets;
 	private SetsManager mgr;
 	private CyIdentifiable cyId;
@@ -23,29 +23,13 @@ public class CopyCyIdTask extends AbstractTask {
 		mgr = manager;
 		cyId = cyid;
 		if (cyid instanceof CyNode)
-			sets = new ListSingleSelection<String>(getSelectedSets(CyIdType.NODE));
+			sets = new ListSingleSelection<String>(mgr.getSetNames(CyNode.class));
 		if (cyid instanceof CyEdge)
-			sets = new ListSingleSelection<String>(getSelectedSets(CyIdType.EDGE));
+			sets = new ListSingleSelection<String>(mgr.getSetNames(CyEdge.class));
 	}
 	
-	private List<String> getSelectedSets(CyIdType type) {
-		ArrayList<String> selectSet = new ArrayList<String>();
-		List<String> mySetNames = mgr.getSetNames();
-		if (type == CyIdType.NODE) {
-			for (String s: mySetNames)
-				if (mgr.getType(s) == CyIdType.NODE)
-					selectSet.add(s);
-		}
-		if (type == CyIdType.EDGE) {
-			for (String s: mySetNames)
-				if (mgr.getType(s) == CyIdType.EDGE)
-					selectSet.add(s);
-		}
-		return selectSet;
-	}
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		// TODO Auto-generated method stub
 		mgr.addToSet(sets.getSelectedValue(), cyId);
 	}
 

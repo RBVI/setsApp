@@ -1,24 +1,23 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
 import org.cytoscape.model.CyNetwork;
-import org.cytoscape.task.AbstractNetworkTaskFactory;
+import org.cytoscape.model.CyNetworkManager;
+import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
-public class CreateSetFromFileTaskFactory extends AbstractNetworkTaskFactory {
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
+public class CreateSetFromFileTaskFactory extends AbstractTaskFactory {
 	private SetsManager mgr;
+	private CyNetworkManager netMgr;
 	
-	public boolean isReady(CyNetwork network) {
-		if (super.isReady(network) && mgr.setsCount() != 0)
-			return true;
-		else return false;
-	}
-	
-	public CreateSetFromFileTaskFactory(SetsManager manager) {
+	public CreateSetFromFileTaskFactory(SetsManager manager, CyNetworkManager netMgr) {
 		mgr = manager;
+		this.netMgr = netMgr;
 	}
 	
-	public TaskIterator createTaskIterator(CyNetwork arg0) {
-		return new TaskIterator(new CreateSetFromFileTask3(mgr, arg0));
+	public TaskIterator createTaskIterator() {
+		return new TaskIterator(new CreateSetFromFileTask(mgr, netMgr));
 	}
 
 }

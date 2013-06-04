@@ -3,6 +3,8 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
 public class RemoveSetTaskFactory extends AbstractTaskFactory {
 	private SetsManager mgr;
 	

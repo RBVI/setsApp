@@ -8,6 +8,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.View;
 import org.cytoscape.work.TaskIterator;
 
+import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
+
 public class AddEdgeViewTaskFactory extends AbstractEdgeViewTaskFactory {
 	
 	private SetsManager mgr;
