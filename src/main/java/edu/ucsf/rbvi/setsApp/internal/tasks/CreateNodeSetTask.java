@@ -15,11 +15,14 @@ import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class CreateNodeSetTask extends AbstractTask {
 	
-	@Tunable(description="Enter a name for the set:",tooltip="The set name must be unique and will appear in the 'Sets' panel",gravity=1.0)
+	// This will require Cytoscape 3.1
+	// @Tunable(description="Enter a name for the set:",tooltip="The set name must be unique and will appear in the 'Sets' panel",gravity=1.0)
+	@Tunable(description="Enter a name for the set:")
 	public String name;
 
-	@Tunable(description="List of nodes for selection",context="nogui",gravity=2.0)
-	public String nodeList;
+	// This will require Cytoscape 3.1
+	// @Tunable(description="List of nodes for selection",context="nogui",gravity=2.0)
+	// public String nodeList;
 
 	private SetsManager mgr;
 	private CyNetworkView cnv;

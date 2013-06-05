@@ -31,13 +31,15 @@ public class CreateSetFromFileTask extends AbstractTask {
 	@ProvidesTitle
 	public String getTitle() { return "Import set from file"; }
 
-	@Tunable(description="Type of set to import:", gravity=1.0)
+	// @Tunable(description="Type of set to import:", gravity=1.0)
+	@Tunable(description="Type of set to import:")
 	public ListSingleSelection<String> getType() {
 		return type;
 	}
 	public void setType(ListSingleSelection<String>input) {}
 
-	@Tunable(description="Select column to use for ID:", listenForChange="Type", gravity=2.0)
+	// @Tunable(description="Select column to use for ID:", listenForChange="Type", gravity=2.0)
+	@Tunable(description="Select column to use for ID:", listenForChange="Type")
 	public ListSingleSelection<String> getColumns() {
 		if (type.getSelectedValue().equals("Node")) {
 			return nodesColumn;
@@ -51,7 +53,8 @@ public class CreateSetFromFileTask extends AbstractTask {
 
 	public ListSingleSelection<String> edgesColumn = null;
 
-	@Tunable(description="Enter name for new set:", gravity=.5)
+	// @Tunable(description="Enter name for new set:", gravity=.5)
+	@Tunable(description="Enter name for new set:")
 	public String name;
 
 	@Tunable(description="File containing set data", params="input=true;fileCategory=unspecified")
