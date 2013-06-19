@@ -45,7 +45,8 @@ public class Set <T extends CyIdentifiable> {
 		this.network = network;
 		this.setType = setType;
 		set = new HashMap<Long, T>();
-		addElements(cyIds);
+		if (cyIds != null && !cyIds.isEmpty())
+			addElements(cyIds);
 	}
 	
 	/**

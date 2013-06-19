@@ -137,5 +137,6 @@ public class CreateSetFromFileTask extends AbstractTask {
 			// Now, add our matches to our set
 			newSet.addElementsByID(new ArrayList<Long>(matches));
 		}
+		mgr.addSet(newSet);
 	}
 }
