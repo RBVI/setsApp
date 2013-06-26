@@ -59,6 +59,8 @@ import edu.ucsf.rbvi.setsApp.internal.ui.SetsPane;
 public class CyActivator extends AbstractCyActivator {
 	private static Logger logger = LoggerFactory
 			.getLogger(edu.ucsf.rbvi.setsApp.internal.CyActivator.class);
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public CyActivator() {
 		super();
@@ -190,6 +192,7 @@ public class CyActivator extends AbstractCyActivator {
 		// Now that everything is initialized, ask the SetsManager to look for any existing
 		// sets
 		sets.initialize();
+		messages.info("setsApp started");
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {

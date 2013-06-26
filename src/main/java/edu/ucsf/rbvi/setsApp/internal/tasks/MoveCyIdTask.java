@@ -10,6 +10,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
@@ -20,6 +22,8 @@ public class MoveCyIdTask extends AbstractTask {
 	private SetsManager mgr;
 	private CyIdentifiable cyId;
 	private String setName;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public MoveCyIdTask (SetsManager manager, String s, CyIdentifiable cyid) {
 		mgr = manager;
@@ -33,9 +37,9 @@ public class MoveCyIdTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		// TODO Auto-generated method stub
 		mgr.addToSet(sets.getSelectedValue(), cyId);
 		mgr.removeFromSet(setName, cyId);
+		messages.info("Moved "+cyId+" from set "+sets.getSelectedValue()+" to set "+setName);
 	}
 
 }

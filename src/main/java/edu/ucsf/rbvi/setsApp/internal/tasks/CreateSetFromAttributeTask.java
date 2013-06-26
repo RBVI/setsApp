@@ -16,6 +16,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
@@ -30,6 +32,8 @@ public class CreateSetFromAttributeTask extends AbstractTask {
 	private String newName;
 	private	Map<String, Set<? extends CyIdentifiable>> cySet;
 	private Class<? extends CyIdentifiable> type;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 
 	public CreateSetFromAttributeTask(SetsManager mgr, CyNetwork network, Class<? extends CyIdentifiable> t) {
 		setsManager = mgr;
@@ -59,6 +63,7 @@ public class CreateSetFromAttributeTask extends AbstractTask {
 		for (String s: cySet.keySet()) {
 			setsManager.addSet(cySet.get(s));
 		}
+		messages.info("Created "+cySet.keySet().size()+" new sets");
 	}
 
 	private void addSet(String attrName, Long cyId) {

@@ -9,6 +9,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
@@ -22,6 +24,8 @@ public class CopySetTask extends AbstractTask {
 	@Tunable(description="Select set to copy:")
 	public ListSingleSelection<String> selectSet;
 	private String movingSet;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public CopySetTask(SetsManager manager, Collection<CyNetwork> networkManager) {
 		mgr = manager;
@@ -39,10 +43,13 @@ public class CopySetTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		if (selectSet != null)
+		if (selectSet != null) {
 			mgr.moveSet(selectSet.getSelectedValue(), newSet, networks.getSelectedValue());
-		else
+			messages.info("Copied set "+selectSet.getSelectedValue()+" to "+newSet+" in network "+networks.getSelectedValue());
+		} else {
 			mgr.moveSet(movingSet, newSet, networks.getSelectedValue());
+			messages.info("Copied set "+movingSet+" to "+newSet+" in network "+networks.getSelectedValue());
+		}
 	}
 
 }

@@ -8,6 +8,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
@@ -22,6 +24,8 @@ public class SetOperationsTask extends AbstractTask {
 	private SetsManager sm;
 	private SetOperations operation;
 	private String s1, s2;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;

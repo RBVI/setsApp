@@ -10,6 +10,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
@@ -26,6 +28,9 @@ public class CreateNodeSetTask extends AbstractTask {
 
 	private SetsManager mgr;
 	private CyNetworkView cnv;
+
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public CreateNodeSetTask(SetsManager manager, CyNetworkView view) {
 		mgr = manager;
@@ -35,6 +40,10 @@ public class CreateNodeSetTask extends AbstractTask {
 	public void run(TaskMonitor arg0) throws Exception {
 		List<CyNode> nodes = CyTableUtil.getNodesInState(cnv.getModel(), CyNetwork.SELECTED, true);
 		mgr.createSet(name, cnv.getModel(), CyNode.class, nodes);
+		if (nodes == null)
+			messages.info("Created new empty node set: "+name);
+		else
+			messages.info("Created new node set: "+name+" with "+nodes.size()+" nodes");
 	}
 
 }

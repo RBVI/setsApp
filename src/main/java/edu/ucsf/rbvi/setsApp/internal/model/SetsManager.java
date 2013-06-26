@@ -209,9 +209,10 @@ public class SetsManager implements SessionLoadedListener {
 
 	public void removeSet(String name) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
-		setsMap.remove(name);
 		String setTableName = TABLE_PREFIX + name;
 		CyNetwork cyNetwork = getCyNetwork(name);
+		// This needs to be after the call to getCyNetwork
+		setsMap.remove(name);
 		CyTable nodeTable = cyNetwork.getTable(CyNode.class, CyNetwork.HIDDEN_ATTRS);
 		CyTable edgeTable = cyNetwork.getTable(CyEdge.class, CyNetwork.HIDDEN_ATTRS);
 		if (nodeTable.getColumn(setTableName) != null)

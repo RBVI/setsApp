@@ -10,6 +10,8 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
@@ -18,6 +20,8 @@ public class CopyCyIdTask extends AbstractTask {
 	public ListSingleSelection<String> sets;
 	private SetsManager mgr;
 	private CyIdentifiable cyId;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public CopyCyIdTask (SetsManager manager, CyIdentifiable cyid) {
 		mgr = manager;

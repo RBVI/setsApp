@@ -20,6 +20,8 @@ import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
@@ -62,6 +64,8 @@ public class CreateSetFromFileTask extends AbstractTask {
 	
 	private SetsManager mgr;
 	private CyNetwork network = null;
+	private static Logger messages = LoggerFactory
+			.getLogger("CyUserMessages.setsApp");
 	
 	public CreateSetFromFileTask(SetsManager setsManager, CyNetworkManager cnm) {
 		mgr = setsManager;
@@ -136,6 +140,13 @@ public class CreateSetFromFileTask extends AbstractTask {
 		if (matches.size() > 0) {
 			// Now, add our matches to our set
 			newSet.addElementsByID(new ArrayList<Long>(matches));
+		}
+		mgr.addSet(newSet);
+
+		if (setType == CyNode.class) {
+			messages.info("Created new node set '"+name+"' with "+matches.size()+" nodes ");
+		} else {
+			messages.info("Created new edge set '"+name+"' with "+matches.size()+" edges ");
 		}
 	}
 }
