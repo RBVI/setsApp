@@ -65,9 +65,18 @@ public class WriteSetToFileTask3 extends AbstractExportSetTask {
 	public void run(TaskMonitor arg0) throws Exception {
 		if (network != null && column != null && selectSet != null) {
 			if (!setFile.exists()) {
-				exportSetToStream(selectSet.getSelectedValue(), column.getSelectedValue(), setFile);
+				try {
+					exportSetToStream(selectSet.getSelectedValue(), column.getSelectedValue(), setFile);
+					arg0.showMessage(TaskMonitor.Level.INFO,
+					                 "Exported set "+selectSet.getSelectedValue()+" to "+setFile.getName());
+				} catch (IOException e) {
+					arg0.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
+				}
+			} else {
+				arg0.showMessage(TaskMonitor.Level.WARN,
+				                 "Unable to export set "+selectSet.getSelectedValue()+
+				                 " to "+setFile.getName()+": file already exists");
 			}
-			else throw new IOException("File " + setFile.getName() + " already exists.");
 		}
 	}
 

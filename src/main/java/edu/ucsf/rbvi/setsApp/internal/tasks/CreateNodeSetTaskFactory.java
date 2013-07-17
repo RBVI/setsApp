@@ -4,13 +4,18 @@ import org.cytoscape.model.CyNetwork;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTaskFactory;
 import org.cytoscape.view.model.CyNetworkView;
+import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskIterator;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class CreateNodeSetTaskFactory extends AbstractNetworkViewTaskFactory {
+public class CreateNodeSetTaskFactory extends AbstractNetworkViewTaskFactory implements TaskFactory {
 	
 	private SetsManager mgr;
+	
+	public CreateNodeSetTaskFactory(SetsManager manager) {
+		mgr = manager;
+	}
 	
 	@Override
 	public boolean isReady(CyNetworkView networkView) {
@@ -19,14 +24,19 @@ public class CreateNodeSetTaskFactory extends AbstractNetworkViewTaskFactory {
 				return true;
 		return false;
 	}
-	
-	public CreateNodeSetTaskFactory(SetsManager manager) {
-		mgr = manager;
+
+	public boolean isReady () {
+		return isReady(mgr.getCurrentNetworkView());
 	}
 	
 	public TaskIterator createTaskIterator(CyNetworkView arg0) {
-		// TODO Auto-generated method stub
+		System.out.println("NetworkViewTaskFactory createNodeSet");
 		return new TaskIterator(new CreateNodeSetTask(mgr,arg0));
+	}
+
+	public TaskIterator createTaskIterator() {
+		System.out.println("TaskFactory createNodeSet");
+		return createTaskIterator(mgr.getCurrentNetworkView());
 	}
 
 }

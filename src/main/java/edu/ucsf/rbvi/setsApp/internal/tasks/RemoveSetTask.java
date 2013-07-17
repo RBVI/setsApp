@@ -4,8 +4,6 @@ import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
@@ -14,8 +12,6 @@ public class RemoveSetTask extends AbstractTask {
 	@Tunable(description="Select set to remove")
 	public ListSingleSelection<String> name;
 	public String setName;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 	
 	public RemoveSetTask(SetsManager manager) {
 		mgr = manager;
@@ -31,10 +27,12 @@ public class RemoveSetTask extends AbstractTask {
 	public void run(TaskMonitor arg0) throws Exception {
 		if (name != null) {
 			mgr.removeSet(name.getSelectedValue());
-			messages.info("Removed set "+name.getSelectedValue());
+			arg0.showMessage(TaskMonitor.Level.INFO, 
+			                 "Removed set "+name.getSelectedValue());
 		} else {
 			mgr.removeSet(setName);
-			messages.info("Removed set "+setName);
+			arg0.showMessage(TaskMonitor.Level.INFO, 
+			                 "Removed set "+setName);
 		}
 	}
 

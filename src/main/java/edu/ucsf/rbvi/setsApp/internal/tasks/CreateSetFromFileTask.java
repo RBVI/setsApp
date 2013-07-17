@@ -16,17 +16,16 @@ import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.ProvidesTitle;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class CreateSetFromFileTask extends AbstractTask {
+public class CreateSetFromFileTask extends AbstractTask implements ObservableTask {
 
 	private ListSingleSelection<String> type = new ListSingleSelection<String>("Node", "Edge");
 
@@ -64,8 +63,7 @@ public class CreateSetFromFileTask extends AbstractTask {
 	
 	private SetsManager mgr;
 	private CyNetwork network = null;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
+	private TaskMonitor monitor = null;
 	
 	public CreateSetFromFileTask(SetsManager setsManager, CyNetworkManager cnm) {
 		mgr = setsManager;
@@ -101,17 +99,29 @@ public class CreateSetFromFileTask extends AbstractTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		this.monitor = arg0;
 		if (network != null && nodesColumn != null) {
 			BufferedReader reader = new BufferedReader(new FileReader(setFile));
-			if (! nodesColumn.getSelectedValue().equals("none") && edgesColumn.getSelectedValue().equals("none"))
+			if (! nodesColumn.getSelectedValue().equals("none") && 
+			    edgesColumn.getSelectedValue().equals("none"))
 				createSetFromStream(name, nodesColumn.getSelectedValue(), reader, CyNode.class);
-			if (! edgesColumn.getSelectedValue().equals("none") && nodesColumn.getSelectedValue().equals("none"))
+			if (! edgesColumn.getSelectedValue().equals("none") && 
+			    nodesColumn.getSelectedValue().equals("none"))
 				createSetFromStream(name, edgesColumn.getSelectedValue(), reader, CyEdge.class);
 		}
 	}
 
+	// Return the updated set
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			return mgr.getSet(name).toString();
+		}
+		return mgr.getSet(name);
+	}
+
 	private void createSetFromStream(String name, String column, 
-	                                 BufferedReader reader, Class<? extends CyIdentifiable> setType) throws Exception {
+	                                 BufferedReader reader, 
+	                                 Class<? extends CyIdentifiable> setType) throws Exception {
 		if (mgr.getSet(name) != null)
 			throw new Exception("Set \"" + name + "\" already exists. Choose a different name.");
 
@@ -144,9 +154,11 @@ public class CreateSetFromFileTask extends AbstractTask {
 		mgr.addSet(newSet);
 
 		if (setType == CyNode.class) {
-			messages.info("Created new node set '"+name+"' with "+matches.size()+" nodes ");
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+			                    "Created new node set '"+name+"' with "+matches.size()+" nodes ");
 		} else {
-			messages.info("Created new edge set '"+name+"' with "+matches.size()+" edges ");
+			monitor.showMessage(TaskMonitor.Level.INFO, 
+			                    "Created new edge set '"+name+"' with "+matches.size()+" edges ");
 		}
 	}
 }

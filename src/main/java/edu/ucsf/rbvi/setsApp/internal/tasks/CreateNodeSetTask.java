@@ -8,14 +8,13 @@ import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.task.AbstractNetworkViewTask;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class CreateNodeSetTask extends AbstractTask {
+public class CreateNodeSetTask extends AbstractTask implements ObservableTask {
 	
 	// This will require Cytoscape 3.1
 	// @Tunable(description="Enter a name for the set:",tooltip="The set name must be unique and will appear in the 'Sets' panel",gravity=1.0)
@@ -29,21 +28,32 @@ public class CreateNodeSetTask extends AbstractTask {
 	private SetsManager mgr;
 	private CyNetworkView cnv;
 
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
-	
 	public CreateNodeSetTask(SetsManager manager, CyNetworkView view) {
 		mgr = manager;
 		cnv = view;
 	}
+
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		List<CyNode> nodes = CyTableUtil.getNodesInState(cnv.getModel(), CyNetwork.SELECTED, true);
+		arg0.showMessage(TaskMonitor.Level.INFO,
+		                 "Creating set "+name+" with "+nodes.size()+" nodes");
 		mgr.createSet(name, cnv.getModel(), CyNode.class, nodes);
+	
 		if (nodes == null)
-			messages.info("Created new empty node set: "+name);
+			arg0.showMessage(TaskMonitor.Level.INFO, 
+			                 "Created new empty node set: "+name);
 		else
-			messages.info("Created new node set: "+name+" with "+nodes.size()+" nodes");
+			arg0.showMessage(TaskMonitor.Level.INFO, 
+			                 "Created new node set: "+name+" with "+nodes.size()+" nodes");
+	}
+
+	// Return the updated set
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			return mgr.getSet(name).toString();
+		}
+		return mgr.getSet(name);
 	}
 
 }

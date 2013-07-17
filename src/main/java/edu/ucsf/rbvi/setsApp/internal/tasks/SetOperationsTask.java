@@ -5,16 +5,15 @@ import java.util.List;
 
 import org.cytoscape.model.CyIdentifiable;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class SetOperationsTask extends AbstractTask {
+public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Enter a name for the new set:")
 	public String setName;
 	@Tunable(description="Select name of second set:")
@@ -24,8 +23,6 @@ public class SetOperationsTask extends AbstractTask {
 	private SetsManager sm;
 	private SetOperations operation;
 	private String s1, s2;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 	
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
@@ -58,16 +55,30 @@ public class SetOperationsTask extends AbstractTask {
 		switch (operation) {
 		case INTERSECT:
 			sm.intersection(setName, set1, set2);
+			arg0.showMessage(TaskMonitor.Level.INFO,
+			                 "Putting the intersection of "+set1+" and "+set2+" into "+setName);
 			break;
 		case DIFFERENCE:
 			sm.difference(setName, set1, set2);
+			arg0.showMessage(TaskMonitor.Level.INFO,
+			                 "Putting the difference of "+set1+" and "+set2+" into "+setName);
 			break;
 		case UNION:
 			sm.union(setName, set1, set2);
+			arg0.showMessage(TaskMonitor.Level.INFO,
+			                 "Putting the union of "+set1+" and "+set2+" into "+setName);
 			break;
 		default:
 			break;
 		}
+	}
+
+	// Return the updated set
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			return sm.getSet(setName).toString();
+		}
+		return sm.getSet(setName);
 	}
 
 }

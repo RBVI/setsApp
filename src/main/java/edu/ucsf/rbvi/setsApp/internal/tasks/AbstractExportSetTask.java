@@ -21,8 +21,6 @@ import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 abstract public class AbstractExportSetTask extends AbstractTask {
 	private SetsManager mgr;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 
 	public AbstractExportSetTask(SetsManager mgr) {
 		this.mgr = mgr;
@@ -45,14 +43,12 @@ abstract public class AbstractExportSetTask extends AbstractTask {
 				for (CyIdentifiable cyId: cyIds)
 					writer.write(table.getRow(cyId.getSUID()).get(column, String.class) + "\n");
 			} catch (IOException e) {
-				messages.error("Could not write to file: "+writer.toString() + "["+e.getMessage()+"]");
 				throw new IOException("Cannot write to file: " + writer.toString() + "["+e.getMessage()+"]");
 			}
 		}
 		try {
 			writer.close();
 		} catch (IOException e) {
-			messages.error("Error writing to file: "+writer.toString() + "["+e.getMessage()+"]");
 			throw new IOException("Problems writing to stream: " + writer.toString() + "["+e.getMessage()+"]");
 		}
 	}

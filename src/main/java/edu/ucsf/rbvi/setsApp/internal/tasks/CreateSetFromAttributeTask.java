@@ -13,27 +13,24 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class CreateSetFromAttributeTask extends AbstractTask {
+public class CreateSetFromAttributeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Select the name of the column:")
 	public ListSingleSelection<String> colName;
-	@Tunable(description="Enter a name for the set:")
+	@Tunable(description="Enter a prefix for the sets:")
 	public String setName;
 	private SetsManager setsManager;
 	private CyNetwork cyNetwork = null;
 	private String newName;
 	private	Map<String, Set<? extends CyIdentifiable>> cySet;
 	private Class<? extends CyIdentifiable> type;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 
 	public CreateSetFromAttributeTask(SetsManager mgr, CyNetwork network, Class<? extends CyIdentifiable> t) {
 		setsManager = mgr;
@@ -63,7 +60,19 @@ public class CreateSetFromAttributeTask extends AbstractTask {
 		for (String s: cySet.keySet()) {
 			setsManager.addSet(cySet.get(s));
 		}
-		messages.info("Created "+cySet.keySet().size()+" new sets");
+		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
+			                      "Created "+cySet.keySet().size()+" new sets");
+	}
+
+	// Return the updated sets	
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			String str = "[";
+			for (Set s: cySet.values())
+				str += s.toString()+",";
+			return str.substring(0, str.length()-1)+"]";
+		}
+		return cySet.values();
 	}
 
 	private void addSet(String attrName, Long cyId) {

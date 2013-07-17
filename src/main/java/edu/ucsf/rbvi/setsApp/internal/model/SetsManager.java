@@ -11,6 +11,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -34,11 +35,13 @@ public class SetsManager implements SessionLoadedListener {
 	private ConcurrentHashMap<String, Set<? extends CyIdentifiable>> setsMap;
 	private ArrayList<SetChangedListener> setChangedListener = new ArrayList<SetChangedListener>();
 	private CyNetworkManager netMgr;
+	private CyApplicationManager appMgr;
 	public static final String TABLE_PREFIX = "setsApp:";
 	
-	public SetsManager(CyNetworkManager netMgr) {
+	public SetsManager(CyNetworkManager netMgr, CyApplicationManager appMgr) {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		this.netMgr = netMgr;
+		this.appMgr = appMgr;
 	}
 	
 	public int setsCount() {return setsMap.size();}
@@ -66,6 +69,14 @@ public class SetsManager implements SessionLoadedListener {
 		if (setsMap.containsKey(name))
 			return setsMap.get(name).getNetwork();
 		return null;
+	}
+
+	public CyNetwork getCurrentNetwork() {
+		return appMgr.getCurrentNetwork();
+	}
+
+	public CyNetworkView getCurrentNetworkView() {
+		return appMgr.getCurrentNetworkView();
 	}
 	
 	public List<String> getSetNames() {

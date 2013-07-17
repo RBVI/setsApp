@@ -5,21 +5,18 @@ import java.util.List;
 
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.work.AbstractTask;
+import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
 import org.cytoscape.work.Tunable;
 import org.cytoscape.work.util.ListSingleSelection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
-public class RemoveEdgeTask extends AbstractTask {
+public class RemoveEdgeTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Select set to remove edges from:")
 	public ListSingleSelection<String> sets;
 	private SetsManager mgr;
 	private CyEdge edge;
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 	
 	public RemoveEdgeTask (SetsManager manager, CyEdge cyEdge) {
 		mgr = manager;
@@ -30,7 +27,16 @@ public class RemoveEdgeTask extends AbstractTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		mgr.removeFromSet(sets.getSelectedValue(), edge);
-		messages.info("Removed edge "+edge+" from set "+sets.getSelectedValue());
+		arg0.showMessage(TaskMonitor.Level.INFO, 
+		                 "Removed edge "+edge+" from set "+sets.getSelectedValue());
+	}
+
+	// Return the updated set
+	public Object getResults(Class expectedType) {
+		if (expectedType.equals(String.class)) {
+			return mgr.getSet(sets.getSelectedValue()).toString();
+		}
+		return mgr.getSet(sets.getSelectedValue());
 	}
 
 }

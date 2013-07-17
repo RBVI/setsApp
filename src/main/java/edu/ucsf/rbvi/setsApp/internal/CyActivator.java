@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.io.BasicCyFileFilter;
@@ -59,8 +60,6 @@ import edu.ucsf.rbvi.setsApp.internal.ui.SetsPane;
 public class CyActivator extends AbstractCyActivator {
 	private static Logger logger = LoggerFactory
 			.getLogger(edu.ucsf.rbvi.setsApp.internal.CyActivator.class);
-	private static Logger messages = LoggerFactory
-			.getLogger("CyUserMessages.setsApp");
 	
 	public CyActivator() {
 		super();
@@ -70,8 +69,9 @@ public class CyActivator extends AbstractCyActivator {
 		// See if we have a graphics console or not
 		boolean haveGUI = true;
 		CySwingApplication cyApplication = getService(bc, CySwingApplication.class);
+		CyApplicationManager cyApplicationManager = getService(bc, CyApplicationManager.class);
 		CyNetworkManager networkManager = (CyNetworkManager) getService(bc, CyNetworkManager.class);
-		SetsManager sets = new SetsManager(networkManager);
+		SetsManager sets = new SetsManager(networkManager, cyApplicationManager);
 
 		if (cyApplication == null) {
 			haveGUI = false;
@@ -106,6 +106,7 @@ public class CyActivator extends AbstractCyActivator {
 		Properties createNodeSetProperties = new Properties();
 		setStandardProperties(createNodeSetProperties, "Create node set", "createNodeSet", "1.0");
 		registerService(bc, createNodeSetTaskFactory, NetworkViewTaskFactory.class, createNodeSetProperties);
+		registerService(bc, createNodeSetTaskFactory, TaskFactory.class, createNodeSetProperties);
 			
 		NetworkViewTaskFactory createEdgeSetTaskFactory = new CreateEdgeSetTaskFactory(sets);
 		Properties createEdgeSetProperties = new Properties();
@@ -192,7 +193,6 @@ public class CyActivator extends AbstractCyActivator {
 		// Now that everything is initialized, ask the SetsManager to look for any existing
 		// sets
 		sets.initialize();
-		messages.info("setsApp started");
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {

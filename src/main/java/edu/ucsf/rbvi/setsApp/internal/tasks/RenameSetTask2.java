@@ -21,6 +21,8 @@ public class RenameSetTask2 extends AbstractTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		mgr.rename(oldName.getSelectedValue(), newName);
+		arg0.showMessage(TaskMonitor.Level.INFO, 
+		                 "Renamed set "+oldName.getSelectedValue()+" to "+newName);
 	}
 
 }

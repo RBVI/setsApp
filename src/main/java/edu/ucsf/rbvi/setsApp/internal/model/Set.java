@@ -229,6 +229,19 @@ public class Set <T extends CyIdentifiable> {
 		return newSet;
 	}
 
+	/**
+ 	 * Method to provide a string representation of this set
+ 	 *
+ 	 * @return the string representation
+ 	 */
+	public String toString() {
+		if (setType.equals(CyNode.class))
+			return "{type:node,name:"+name+",nodes:"+set.size()+"}";
+		else // if (setType.equals(CyEdge.class))
+			return "{type:edge,name:"+name+",edges:"+set.size()+"}";
+	}
+	
+
 	private void sanityCheck(Set<? extends CyIdentifiable> s) throws Exception {
 		if (!s.getType().equals(setType))
 			throw new Exception("Types for '"+name+"' and '"+s.getName()+"' are not the same");
