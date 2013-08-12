@@ -26,17 +26,17 @@ public class CreateNodeSetTaskFactory extends AbstractNetworkViewTaskFactory imp
 	}
 
 	public boolean isReady () {
-		return isReady(mgr.getCurrentNetworkView());
+		if (mgr.getCurrentNetwork() != null)
+			return true;
+		return false;
 	}
 	
 	public TaskIterator createTaskIterator(CyNetworkView arg0) {
-		System.out.println("NetworkViewTaskFactory createNodeSet");
-		return new TaskIterator(new CreateNodeSetTask(mgr,arg0));
+		return new TaskIterator(new CreateNodeSetTask(mgr,arg0.getModel()));
 	}
 
 	public TaskIterator createTaskIterator() {
-		System.out.println("TaskFactory createNodeSet");
-		return createTaskIterator(mgr.getCurrentNetworkView());
+		return new TaskIterator(new CreateNodeSetTask(mgr,null));
 	}
 
 }

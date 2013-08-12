@@ -234,7 +234,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				selectedStuff.setPopupVisible(false);
 				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 				if (selectedType.equals(selectNodes))
-					taskManager.execute(new TaskIterator(new CreateNodeSetTask(mySets, appManager.getCurrentNetworkView())));
+					taskManager.execute(new TaskIterator(new CreateNodeSetTask(mySets, appManager.getCurrentNetwork())));
 				if (selectedType.equals(selectEdges))
 					taskManager.execute(new TaskIterator(new CreateEdgeSetTask(mySets, appManager.getCurrentNetworkView())));
 				if (selectedType.equals(attrNodes))
