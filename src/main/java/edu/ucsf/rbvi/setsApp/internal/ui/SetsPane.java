@@ -236,7 +236,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				if (selectedType.equals(selectNodes))
 					taskManager.execute(new TaskIterator(new CreateNodeSetTask(mySets, appManager.getCurrentNetwork())));
 				if (selectedType.equals(selectEdges))
-					taskManager.execute(new TaskIterator(new CreateEdgeSetTask(mySets, appManager.getCurrentNetworkView())));
+					taskManager.execute(new TaskIterator(new CreateEdgeSetTask(mySets, appManager.getCurrentNetwork())));
 				if (selectedType.equals(attrNodes))
 					taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyNode.class)));
 				if (selectedType.equals(attrEdges))

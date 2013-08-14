@@ -25,9 +25,9 @@ public class WriteSetToFileTask3 extends AbstractExportSetTask {
 	@Tunable(description="Select column to use for ID:")
 	public ListSingleSelection<String> column = null;
 	@Tunable(description="Select a set to write:")
-	public ListSingleSelection<String> selectSet = null;
+	public ListSingleSelection<String> name = null;
 	@Tunable(description="File to write set data to", params="input=false;fileCategory=unspecified")
-	public File setFile;
+	public File file;
 	private CyNetwork network = null;
 	
 	public WriteSetToFileTask3(SetsManager setsManager, CyNetwork n, Class<? extends CyIdentifiable> type) {
@@ -41,14 +41,14 @@ public class WriteSetToFileTask3 extends AbstractExportSetTask {
 				for (String s: setNames)
 					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyNode.class)) 
 						networkSetNames.add(s);
-				selectSet = new ListSingleSelection<String>(networkSetNames);
+				name = new ListSingleSelection<String>(networkSetNames);
 			}
 			if (type.equals(CyEdge.class)) {
 				table = network.getDefaultEdgeTable();
 				for (String s: setNames)
 					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyEdge.class)) 
 						networkSetNames.add(s);
-				selectSet = new ListSingleSelection<String>(networkSetNames);
+				name = new ListSingleSelection<String>(networkSetNames);
 			}
 			if (table != null) {
 				Collection<CyColumn> cyColumns = table.getColumns();
@@ -63,19 +63,19 @@ public class WriteSetToFileTask3 extends AbstractExportSetTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		if (network != null && column != null && selectSet != null) {
-			if (!setFile.exists()) {
+		if (network != null && column != null && name != null) {
+			if (!file.exists()) {
 				try {
-					exportSetToStream(selectSet.getSelectedValue(), column.getSelectedValue(), setFile);
+					exportSetToStream(name.getSelectedValue(), column.getSelectedValue(), file);
 					arg0.showMessage(TaskMonitor.Level.INFO,
-					                 "Exported set "+selectSet.getSelectedValue()+" to "+setFile.getName());
+					                 "Exported set "+name.getSelectedValue()+" to "+file.getName());
 				} catch (IOException e) {
 					arg0.showMessage(TaskMonitor.Level.ERROR, e.getMessage());
 				}
 			} else {
 				arg0.showMessage(TaskMonitor.Level.WARN,
-				                 "Unable to export set "+selectSet.getSelectedValue()+
-				                 " to "+setFile.getName()+": file already exists");
+				                 "Unable to export set "+name.getSelectedValue()+
+				                 " to "+file.getName()+": file already exists");
 			}
 		}
 	}

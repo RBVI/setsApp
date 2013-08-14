@@ -15,11 +15,11 @@ import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	@Tunable(description="Enter a name for the new set:")
-	public String setName;
+	public String name;
 	@Tunable(description="Select name of second set:")
-	public ListSingleSelection<String> seT2;
+	public ListSingleSelection<String> set2;
 	@Tunable(description="Select name of first set:")
-	public ListSingleSelection<String> seT1;
+	public ListSingleSelection<String> set1;
 	private SetsManager sm;
 	private SetOperations operation;
 	private String s1, s2;
@@ -27,15 +27,15 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
 		List<String> attr = sm.getSetNames(type); 
-		seT1 = new ListSingleSelection<String>(attr);
-		seT2 = new ListSingleSelection<String>(attr);
+		this.set1 = new ListSingleSelection<String>(attr);
+		this.set2 = new ListSingleSelection<String>(attr);
 		operation = s;
 	}
 	
 	public SetOperationsTask(SetsManager setsManager, String set1, String set2, SetOperations s) {
 		sm = setsManager;
-		seT1 = null;
-		seT2 = null;
+		this.set1 = null;
+		this.set2 = null;
 		s1 = set1;
 		s2 = set2;
 		operation = s;
@@ -44,9 +44,9 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
 		String set1, set2;
-		if (seT1 != null && seT2 != null) {
-			set1 = seT1.getSelectedValue();
-			set2 = seT2.getSelectedValue();
+		if (this.set1 != null && this.set2 != null) {
+			set1 = this.set1.getSelectedValue();
+			set2 = this.set2.getSelectedValue();
 		}
 		else {
 			set1 = s1;
@@ -54,19 +54,19 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 		}
 		switch (operation) {
 		case INTERSECT:
-			sm.intersection(setName, set1, set2);
+			sm.intersection(name, set1, set2);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the intersection of "+set1+" and "+set2+" into "+setName);
+			                 "Putting the intersection of "+set1+" and "+set2+" into "+name);
 			break;
 		case DIFFERENCE:
-			sm.difference(setName, set1, set2);
+			sm.difference(name, set1, set2);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the difference of "+set1+" and "+set2+" into "+setName);
+			                 "Putting the difference of "+set1+" and "+set2+" into "+name);
 			break;
 		case UNION:
-			sm.union(setName, set1, set2);
+			sm.union(name, set1, set2);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the union of "+set1+" and "+set2+" into "+setName);
+			                 "Putting the union of "+set1+" and "+set2+" into "+name);
 			break;
 		default:
 			break;
@@ -76,9 +76,9 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	// Return the updated set
 	public Object getResults(Class expectedType) {
 		if (expectedType.equals(String.class)) {
-			return sm.getSet(setName).toString();
+			return sm.getSet(name).toString();
 		}
-		return sm.getSet(setName);
+		return sm.getSet(name);
 	}
 
 }
