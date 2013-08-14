@@ -422,15 +422,15 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		private Icon setsIcon = null, nodeSetIcon = null, edgeSetIcon = null, nodeIcon = null, edgeIcon = null;
 		
 		public SetIconRenderer() {
-			URL myUrl = SetsPane.class.getResource("/images/node_set.png");
+			URL myUrl = SetsPane.class.getResource("/images/Node2.png");
 			if (myUrl != null) nodeSetIcon = new ImageIcon(myUrl);
-			myUrl = SetsPane.class.getResource("/images/edge_set.png");
+			myUrl = SetsPane.class.getResource("/images/Edge2.png");
 			if (myUrl != null) edgeSetIcon = new ImageIcon(myUrl);
-			myUrl = SetsPane.class.getResource("/images/sets.png");
+			myUrl = SetsPane.class.getResource("/images/Node2.png");
 			if (myUrl != null) setsIcon = new ImageIcon(myUrl);
-			myUrl = SetsPane.class.getResource("/images/edge.png");
+			myUrl = SetsPane.class.getResource("/images/Edge2.png");
 			if (myUrl != null) edgeIcon = new ImageIcon(myUrl);
-			myUrl = SetsPane.class.getResource("/images/node.png");
+			myUrl = SetsPane.class.getResource("/images/Node2.png");
 			if (myUrl != null) nodeIcon = new ImageIcon(myUrl);
 			if (nodeSetIcon != null && edgeSetIcon != null && setsIcon != null && edgeIcon != null && nodeIcon != null)
 				iconsOk = true;

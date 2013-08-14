@@ -210,8 +210,9 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
-	public void addSet(Set<? extends CyIdentifiable> newSet) {
+	public void addSet(Set<? extends CyIdentifiable> newSet) throws Exception {
 		String name = newSet.getName();
+		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		setsMap.put(name, newSet);
 		exportToAttribute(name);
 		fireSetCreatedEvent(name);
