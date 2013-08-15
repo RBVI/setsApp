@@ -136,19 +136,19 @@ public class CyActivator extends AbstractCyActivator {
 		setStandardProperties(createEdgeSetFromAttributesProperties, "Create edge set from attributes", null, "2.0");
 		registerService(bc, createEdgeSetFromAttributes, NetworkTaskFactory.class, createEdgeSetFromAttributesProperties);
 		
-		TaskFactory nodeUnion = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.UNION);
+		TaskFactory nodeUnion = new SetOperationsTaskFactory(sets, null, SetOperations.UNION);
 		Properties nodeUnionProperties = new Properties();
 		setStandardProperties(nodeUnionProperties, null, "union", "1.0");
 		// nodeUnionProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
 		registerService(bc,nodeUnion, TaskFactory.class, nodeUnionProperties);
 		
-		TaskFactory nodeIntersect = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.INTERSECT);
+		TaskFactory nodeIntersect = new SetOperationsTaskFactory(sets, null, SetOperations.INTERSECT);
 		Properties nodeIntersectProperties = new Properties();
 		setStandardProperties(nodeIntersectProperties, null, "intersect", "2.0");
 		// nodeIntersectProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
 		registerService(bc,nodeIntersect, TaskFactory.class, nodeIntersectProperties);
 		
-		TaskFactory nodeDifference = new SetOperationsTaskFactory(sets, CyNode.class, SetOperations.DIFFERENCE);
+		TaskFactory nodeDifference = new SetOperationsTaskFactory(sets, null, SetOperations.DIFFERENCE);
 		Properties nodeDifferenceProperties = new Properties();
 		setStandardProperties(nodeDifferenceProperties, null, "difference", "3.0");
 		// nodeDifferenceProperties.setProperty(PREFERRED_MENU, "Apps.SetsApp.Operations.Nodes");
@@ -187,7 +187,7 @@ public class CyActivator extends AbstractCyActivator {
 		setStandardProperties(setFromFileProperties, "Import set from file", "import", "5.0");
 		registerService(bc, createNodeSetFromFile, TaskFactory.class, setFromFileProperties);
 
-		NetworkTaskFactory writeNodeSet = new WriteSetToFileTaskFactory(sets, CyNode.class);
+		NetworkTaskFactory writeNodeSet = new WriteSetToFileTaskFactory(sets, null);
 		Properties writeNodeSetProperties = new Properties();
 		setStandardProperties(writeNodeSetProperties, null, "export", "6.0");
 		registerService(bc, writeNodeSet, NetworkTaskFactory.class, writeNodeSetProperties);

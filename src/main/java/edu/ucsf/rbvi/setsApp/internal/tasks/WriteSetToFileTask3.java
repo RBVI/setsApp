@@ -36,27 +36,46 @@ public class WriteSetToFileTask3 extends AbstractExportSetTask {
 		if (network != null) {
 			List<String> setNames = setsManager.getSetNames(), networkSetNames = new ArrayList<String>();
 			CyTable table = null;
-			if (type.equals(CyNode.class)) {
-				table = network.getDefaultNodeTable();
-				for (String s: setNames)
-					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyNode.class)) 
-						networkSetNames.add(s);
-				name = new ListSingleSelection<String>(networkSetNames);
+			if (type != null) {
+				if (type.equals(CyNode.class)) {
+					table = network.getDefaultNodeTable();
+					for (String s: setNames)
+						if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyNode.class)) 
+							networkSetNames.add(s);
+					name = new ListSingleSelection<String>(networkSetNames);
+				}
+				if (type.equals(CyEdge.class)) {
+					table = network.getDefaultEdgeTable();
+					for (String s: setNames)
+						if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyEdge.class)) 
+							networkSetNames.add(s);
+					name = new ListSingleSelection<String>(networkSetNames);
+				}
+				if (table != null) {
+					Collection<CyColumn> cyColumns = table.getColumns();
+					ArrayList<String> columnNames = new ArrayList<String>();
+					for (CyColumn c: cyColumns) 
+						if (c.getType() == String.class) columnNames.add(c.getName());
+					column = new ListSingleSelection<String>(columnNames);
+					column.setSelectedValue(CyNetwork.NAME);
+				}
 			}
-			if (type.equals(CyEdge.class)) {
-				table = network.getDefaultEdgeTable();
-				for (String s: setNames)
-					if (setsManager.getCyNetwork(s) == network && setsManager.getType(s).equals(CyEdge.class)) 
-						networkSetNames.add(s);
+			else {
+				networkSetNames = setNames;
 				name = new ListSingleSelection<String>(networkSetNames);
-			}
-			if (table != null) {
-				Collection<CyColumn> cyColumns = table.getColumns();
-				ArrayList<String> columnNames = new ArrayList<String>();
-				for (CyColumn c: cyColumns) 
-					if (c.getType() == String.class) columnNames.add(c.getName());
-				column = new ListSingleSelection<String>(columnNames);
-				column.setSelectedValue(CyNetwork.NAME);
+				CyTable table1 = network.getDefaultNodeTable();
+				CyTable table2 = network.getDefaultEdgeTable();
+				if (table1 != null && table2 != null) {
+					Collection<CyColumn>	cyColumns1 = table1.getColumns(),
+											cyColumns2 = table2.getColumns();
+					ArrayList<String> columnNames = new ArrayList<String>();
+					for (CyColumn c: cyColumns1) 
+						if (c.getType() == String.class) columnNames.add(c.getName());
+					for (CyColumn c: cyColumns2) 
+						if (c.getType() == String.class) columnNames.add(c.getName());
+					column = new ListSingleSelection<String>(columnNames);
+					column.setSelectedValue(CyNetwork.NAME);
+				}
 			}
 		}
 	}

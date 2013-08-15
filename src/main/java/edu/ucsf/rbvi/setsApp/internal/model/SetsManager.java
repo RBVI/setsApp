@@ -210,9 +210,8 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
-	public void addSet(Set<? extends CyIdentifiable> newSet) throws Exception {
+	public void addSet(Set<? extends CyIdentifiable> newSet) {
 		String name = newSet.getName();
-		if (setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		setsMap.put(name, newSet);
 		exportToAttribute(name);
 		fireSetCreatedEvent(name);
@@ -302,16 +301,16 @@ public class SetsManager implements SessionLoadedListener {
 	}
 
 	public void createSet(String name, CyNetwork network, Class<? extends CyIdentifiable> type, 
-	                      List<? extends CyIdentifiable> members) {
+	                      List<? extends CyIdentifiable> members) throws Exception {
 		Set<? extends CyIdentifiable> newSet;
-
+		if (setsMap.containsKey(name)) throw new Exception(name + " already exists.");
 		if (type.equals(CyNode.class))
 			newSet = new Set<CyNode>(name, network, CyNode.class, (List<CyNode>)members);
 		else
 			newSet = new Set<CyEdge>(name, network, CyEdge.class, (List<CyEdge>)members);
-
-		setsMap.put(name, newSet);
-		fireSetCreatedEvent(name);
+		addSet(newSet);
+	/*	setsMap.put(name, newSet);
+		fireSetCreatedEvent(name); */
 	}
 
 	private void exportToAttribute(String name) {

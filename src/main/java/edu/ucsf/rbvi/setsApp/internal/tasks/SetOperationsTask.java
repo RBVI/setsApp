@@ -3,7 +3,9 @@ package edu.ucsf.rbvi.setsApp.internal.tasks;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
+import org.cytoscape.model.CyNode;
 import org.cytoscape.work.AbstractTask;
 import org.cytoscape.work.ObservableTask;
 import org.cytoscape.work.TaskMonitor;
@@ -26,9 +28,18 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
-		List<String> attr = sm.getSetNames(type); 
-		this.set1 = new ListSingleSelection<String>(attr);
-		this.set2 = new ListSingleSelection<String>(attr);
+		if (type.equals(CyNode.class) || type.equals(CyEdge.class)) {
+			List<String> attr = sm.getSetNames(type); 
+			this.set1 = new ListSingleSelection<String>(attr);
+			this.set2 = new ListSingleSelection<String>(attr);
+		}
+		else {
+			List<String> attr = new ArrayList<String>();
+			for (String string: sm.getSetNames(CyNode.class)) attr.add(string);
+			for (String string: sm.getSetNames(CyEdge.class)) attr.add(string);
+			this.set1 = new ListSingleSelection<String>(attr);
+			this.set2 = new ListSingleSelection<String>(attr);
+		}
 		operation = s;
 	}
 	
