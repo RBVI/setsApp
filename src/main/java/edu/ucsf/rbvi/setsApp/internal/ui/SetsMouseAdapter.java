@@ -32,6 +32,11 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 
+/**
+ * Creates context menu for the JTree
+ * @author Allan Wu
+ *
+ */
 public class SetsMouseAdapter extends MouseAdapter {
 	private SetsManager mySets;
 	private SetsPane panel;

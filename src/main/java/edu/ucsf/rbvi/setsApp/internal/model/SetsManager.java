@@ -31,6 +31,13 @@ import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
 
+/**
+ * Contains a collection of sets that are used by the program. Creates each set and identifies each
+ * one with a unique String. Perform set operations, and fires events for SetChangedListener.
+ * 
+ * @author Allan Wu
+ *
+ */
 public class SetsManager implements SessionLoadedListener {
 	private ConcurrentHashMap<String, Set<? extends CyIdentifiable>> setsMap;
 	private ArrayList<SetChangedListener> setChangedListener = new ArrayList<SetChangedListener>();
@@ -38,19 +45,37 @@ public class SetsManager implements SessionLoadedListener {
 	private CyApplicationManager appMgr;
 	public static final String TABLE_PREFIX = "setsApp:";
 	
+	/**
+	 * Constructor of SetsManager
+	 * @param netMgr The current CyNetworkManager
+	 * @param appMgr The current CyApplicationManager
+	 */
 	public SetsManager(CyNetworkManager netMgr, CyApplicationManager appMgr) {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		this.netMgr = netMgr;
 		this.appMgr = appMgr;
 	}
 	
+	/**
+	 * Gets the number of sets in SetsManager.
+	 * @return number of sets
+	 */
 	public int setsCount() {return setsMap.size();}
 	
+	/**
+	 * Add a SetChangedListener. Fires them in the order that they are added.
+	 * @param s SetChangedListener
+	 */
 	public void addSetChangedListener(SetChangedListener s) {
 		if (s != null)
 			this.setChangedListener.add(s);
 	}
 	
+	/**
+	 * Check every set to see if an element is in any set.
+	 * @param cyId SUID of the element
+	 * @return true if element is found
+	 */
 	public boolean isInSet(Long cyId) {
 		for (Set<? extends CyIdentifiable> set: setsMap.values()) {
 			if (set.hasCyId(cyId))
@@ -59,26 +84,49 @@ public class SetsManager implements SessionLoadedListener {
 		return false;
 	}
 
+	/**
+	 * Check if an element is in a set in the SetManager
+	 * @param name Name of the set
+	 * @param cyId SUID of the element
+	 * @return true if element is found
+	 */
 	public boolean isInSet(String name, Long cyId) {
 		Set<? extends CyIdentifiable> thisSet;
 		if ((thisSet = setsMap.get(name)) != null) return  thisSet.hasCyId(cyId);
 		else return false;
 	}
 	
+	/**
+	 * Get CyNetwork the set belongs to.
+	 * @param name Name of the set
+	 * @return CyNetwork the set belongs to, null if set is not in SetsManager
+	 */
 	public CyNetwork getCyNetwork(String name) {
 		if (setsMap.containsKey(name))
 			return setsMap.get(name).getNetwork();
 		return null;
 	}
 
+	/**
+	 * Get the current network of CyApplicationManager.
+	 * @return current network of CyApplicationManager
+	 */
 	public CyNetwork getCurrentNetwork() {
 		return appMgr.getCurrentNetwork();
 	}
 
+	/**
+	 * Get current NetworkView of CyApplicationManager.
+	 * @return current NetworkView of CyApplicationManager
+	 */
 	public CyNetworkView getCurrentNetworkView() {
 		return appMgr.getCurrentNetworkView();
 	}
 	
+	/**
+	 * Return the names of all sets.
+	 * @return a List of names of all sets.
+	 */
 	public List<String> getSetNames() {
 		List<String> setNames = new ArrayList<String>();
 		for (String s: setsMap.keySet()) {
@@ -118,6 +166,11 @@ public class SetsManager implements SessionLoadedListener {
 		return setNames;
 	}
 	
+	/**
+	 * Check if a set is in SetsManager.
+	 * @param name Name of a set
+	 * @return true if there's a set with the name
+	 */
 	public boolean isInSetsManager(String name) {
 		if (setsMap.get(name) == null)
 			return false;
@@ -125,31 +178,56 @@ public class SetsManager implements SessionLoadedListener {
 			return true;
 	}
 	
+	/**
+	 * Get the type of element of the set
+	 * @param name Type of the element in the set
+	 * @return Type of the element in the set. Null if the set is not in SetsManager.
+	 */
 	public Class<? extends CyIdentifiable> getType(String name) {
 		if(setsMap.containsKey(name))
 			return setsMap.get(name).getType();
 		return null;
 	}
 	
+	/**
+	 * Get the Set with the name associated with it
+	 * @param setName name of set
+	 * @return The Set if a set with the name exists, otherwise null
+	 */
 	public Set<? extends CyIdentifiable> getSet(String setName) {
 		if(setsMap.containsKey(setName))
 			return setsMap.get(setName);
 		return null;
 	}
 
+	/**
+	 * Get the name of an element
+	 * @param network The network the element comes from
+	 * @param setName name of the set
+	 * @param element a CyIdentifiable element
+	 * @return The name if the element is a CyNode or CyEdge, null otherwise
+	 */
 	public String getElementName(CyNetwork network, String setName, CyIdentifiable element) {
 		if (getType(setName) == CyNode.class) {
 			return network.getDefaultNodeTable().getRow(element.getSUID()).get(CyNetwork.NAME, String.class);
-		} else {
+		} else if (getType(setName) == CyEdge.class) {
 			return network.getDefaultEdgeTable().getRow(element.getSUID()).get(CyNetwork.NAME, String.class);
 		}
+		else return null;
 	}
 	
+	/**
+	 * Clear all sets from the SetsManager
+	 */
 	public void reset() {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		fireSetsClearedEvent();
 	}
 
+	/**
+	 * Initialize the set by checking if there are sets stored in hidden tables from a saved
+	 * session and loading them into SetsManager.
+	 */
 	public void initialize() {
 		reset();
 		CyTable cyTable;
@@ -196,6 +274,13 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
+	/**
+	 * Rename a set in SetsManager
+	 * @param name old name of the set
+	 * @param newName new name of the set
+	 * @throws Exception Exception thrown if the set does not exist, or new name for the set already
+	 * exists.
+	 */
 	public void rename(String name, String newName) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
@@ -210,6 +295,10 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
+	/**
+	 * Add set to SetsManager
+	 * @param newSet The new set
+	 */
 	public void addSet(Set<? extends CyIdentifiable> newSet) {
 		String name = newSet.getName();
 		setsMap.put(name, newSet);
@@ -217,7 +306,11 @@ public class SetsManager implements SessionLoadedListener {
 		fireSetCreatedEvent(name);
 	}
 
-
+	/**
+	 * Remove set from SetsManager
+	 * @param name name of the set to be removed
+	 * @throws Exception Exception thrown if set does not exist.
+	 */
 	public void removeSet(String name) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		String setTableName = TABLE_PREFIX + name;
@@ -233,24 +326,58 @@ public class SetsManager implements SessionLoadedListener {
 		fireSetRemovedEvent(name, cyNetwork);
 	}
 	
+	/**
+	 * Creates a union of set1 and set2, then adds the new set to set manager under the name
+	 * newName
+	 * @param newName name for new set created
+	 * @param set1 Name of first set
+	 * @param set2 Name of second set
+	 * @throws Exception Throws Exception if set1 and/or set2 does not exist, or if name for new
+	 * set already exists.
+	 */
 	public void union(String newName, String set1, String set2) throws Exception {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).union(newName, setsMap.get(set2));
 		addSet(newSet);
 	}
 	
+	/**
+	 * Creates an intersection of set1 and set2, then adds the new set to set manager under the name
+	 * newName
+	 * @param newName name for new set created
+	 * @param set1 Name of first set
+	 * @param set2 Name of second set
+	 * @throws Exception Throws Exception if set1 and/or set2 does not exist, or if name for new
+	 * set already exists.
+	 */
 	public void intersection(String newName, String set1, String set2) throws Exception {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).intersection(newName, setsMap.get(set2));
 		addSet(newSet);
 	}
 	
+	/**
+	 * Creates a difference of set1 and set2, then adds the new set to set manager under the name
+	 * newName
+	 * @param newName name for new set created
+	 * @param set1 Name of first set
+	 * @param set2 Name of second set
+	 * @throws Exception Throws Exception if set1 and/or set2 does not exist, or if name for new
+	 * set already exists.
+	 */
 	public void difference(String newName, String set1, String set2) throws Exception {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).difference(newName, setsMap.get(set2));
 		addSet(newSet);
 	}
 	
+	/**
+	 * Add a new element to set
+	 * @param name Name of a set
+	 * @param cyId CyIdentifiable element
+	 * @throws Exception Throws exception of set does not exist, cyId is not in the network, or
+	 * the cyId already exists in the network.
+	 */
 	public void addToSet(String name, CyIdentifiable cyId) throws Exception {
 		if (!setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		if (getCyNetwork(name).getRow(cyId) == null) throw new Exception(cyId + " is not in the network of set \"" + name + "\". Cannot perform operation.");
@@ -263,6 +390,13 @@ public class SetsManager implements SessionLoadedListener {
 			throw new Exception("Node/Edge already in the set \"" + name + "\" or not in network.");
 	}
 
+	/**
+	 * Move set from one CyNetwork to another, if possible.
+	 * @param name name of the set
+	 * @param newName name of a new set
+	 * @param cyNetwork CyNetwork to move set to, only if the node or edge exists in this CyNetwork
+	 * @throws Exception Throws Exception if "name" does not exist or newName already exists.
+	 */
 	public void moveSet(String name, String newName, CyNetwork cyNetwork) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exist. Choose a different name.");
@@ -285,6 +419,12 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 	
+	/**
+	 * Remove an element from the set
+	 * @param name name of the set
+	 * @param cyId CyIdentifiable element
+	 * @throws Exception Throws Exception if the set does not exist.
+	 */
 	public void removeFromSet(String name, CyIdentifiable cyId) throws Exception {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
