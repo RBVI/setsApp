@@ -245,7 +245,7 @@ public class SetsManager implements SessionLoadedListener {
 							cyNodes.add(cyNetwork.getNode(suid));
 					if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
 					try {
-						createSet(loadedSetName, cyNetwork, CyNode.class, cyNodes);
+						restoreSet(loadedSetName, cyNetwork, CyNode.class, cyNodes);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -264,7 +264,7 @@ public class SetsManager implements SessionLoadedListener {
 							cyEdges.add(cyNetwork.getEdge(suid));
 					if (cyEdges != null && cyEdges.size() == 0) cyEdges = null;
 					try {
-						createSet(loadedSetName, cyNetwork, CyEdge.class, cyEdges);
+						restoreSet(loadedSetName, cyNetwork, CyEdge.class, cyEdges);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -442,15 +442,26 @@ public class SetsManager implements SessionLoadedListener {
 
 	public void createSet(String name, CyNetwork network, Class<? extends CyIdentifiable> type, 
 	                      List<? extends CyIdentifiable> members) throws Exception {
+		addSet(addSetHelper(name, network, type, members));
+	/*	setsMap.put(name, newSet);
+		fireSetCreatedEvent(name); */
+	}
+
+	private void restoreSet(String name, CyNetwork network, Class<? extends CyIdentifiable> type, 
+            List<? extends CyIdentifiable> members) throws Exception {
+		setsMap.put(name, addSetHelper(name, network, type, members));
+		fireSetCreatedEvent(name);
+	}
+
+	private Set<? extends CyIdentifiable> addSetHelper(String name, CyNetwork network, Class<? extends CyIdentifiable> type, 
+            List<? extends CyIdentifiable> members) throws Exception {
 		Set<? extends CyIdentifiable> newSet;
 		if (setsMap.containsKey(name)) throw new Exception(name + " already exists.");
 		if (type.equals(CyNode.class))
 			newSet = new Set<CyNode>(name, network, CyNode.class, (List<CyNode>)members);
 		else
 			newSet = new Set<CyEdge>(name, network, CyEdge.class, (List<CyEdge>)members);
-		addSet(newSet);
-	/*	setsMap.put(name, newSet);
-		fireSetCreatedEvent(name); */
+		return newSet;
 	}
 
 	private void exportToAttribute(String name) {
