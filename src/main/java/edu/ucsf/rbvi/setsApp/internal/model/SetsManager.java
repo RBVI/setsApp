@@ -383,6 +383,8 @@ public class SetsManager implements SessionLoadedListener {
 		if (getCyNetwork(name).getRow(cyId) == null) throw new Exception(cyId + " is not in the network of set \"" + name + "\". Cannot perform operation.");
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
 		if (getCyNetwork(name).getRow(cyId) != null && s.add(cyId)) {
+			CyTable table = getCyNetwork(name).getTable(getType(name), CyNetwork.HIDDEN_ATTRS);
+			table.getRow(cyId.getSUID()).set(TABLE_PREFIX + name, true);
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 			cyIdList.add(cyId);
 			fireSetAddedEvent(name, cyIdList);
@@ -429,6 +431,8 @@ public class SetsManager implements SessionLoadedListener {
 		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
 		Set<? extends CyIdentifiable> s = setsMap.get(name);
 		if (s.remove(cyId)) {
+			CyTable table = getCyNetwork(name).getTable(getType(name), CyNetwork.HIDDEN_ATTRS);
+			table.getRow(cyId.getSUID()).set(TABLE_PREFIX + name, false);
 			ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
 			cyIdList.add(cyId);
 			fireSetRemovedEvent(name, cyIdList);
