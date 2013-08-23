@@ -123,7 +123,7 @@ public class CyActivator extends AbstractCyActivator {
 		
 		CreateSetTaskFactory createSetTaskFactory = new CreateSetTaskFactory(sets);
 		Properties createSetProperties = new Properties();
-		setStandardProperties(createSetProperties, "Create set", "createSet", "3.0");
+		setStandardProperties(createSetProperties, null, "createSet", "3.0");
 		registerService(bc, createSetTaskFactory, TaskFactory.class, createSetProperties);
 		
 		NetworkTaskFactory createNodeSetFromAttributes = new CreateSetFromAttributesTaskFactory(sets, CyNode.class);

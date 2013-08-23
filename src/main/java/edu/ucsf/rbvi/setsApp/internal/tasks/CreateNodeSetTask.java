@@ -57,6 +57,7 @@ public class CreateNodeSetTask extends AbstractTask implements ObservableTask {
 			nodes = nodeList.getValue();
 			net = network;
 		} else {
+			if (net == null) net = mgr.getCurrentNetwork();
 			nodes = CyTableUtil.getNodesInState(net, CyNetwork.SELECTED, true);
 		}
 		arg0.showMessage(TaskMonitor.Level.INFO,

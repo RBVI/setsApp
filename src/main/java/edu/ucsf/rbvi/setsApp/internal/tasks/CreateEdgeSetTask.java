@@ -49,6 +49,7 @@ public class CreateEdgeSetTask extends AbstractTask implements ObservableTask {
 			edges = edgeList.getValue();
 			net = network;
 		} else {
+			if (net == null) net = mgr.getCurrentNetwork();
 			edges = CyTableUtil.getEdgesInState(net, CyNetwork.SELECTED, true);
 		}
 		arg0.showMessage(TaskMonitor.Level.INFO,
