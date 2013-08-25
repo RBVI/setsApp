@@ -42,7 +42,7 @@
 		<repository>
 			<id>cytoscape_snapshots</id>
 			<snapshots>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</snapshots>
 			<releases>
 				<enabled>false</enabled>
