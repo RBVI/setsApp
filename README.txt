@@ -16,7 +16,7 @@ that has been created.
 3. Creating sets:
 There are three methods to create sets. 
 
-2.1 Creating sets from selected nodes/edges:
+3.1 Creating sets from selected nodes/edges:
 The first method is to create a set by selecting a set of nodes or edges in a network.
 First, select nodes and/or edges with the mouse, then go to the sets panel to the
 section "New Sets." Select from the drop-down menu "Create sets from selected nodes"

@@ -26,7 +26,7 @@ public class CreateNodeSetTaskFactory extends AbstractNetworkViewTaskFactory imp
 	}
 
 	public boolean isReady () {
-		if (mgr.getCurrentNetwork() != null)
+		if (mgr.getCurrentNetwork() != null && !CyTableUtil.getNodesInState(mgr.getCurrentNetwork(), CyNetwork.SELECTED, true).isEmpty())
 			return true;
 		return false;
 	}

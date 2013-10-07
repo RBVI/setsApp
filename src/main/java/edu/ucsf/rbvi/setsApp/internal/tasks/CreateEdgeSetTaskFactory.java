@@ -36,7 +36,7 @@ public class CreateEdgeSetTaskFactory extends AbstractNetworkViewTaskFactory imp
 
 	public boolean isReady() {
 		// TODO Auto-generated method stub
-		if (mgr.getCurrentNetwork() != null)
+		if (mgr.getCurrentNetwork() != null && !CyTableUtil.getEdgesInState(mgr.getCurrentNetwork(), CyNetwork.SELECTED, true).isEmpty())
 			return true;
 		return false;
 	}
