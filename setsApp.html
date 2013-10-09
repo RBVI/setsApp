@@ -1,0 +1,400 @@
+<html>
+<head>
+
+<link rel="icon" href="../../chimera/chimera16.png" type="image/png">
+<link rel="stylesheet" href="../../css/cgl.css" type="text/css">
+<link rel="stylesheet" href="../../css/chimera.css" type="text/css">
+<link rel="stylesheet" href="../../css/cytoscape.css" type="text/css">
+<style>
+ol.dotted { counter-reset: item }
+li.dotted { display: block }
+li.dotted:before { content: counters(item, ".") " "; counter-increment: item}
+A.nounder:link {text-decoration: none}
+A.nounder:visited {text-decoration: none}
+A.nounder:active {text-decoration: none}
+A.nounder:hover {text-decoration: underline; color: red;}
+</style>
+
+<title>structureViz: Linking Cytoscape and Chimera</title>
+
+</head>
+
+<body alink="#7f1066" bgcolor="#ffffff" link="#154c5c" vlink="#7f1066">
+<a name="top"></a>
+
+<!-- Top menu -->
+<div style="margin-bottom: 110px;">
+	<img src="../../images/Top.png" style="position: absolute; left: 10px; top: 10px; right: 10px;" height="86" width="95%">
+	<a href="../../index.html"><img border="0" src="../../images/DNALogo1.png" style="position: absolute; left: 10px; top: 10px;"></a>
+	<img src="../../images/TopHighlightNew.png" style="position: absolute; top: 10px; right: 10px;">
+
+	<a href="../../index.html" class="top-line" style="right: 320px;">home</a>
+	<a href="../../Overview/index.html" class="top-line" style="right: 228px;">overview</a>
+	<a href="../../Research/index.html" class="top-line" style="right: 132px;">research</a>
+	<a href="../../Resources/index.html" class="top-line" style="right: 42px;">resources</a>
+
+	<span class="second-line-shadow" style="right: 248px;">outreach &amp; training</span>
+	<a href="../../Outreach/index.html" class="second-line" style="right: 249px;">outreach &amp; training</a>
+	<span class="second-line-shadow" style="right: 110px;">visitors center</span>
+	<a href="../../Visitors/index.html" class="second-line" style="right: 111px;">visitors center</a>
+	<span class="second-line-shadow" style="right: 30px;">search</span>
+	<a href="../../Search/index.html" class="second-line" style="right: 31px;">search</a>
+</div>
+
+<!-- Left hand quick-links -->
+<div class="leftNav">
+<p class="header" style="margin-top: 0px">Current Plugins</p>
+<h4 class="menu">Structure Integration</h4>
+<h5 class="menu"><a href="../structureViz/index.html">structureViz</a></h5>
+<h4 class="menu">Chem Informatics</h4>
+<h5 class="menu"><a href="../chemViz/index.html">chemViz</a></h5>
+<h4 class="menu">Cluster Analysis</h4>
+<h5 class="menu"><a href="../cluster/clusterMaker.html">clusterMaker</a></h5>
+<h5 class="menu"><a href="../cluster/clusterExplorer.html">clusterExplorer</a></h5>
+<h4 class="menu"><a href="../SFLDLoader.html">SFLD Network Loader</a></h4>
+<h4 class="menu"><a href="../bioCycPlugin/index.html">BioCyc Network Loader</a></h4>
+<h4 class="menu"><a href="../groups/index.html">Groups</a></h4>
+<h5 class="menu"><a href="../groups/index.html#groupTool">Group Tool</a></h5>
+<h5 class="menu"><a href="../groups/index.html#namedSelection">Named Selection Plugin</a></h5>
+<h5 class="menu"><a href="../groups/index.html#metaNodePlugin">MetaNode Plugin</a></h5>
+<h4 class="menu"><a href="../utilities/index.html">Utilities</a></h4>
+<h5 class="menu"><a href="../utilities/index.html#addParentNeighbors">Add Parent Neighbors</a></h5>
+<h5 class="menu"><a href="../utilities/index.html#commandTool">Command tool</a></h5>
+<h5 class="menu"><a href="../utilities/index.html#edgeLength">Edge Length Plugin</a></h5>
+<h5 class="menu"><a href="../utilities/index.html#edgeLister">Edge Lister Plugin</a></h5>
+<h5 class="menu"><a href="../utilities/index.html#nodeCharts">Node Chart Plugin</a></h5>
+<h4 class="menu"><a href="../samples/index.html">Programmer Samples</a></h4>
+<h5 class="menu"><a href="../samples/index.html#sampleGroupViewer">Sample Group Viewer</a></h5>
+<h5 class="menu"><a href="../samples/index.html#sampleLayout">Sample Layout Algorithm</a></h5>
+<h5 class="menu"><a href="../samples/index.html#tunableSampler">Tunables Sampler</a></h5>
+</div>
+
+<div class="leftInfo" style="font-size: 90%">
+<p class="header" style="margin-top: 0px">Typographic Conventions</p>
+<b class="mouse">Mouse button</b><br style="margin-bottom: 5px"/>
+<b class="button">Dialog button</b><br style="margin-bottom: 5px"/>
+<b class="button">Keyboard button</b><br style="margin-bottom: 5px"/>
+<b class="menuItem">Menu item</b><br style="margin-bottom: 5px"/>
+<b class="menuLabel">Dialog label</b>
+</div>
+<p>
+<i>SetsApp</i> is a <a href="http://www.cytoscape.org" target="_blank">
+Cytoscape</a> 3 app allowing the user to create and manipulate sets of nodes
+or edges (but not sets with both nodes and edges, at least in the current version) in
+Cytoscape. Sets can be created from different networks. In order to create a set, the
+user must select a network (usually when a user imports a network or opens up a
+session there is a network selected by default), and the program will create sets of
+nodes or edges based on user input.
+</p><p>
+
+<a name="contents"><h4 class="ul">Contents</h4></a>
+<ol class="dotted">
+<li class="dotted"><a href="#install">Installation</a></li>
+<li class="dotted"><a href="#annotate">The "Sets" Panel</a>
+	<ol class="dotted">
+		<li class="dotted"><a href="#sets_new">New Sets</a></li>
+		<li class="dotted"><a href="#sets_tree">Sets Tree</a></li>
+		<ol class="dotted">
+			<li class="dotted"><a href="#sets_context">Set Context Menu</a></li>
+			<li class="dotted"><a href="#sets_element">Set Element Context Menu</a></li>
+		</ol>
+		<li class="dotted"><a href="#sets_operation">Set Operations</a></li>
+		<li class="dotted"><a href="#sets_file">Import/Export Sets to File</a></li>
+	</ol>
+</li>
+<li class="dotted"><a href="#menus"><i>SetsApp</i> menus</a>
+	<ol class="dotted">
+		<li class="dotted"><a href="#menus_top">Top-level menus</a></li>
+		<li class="dotted"><a href="#menus_context">Context menus</a></li>
+	</ol>
+</li>
+<li class="dotted"><a href="#commands"><i>structureViz</i> CyCommands</a></li>
+</ol>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+<h4 class="ul"><a name="install">1. Installation</a></h4>
+<p>To install <i>SetsApp</i>, download <i>SetsApp</i> at (insert website). Open Cytoscape, then select from the top menu bar Apps&rarr;Apps Manager to install it in Cytoscape.</p>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+<h4 class="ul"><a name="sets">
+	2. The "Sets" Panel
+</a></h4>
+<p>
+The "Sets" panel is the main graphical user interface through which the user creates,
+manipulates and destroys sets. It resides on the left side of the Cytoscape app and
+consists of four different sub-panels.
+</p>
+<h4 class="ul"><a name="sets_new">
+	2.1 New Sets
+</a></h4>
+<p>
+This sub-panel allows the user to create new sets. It contains a drop-down menu with the following items:
+</p>
+<dl>
+<dt><b class="menuItem">Create set from: selected nodes</b></dt>
+<dd>Create sets from selected nodes. Works the same as <a href="#menus_top">"Create node set"</a></dd>
+<dt><b class="menuItem">Create set from: selected edges</b></dt>
+<dd>Create sets from selected edges. Works the same as <a href="#menus_top">"Create edge set"</a></dd>
+<dt><b class="menuItem">Create set from: node attributes</b></dt>
+<dd>Create node sets using attributes. Works the same as <a href="#menus_top">"Create node set from attributes"</a></dd>
+<dt><b class="menuItem">Create set from: edge attributes</b></dt>
+<dd>Create edge sets using attributes. Works the same as <a href="#menus_top">"Create node set from attributes"</a></dd>
+</dl>
+
+<h4 class="ul"><a name="sets_tree">
+	2.2 Sets Tree
+</a></h4>
+<p>Sets Tree is the panel right below the "New Sets" sub-panel.
+It displays all the sets that have been created using a JTree with a hidden root.
+Each set is represented by an internal node, and the child nodes represent elements in the set.
+The symbol of the pink circle indicates that a set or element is a node set.
+The symbol of two pink circles linked by a curved black line indicates that a set or element is an edge set.
+Right-click brings up a context menu that allows manipulation of the set or its elements.
+</p>
+<h4 class="ul"><a name="sets_context">
+	2.2.1 Set Context Menu
+</a></h4>
+<dl>
+<dt><b>Select</b></dt>
+<dd>Select nodes/edges in the current network.</dd>
+<dt><b>Unselect</b></dt>
+<dd>Unselect nodes/edges in the current network.</dd>
+<dt><b>Remove Set</b></dt>
+<dd>Remove set from the current network.</dd>
+<dt><b>Rename Set</b></dt>
+<dd>Rename this set.</dd>
+<dt><b>Copy set to different network</b></dt>
+<dd>Copy this set to a different network. Will only copy the nodes/edges shared between the two networks.</dd>
+</dl>
+<h4 class="ul"><a name="sets_element">
+	2.2.2 Set Element Context Menu
+</a></h4>
+<dl>
+<dt><b>Select</b></dt>
+<dd>Select node/edge in the current network.</dd>
+<dt><b>Unselect</b></dt>
+<dd>Unselect node/edge in the current network.</dd>
+<dt><b>Copy to...</b></dt>
+<dd>Copy this node/edge to another set.</dd>
+<dt><b>Move to...</b></dt>
+<dd>Move this node/edge to another set</dd>
+<dt><b>Remove from set</b></dt>
+<dd>Remove this node/edge from this set.</dd>
+</dl>
+
+<h4 class="ul"><a name="sets_operation">
+	2.3 Set Operations
+</a></h4>
+<p>
+The Set Operations sub-panel provides methods to manipulate two different sets in the Set Tree sub-panel.
+The three buttons <b>Union</b>, <b>Intersection</b>, and <b>Difference</b> are activated when two different sets are selected.
+On most operating systems, it could be done by using Ctrl-Z-Left-mouse-click.
+A new set is created after the operation is performed.
+</p>
+<dl>
+<dt>
+<b>Union</b>
+</dt>
+<dd>Perform union of two sets.</dd>
+<dt><b>Intersection</b></dt>
+<dd>Perform intersection of two sets.</dd>
+<dt><b>Difference</b></dt>
+<dd>Perform difference of two sets.</dd>
+</dl>
+
+<h4 class="ul"><a name="sets_file">
+	2.4 Import/Export Sets to File
+</a></h4>
+<p>
+This sub-panel contains buttons for reading and writing sets to file.
+The file imported/exported should contain a list of names for the nodes/edges, which will be matched against identifiers in a column chosen by the user.
+</p>
+<dl>
+<dt><b>Import Set From File</b></dt>
+<dd>Import a set from file. Allows the user to specify whether a node or edge set is created.</dd>
+<dt><b>Export Set to File</b></dt>
+<dd>Export a set to file.</dd>
+</dl>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+<h4 class="ul">
+<a name="menus">3. <i>SetsApp</i> menus
+</a></h4>
+<p><i>SetsApp</i> provides two similar sets of menus, one under the 
+<b class="menuItem">Apps&rarr;SetsApp</b> top-level menu 
+and the other as part of
+the context menus accessed by mouse
+<b class=mouse">right-click</b> in the Cytoscape network window, nodes or edges.
+</p>
+<h4 class="ul"><a name="menus_top">
+	3.1 Top-level menus
+</a></h4>
+<dl>
+<dt><b class="menuItem">Create node set</b></dt>
+<dd>
+Create node set from selected nodes. This menu item is available only when there are selected nodes in the network.
+</dd>
+
+<dt><b class="menuItem">Create edge set</b></dt>
+<dd>
+Create edge set from selected nodes. This menu item is available only when there are selected edges in the network.
+</dd>
+
+<dt><b class="menuItem">Create node set from attributes</b></dt>
+<dd>
+Creates node sets for sets of nodes with the same attribute value. 
+</dd>
+
+<dt><b class="menuItem">Create edge set from attributes</b></dt>
+<dd>
+Create edge sets for sets of edges with the same attribute value.
+</dd>
+
+<dt><b class="menuItem">Import set from file</b></dt>
+<dd>
+Creat a set from a file of nodes or edges.
+</dd>
+</dl>
+
+<h4 class="ul"><a name="menus_context">
+	3.2 Context menus
+</a></h4>
+<p>The network context menus contains two menu items that are the same as the top-level menu, <b>Create node set</b> and <b>Create edge set</b>.
+In addition, there are two menu items available by right-clicking on an node or edge, and choosing Apps&rarr;SetsApp:
+</p>
+<dl>
+<dt><b class="menuItem">Add node to set</b></dt>
+<dd>
+Add a node to a selected set.
+</dd>
+<dt><b class="menuItem">Remove node from set</b></dt>
+<dd>Remove a node from a selected set.</dd>
+<dt><b class="menuItem">Add edge to set</b></dt>
+<dd>Add an edge to a selected set.</dd>
+<dt><b class="menuItem">Remove edge from set</b></dt>
+<dd>Remove an edge from a selected set.</dd>
+</dl>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+<h4 class="ul"><a name="commands">
+	4. <i>SetsApp</i> Commands
+</a></h4>
+<p>In order to facilitate the use of <i>SetsApp</i>, the
+<i>SetsApp</i> app exports a number of commands.  These
+commands may be used by other apps, or as part of scripts.
+</p>
+
+<dl>
+	<dt><a name="createSet"><i class="menuLabel">setsApp createSet</i></a></dt>
+	<dd>
+		<p>The createSet command is the command-line interface for creating node/edge sets.
+		To use this command, all arguments must be set, except for nodeList and edgeList which are mutually exclusive (either nodeList or edgeList can be non-null, but not both).</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>edgeList</b>=<i>EdgeList</i>: Specifies the list of edges to be used for creating an edge set.
+				Example: edgeList="column:attribute" create an edge set where the attribute equals "attribute" in the
+				column named "column".</li>
+				<li><b>nodeList</b>=<i>NodeList</i>: Specifies the list of edges to be used for creating a node set.
+				Example: nodeList="column:attribute" create a node set where the attribute equals "attribute" in the
+				column named "column".</li>
+				<li><b>name</b>=<i>String</i>: Specifies name of the new set.</li>
+				<li><b>network</b>=<i>CyNetwork</i>: Specifies the network from which the nodes/edges are taken to create the set.
+				Defaults to the current network if null.</li>
+			</ul>
+		</div>
+	</dd>
+
+	<dt><a name="union"><i class="menuLabel">setsApp union</i></a></dt>
+	<dd>
+		<p>The union command creates a union of two sets.</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>set1</b>=<i>ListSingleSelection</i>: First set to be selected.</li>
+				<li><b>set2</b>=<i>ListSingleSelection</i>: Second set to be selected.</li>
+				<li><b>name</b>=<i>String</i>: Specifies name of the new set.</li>
+			</ul>
+		</div>
+	</dd>
+	<dt><a name="intersect"><i class="menuLabel">setsApp intersect</i></a></dt>
+	<dd>
+		<p>The intersect command creates a intersect of two sets.</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>set1</b>=<i>ListSingleSelection</i>: First set to be selected.</li>
+				<li><b>set2</b>=<i>ListSingleSelection</i>: Second set to be selected.</li>
+				<li><b>name</b>=<i>String</i>: Specifies name of the new set.</li>
+			</ul>
+		</div>
+	</dd>
+	<dt><a name="difference"><i class="menuLabel">setsApp difference</i></a></dt>
+	<dd>
+		<p>The difference command creates a difference of two sets. The difference is calculated as set1-set2.</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>set1</b>=<i>ListSingleSelection</i>: First set to be selected.</li>
+				<li><b>set2</b>=<i>ListSingleSelection</i>: Second set to be selected.</li>
+				<li><b>name</b>=<i>String</i>: Specifies name of the new set.</li>
+			</ul>
+		</div>
+	</dd>
+
+	<dt><a name="import"><i class="menuLabel">setsApp import</i></a></dt>
+	<dd>
+		<p>Import set from file.</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>Columns</b>=<i>ListSingleSelection</i>: Column to use for choosing identifiers to
+				create the set with.</li>
+				<li><b>Type</b>=<i>ListSingleSelection</i>: Create node or edge set.</li>
+				<li><b>name</b>=<i>String</i>: Specifies name of the new set.</li>
+				<li><b>setFile</b>=<i>File</i>: Specifies the file to import.</li>
+			</ul>
+		</div>
+	</dd>
+
+	<dt><a name="export"><i class="menuLabel">setsApp export</i></a></dt>
+	<dd>
+		<p>Export set to file.</p>
+		<div style="margin-top: 5px"><b style="font-size:90%">Arguments</b>:
+			<ul>
+				<li><b>column</b>=<i>ListSingleSelection</i>: Column to use for exporting list of identifiers.</li>
+				<li><b>name</b>=<i>String</i>: Name of the file to export.</li>
+				<li><b>file</b>=<i>File</i>: Specifies the file to export to.</li>
+			</ul>
+		</div>
+	</dd>
+</dl>
+
+<table align="right"><tr><td><font size="-1">
+[<a href="#contents" class="nounder">Contents</a>]
+[<a href="#top" class="nounder">Top</a>]
+</font></td></tr></table>
+
+<p><hr align=left></p>
+<p align=center>
+<a href="/Overview/index.html">Laboratory Overview</a>
+| <a href="/Research/index.html">Research</a>
+| <a href="/Outreach/index.html">Outreach &amp; Training</a>
+| <a href="/Resources/index.html">Available Resources</a>
+| <a href="/Visitors/index.html">Visitors Center</a>
+| <a href="/Search/index.html">Search</a></p>
+</body>
+</html>
+
