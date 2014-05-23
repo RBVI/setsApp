@@ -29,6 +29,7 @@ public class AddNodeTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Adding node to set "+sets.getSelectedValue());
 		mgr.addToSet(sets.getSelectedValue(), node);
 		arg0.showMessage(TaskMonitor.Level.INFO, 
 		                 "Added node "+node+" to set "+sets.getSelectedValue());

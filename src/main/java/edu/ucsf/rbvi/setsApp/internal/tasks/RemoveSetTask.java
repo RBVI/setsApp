@@ -25,6 +25,7 @@ public class RemoveSetTask extends AbstractTask {
 	}
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Removing set");
 		if (name != null) {
 			mgr.removeSet(name.getSelectedValue());
 			arg0.showMessage(TaskMonitor.Level.INFO, 

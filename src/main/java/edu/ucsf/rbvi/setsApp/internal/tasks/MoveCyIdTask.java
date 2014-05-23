@@ -34,6 +34,7 @@ public class MoveCyIdTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Moving set");
 		mgr.addToSet(sets.getSelectedValue(), cyId);
 		mgr.removeFromSet(setName, cyId);
 		arg0.showMessage(TaskMonitor.Level.INFO, 

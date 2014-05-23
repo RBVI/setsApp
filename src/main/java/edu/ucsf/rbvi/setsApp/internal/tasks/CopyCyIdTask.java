@@ -31,6 +31,7 @@ public class CopyCyIdTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Copying set");
 		mgr.addToSet(sets.getSelectedValue(), cyId);
 		if (cyId instanceof CyNode)
 			arg0.showMessage(TaskMonitor.Level.INFO, 

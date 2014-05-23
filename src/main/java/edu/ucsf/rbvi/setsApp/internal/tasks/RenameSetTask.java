@@ -19,6 +19,7 @@ public class RenameSetTask extends AbstractTask implements ObservableTask {
 	}
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Renaming set");
 		mgr.rename(oldName, newName);
 		arg0.showMessage(TaskMonitor.Level.INFO, 
 		                 "Renamed set "+oldName+" to "+newName);

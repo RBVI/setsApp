@@ -40,6 +40,7 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {
+		taskMonitor.setTitle("Creating set from attribute");
 		String column = colName.getSelectedValue();
 		cySet = new HashMap<String, Set<? extends CyIdentifiable>>();
 

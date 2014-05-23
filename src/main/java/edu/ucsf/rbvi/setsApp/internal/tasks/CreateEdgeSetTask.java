@@ -44,6 +44,7 @@ public class CreateEdgeSetTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Creating edge set");
 		List<CyEdge> edges;
 		if (net == null && network != null) {
 			edges = edgeList.getValue();

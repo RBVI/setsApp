@@ -56,6 +56,7 @@ public class AddToSetTask extends AbstractTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Adding to set");
 		if (name == null) {
 			arg0.showMessage(TaskMonitor.Level.ERROR,
 					"The name of the set must be specified");

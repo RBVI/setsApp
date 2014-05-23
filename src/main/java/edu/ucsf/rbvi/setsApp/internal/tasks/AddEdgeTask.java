@@ -29,6 +29,7 @@ public class AddEdgeTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Adding edge to set "+sets.getSelectedValue());
 		mgr.addToSet(sets.getSelectedValue(), edge);
 		arg0.showMessage(TaskMonitor.Level.INFO, 
 		                 "Added edge "+edge+" to set "+sets.getSelectedValue());

@@ -16,15 +16,16 @@ import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class SetOperationsTask extends AbstractTask implements ObservableTask {
-	@Tunable(description="Enter a name for the new set:")
+	@Tunable(description="Enter a name for the new set:", gravity=1.0)
 	public String name;
-	@Tunable(description="Select name of second set:")
-	public ListSingleSelection<String> set2;
-	@Tunable(description="Select name of first set:")
+	@Tunable(description="Select name of first set:", gravity=2.0)
 	public ListSingleSelection<String> set1;
+	@Tunable(description="Select name of second set:", gravity=3.0)
+	public ListSingleSelection<String> set2;
 	private SetsManager sm;
 	private SetOperations operation;
 	private String s1, s2;
+	private List<String> setsList;
 	
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
@@ -41,8 +42,17 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 			this.set2 = new ListSingleSelection<String>(attr);
 		}
 		operation = s;
+		setsList = null;
 	}
 	
+	public SetOperationsTask(SetsManager setsManager, List<String> setList, SetOperations s) {
+		sm = setsManager;
+		this.set1 = null;
+		this.set2 = null;
+		this.setsList = setList;
+		operation = s;
+	}
+
 	public SetOperationsTask(SetsManager setsManager, String set1, String set2, SetOperations s) {
 		sm = setsManager;
 		this.set1 = null;
@@ -54,34 +64,51 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
-		String set1, set2;
-		if (this.set1 != null && this.set2 != null) {
-			set1 = this.set1.getSelectedValue();
-			set2 = this.set2.getSelectedValue();
+		arg0.setTitle("Executing set operation");
+		if (setsList == null) {
+			setsList = new ArrayList<String>();
+
+			if (this.set1 != null && this.set2 != null) {
+				setsList.add(this.set1.getSelectedValue());
+				setsList.add(this.set2.getSelectedValue());
+			}
+			else {
+				setsList.add(s1);
+				setsList.add(s2);
+			}
 		}
-		else {
-			set1 = s1;
-			set2 = s2;
-		}
+
 		switch (operation) {
 		case INTERSECT:
-			sm.intersection(name, set1, set2);
+			sm.intersection(name, setsList);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the intersection of "+set1+" and "+set2+" into "+name);
+			                 "Putting the intersection of "+multiSetName(setsList)+" into "+name);
 			break;
 		case DIFFERENCE:
-			sm.difference(name, set1, set2);
+			sm.difference(name, setsList);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the difference of "+set1+" and "+set2+" into "+name);
+			                 "Putting the difference of "+multiSetName(setsList)+" into "+name);
 			break;
 		case UNION:
-			sm.union(name, set1, set2);
+			sm.union(name, setsList);
 			arg0.showMessage(TaskMonitor.Level.INFO,
-			                 "Putting the union of "+set1+" and "+set2+" into "+name);
+			                 "Putting the union of "+multiSetName(setsList)+" into "+name);
 			break;
 		default:
 			break;
 		}
+	}
+
+	private String multiSetName(List<String> setList) {
+		if (setList.size() == 1) 
+			return setList.get(0);
+
+		String name = "";
+		for (int i = 0; i < (setList.size()-2); i++) {
+			name += setList.get(i)+", ";
+		}
+		name += setList.get(setList.size()-2)+" and "+setList.get(setList.size()-1);
+		return name;
 	}
 
 	// Return the updated set

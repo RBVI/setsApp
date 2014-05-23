@@ -26,6 +26,7 @@ public class RemoveEdgeTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Removing edge from set");
 		mgr.removeFromSet(sets.getSelectedValue(), edge);
 		arg0.showMessage(TaskMonitor.Level.INFO, 
 		                 "Removed edge "+edge+" from set "+sets.getSelectedValue());

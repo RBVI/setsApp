@@ -99,6 +99,7 @@ public class CreateSetFromFileTask extends AbstractTask implements ObservableTas
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Creating set from file");
 		this.monitor = arg0;
 		if (network != null && nodesColumn != null) {
 			BufferedReader reader = new BufferedReader(new FileReader(setFile));

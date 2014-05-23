@@ -62,6 +62,7 @@ public class CreateSetTask extends AbstractTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Creating set");
 		List<CyNode> nodes = null;
 		List<CyEdge> edges = null;
 		if (net == null && network != null) {

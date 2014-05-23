@@ -6,6 +6,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -172,8 +175,8 @@ public class SetsMouseAdapter extends MouseAdapter {
 			if (singleSetSelected(e))
 				panel.enableExportButton(true);
 			else panel.enableExportButton(false);
-			panel.setFirstSet(set1);
-			panel.setSecondSet(set2);
+			// panel.setFirstSet(set1);
+			// panel.setSecondSet(set2);
 		}
 	}
 	public void mouseReleased(MouseEvent e) {
@@ -185,8 +188,8 @@ public class SetsMouseAdapter extends MouseAdapter {
 			if (singleSetSelected(e))
 				panel.enableExportButton(true);
 			else panel.enableExportButton(false);
-			panel.setFirstSet(set1);
-			panel.setSecondSet(set2);
+			// panel.setFirstSet(set1);
+			// panel.setSecondSet(set2);
 		}
 	}
 	private boolean singleSetSelected(MouseEvent e) {
@@ -199,13 +202,16 @@ public class SetsMouseAdapter extends MouseAdapter {
 		}
 		else return false;
 	}
+
 	private boolean getSetsSelectedFromTree(MouseEvent e) {
 		JTree tree = (JTree) e.getSource();
 		TreePath path[] = tree.getSelectionPaths();
 		if (path != null && path.length == 1) {
 			DefaultMutableTreeNode node1 = (DefaultMutableTreeNode) path[0].getLastPathComponent();
-			if (! node1.isRoot() && ((NodeInfo) node1.getUserObject()).cyId == null)
+			if (! node1.isRoot() && ((NodeInfo) node1.getUserObject()).cyId == null) {
 				set1 = ((NodeInfo) node1.getUserObject()).setName;
+				panel.setFirstSet(set1);
+			}
 			return false;
 		}
 		else if (path != null && path.length == 2) {
@@ -220,14 +226,37 @@ public class SetsMouseAdapter extends MouseAdapter {
 					set1 = ((NodeInfo) node2.getUserObject()).setName;
 					set2 = ((NodeInfo) node1.getUserObject()).setName;
 				}
-				if (mySets.getType(set1) == mySets.getType(set2))
+				if (mySets.getType(set1) == mySets.getType(set2)) {
+					panel.setFirstSet(set1);
+					panel.setSecondSet(set2);
 					return true;
+				}
 				else return false;
 			}
 			else return false;
 		}
+		else if (path != null && path.length > 2) {
+			Class<? extends CyIdentifiable> type = null;
+			List<String> setList = new ArrayList<String>();
+
+			for (int i = 0; i < path.length; i++) {
+				DefaultMutableTreeNode node = (DefaultMutableTreeNode) path[i].getLastPathComponent();
+				if (!node.isRoot() && ((NodeInfo) node.getUserObject()).cyId == null) {
+					String setName = ((NodeInfo) node.getUserObject()).setName;
+					if (type == null) 
+						type = mySets.getType(setName);
+					else
+						if (! mySets.getType(setName).equals(type) )
+							return false;
+					setList.add(setName);
+				}
+			}
+			panel.setSetList(setList);
+			return true;
+		}
 		else return false;
 	}
+
 	private void displaySelectedCyIds(String setName, Long cyId) {
 		CyNetwork curNetwork = mySets.getCyNetwork(setName);
 		CyTable curTable = null;

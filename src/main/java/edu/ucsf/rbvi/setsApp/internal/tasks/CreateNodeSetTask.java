@@ -52,6 +52,7 @@ public class CreateNodeSetTask extends AbstractTask implements ObservableTask {
 
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Creating node set");
 		List<CyNode> nodes;
 		if (net == null && network != null) {
 			nodes = nodeList.getValue();

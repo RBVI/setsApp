@@ -106,6 +106,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private HashMap<String, HashMap<Long, DefaultMutableTreeNode>> cyIdNode;
 	private JFileChooser chooseImport;
 	private String set1, set2;
+	private List<String> setsList;
 	
 	/**
 	 * Constructor for SetsPane
@@ -138,7 +139,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.UNION)));
+				if (setsList != null) {
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,setsList,SetOperations.UNION)));
+				} else
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.UNION)));
 			}
 		});
 		union.setEnabled(false);
@@ -148,7 +152,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.INTERSECT)));
+				if (setsList != null)
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,setsList,SetOperations.INTERSECT)));
+				else
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set1,set2,SetOperations.INTERSECT)));
 			}
 		});
 		intersection.setEnabled(false);
@@ -158,7 +165,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set2,set1,SetOperations.DIFFERENCE)));
+				if (setsList != null)
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,setsList,SetOperations.DIFFERENCE)));
+				else
+					taskManager.execute(new TaskIterator(new SetOperationsTask(mySets,set2,set1,SetOperations.DIFFERENCE)));
 			}
 		});
 		difference.setEnabled(false);
@@ -317,6 +327,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	 */
 	public void setFirstSet(String set) {
 		set1 = set;
+		setsList = null;
 	}
 
 	/**
@@ -326,6 +337,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	 */
 	public void setSecondSet(String set) {
 		set2 = set;
+		setsList = null;
+	}
+
+	/**
+	 * Set "setList" variable, usually used internally. Used by the "Set Operations" button to
+	 * determine what sets to use.
+	 * @param list of set names to use
+	 */
+	public void setSetList(List<String> sets) {
+		set1 = null;
+		set2 = null;
+		setsList = sets;
 	}
 
 	public SetsManager getSetsManager() {return mySets;}

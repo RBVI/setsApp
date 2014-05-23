@@ -40,6 +40,7 @@ public class CopySetTask extends AbstractTask implements ObservableTask {
 	
 	@Override
 	public void run(TaskMonitor arg0) throws Exception {
+		arg0.setTitle("Copying set");
 		if (selectSet != null) {
 			mgr.moveSet(selectSet.getSelectedValue(), newSet, networks.getSelectedValue());
 			arg0.showMessage(TaskMonitor.Level.INFO,

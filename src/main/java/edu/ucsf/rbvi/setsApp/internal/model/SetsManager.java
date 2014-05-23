@@ -229,6 +229,7 @@ public class SetsManager implements SessionLoadedListener {
 	 * session and loading them into SetsManager.
 	 */
 	public void initialize() {
+		System.out.println("Sets.initialize()");
 		reset();
 		CyTable cyTable;
 		Collection<CyColumn> cyColumns;
@@ -325,6 +326,24 @@ public class SetsManager implements SessionLoadedListener {
 			edgeTable.deleteColumn(setTableName);
 		fireSetRemovedEvent(name, cyNetwork);
 	}
+
+	/**
+	 * Creates a union of the sets, then adds the new set to set manager under the name
+	 * newName
+	 * @param newName name for new set created
+	 * @param setList Names of the sets to be operated on
+	 * @throws Exception Throws Exception if any of the sets do not exist, or if name for new
+	 * set already exists.
+	 */
+	public void union(String newName, List<String> setList) throws Exception {
+		sanityCheck(newName, setList);
+		Set<? extends CyIdentifiable> newSet = setsMap.get(setList.get(0));
+		for (int index = 1; index < setList.size(); index++) {
+			newSet = newSet.union(newName, setsMap.get(setList.get(index)));
+		}
+		addSet(newSet);
+	}
+			
 	
 	/**
 	 * Creates a union of set1 and set2, then adds the new set to set manager under the name
@@ -340,6 +359,23 @@ public class SetsManager implements SessionLoadedListener {
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).union(newName, setsMap.get(set2));
 		addSet(newSet);
 	}
+
+	/**
+	 * Creates an intersection of the sets, then adds the new set to set manager under the name
+	 * newName
+	 * @param newName name for new set created
+	 * @param setList Names of the sets to be operated on
+	 * @throws Exception Throws Exception if any of the sets do not exist, or if name for new
+	 * set already exists.
+	 */
+	public void intersection(String newName, List<String> setList) throws Exception {
+		sanityCheck(newName, setList);
+		Set<? extends CyIdentifiable> newSet = setsMap.get(setList.get(0));
+		for (int index = 1; index < setList.size(); index++) {
+			newSet = newSet.intersection(newName, setsMap.get(setList.get(index)));
+		}
+		addSet(newSet);
+	}
 	
 	/**
 	 * Creates an intersection of set1 and set2, then adds the new set to set manager under the name
@@ -353,6 +389,25 @@ public class SetsManager implements SessionLoadedListener {
 	public void intersection(String newName, String set1, String set2) throws Exception {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).intersection(newName, setsMap.get(set2));
+		addSet(newSet);
+	}
+
+	/**
+	 * Creates a difference of the sets, then adds the new set to set manager under the name
+	 * newName.  Note that doing a difference of multiple sets is not guaranteed to give the
+	 * same result each time.  This is because the difference operation is order-dependent, so
+	 * this approach isn't really recommended.
+	 * @param newName name for new set created
+	 * @param setList Names of the sets to be operated on
+	 * @throws Exception Throws Exception if any of the sets do not exist, or if name for new
+	 * set already exists.
+	 */
+	public void difference(String newName, List<String> setList) throws Exception {
+		sanityCheck(newName, setList);
+		Set<? extends CyIdentifiable> newSet = setsMap.get(setList.get(0));
+		for (int index = 1; index < setList.size(); index++) {
+			newSet = newSet.difference(newName, setsMap.get(setList.get(index)));
+		}
 		addSet(newSet);
 	}
 	
@@ -535,6 +590,16 @@ public class SetsManager implements SessionLoadedListener {
 		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
 		if (! setsMap.containsKey(set1)) throw new Exception("Set \"" + set1 + "\" does not exist.");
 		if (! setsMap.containsKey(set2)) throw new Exception("Set \"" + set2 + "\" does not exist.");
+	}
+
+	private void sanityCheck(String newName, List<String> setList) throws Exception {
+		if (setsMap.containsKey(newName)) throw new Exception("Set \"" + newName + "\" already exists. Choose a different name.");
+		for (String setName: setList) {
+			if (setName == null)
+				throw new Exception("Set name is null!");
+			else if (! setsMap.containsKey(setName)) 
+				throw new Exception("Set \"" + setName + "\" does not exist.");
+		}
 	}
 	
 	/* Event handling */
