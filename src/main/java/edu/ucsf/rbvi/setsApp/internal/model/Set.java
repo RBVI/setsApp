@@ -62,6 +62,20 @@ public class Set <T extends CyIdentifiable> {
 			}
 		}
 	}
+	
+	/**
+ 	 * Remove a list of nodes or edges from an existing set.  Note that the types must
+ 	 * match!
+ 	 *
+ 	 * @param cyIds the list of nodes or edges to remove
+ 	 */
+	public void removeElements(List<T> cyIds) {
+		for (T cyId: cyIds) {
+			if (network.getRow(cyId) != null && set.containsKey(cyId.getSUID())) {
+				set.remove(cyId.getSUID());
+			}
+		}
+	}
 
 	/**
  	 * Add a list of nodes or edges to an existing set using only their SUIDs.

@@ -391,6 +391,31 @@ public class SetsManager implements SessionLoadedListener {
 		} else 
 			throw new Exception("Node/Edge already in the set \"" + name + "\" or not in network.");
 	}
+	
+	/**
+	 * Add new elements to set
+	 * @param name Name of a set
+	 * @param cyIds List of CyIdentifiable elements
+	 * @throws Exception Throws exception of set does not exist, cyId is not in the network, or
+	 * the cyId already exists in the network.
+	 */
+	public void addToSet(String name, List<CyIdentifiable> cyIds) throws Exception {
+		if (!setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
+		Set<? extends CyIdentifiable> s = setsMap.get(name);
+		ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
+		for (CyIdentifiable cyId: cyIds) {
+			if (getCyNetwork(name).getRow(cyId) == null) 
+				throw new Exception(cyId + " is not in the network of set \"" + name + "\". Cannot perform operation.");
+			if (getCyNetwork(name).getRow(cyId) != null && s.add(cyId)) {
+				CyTable table = getCyNetwork(name).getTable(getType(name), CyNetwork.HIDDEN_ATTRS);
+				table.getRow(cyId.getSUID()).set(TABLE_PREFIX + name, true);
+				cyIdList.add(cyId);
+			} else {
+				throw new Exception("Node/Edge already in the set \"" + name + "\" or not in network.");
+			}
+		}
+		fireSetAddedEvent(name, cyIdList);
+	}
 
 	/**
 	 * Move set from one CyNetwork to another, if possible.
@@ -437,6 +462,26 @@ public class SetsManager implements SessionLoadedListener {
 			cyIdList.add(cyId);
 			fireSetRemovedEvent(name, cyIdList);
 		}
+	}
+	
+	/**
+	 * Remove elements from the set
+	 * @param name name of the set
+	 * @param cyIds List of CyIdentifiable elements
+	 * @throws Exception Throws Exception if the set does not exist.
+	 */
+	public void removeFromSet(String name, List<CyIdentifiable> cyIds) throws Exception {
+		if (! setsMap.containsKey(name)) throw new Exception("Set \"" + name + "\" does not exist.");
+		Set<? extends CyIdentifiable> s = setsMap.get(name);
+		ArrayList<CyIdentifiable> cyIdList = new ArrayList<CyIdentifiable>();
+		for (CyIdentifiable cyId: cyIds) {
+			if (s.remove(cyId)) {
+				CyTable table = getCyNetwork(name).getTable(getType(name), CyNetwork.HIDDEN_ATTRS);
+				table.getRow(cyId.getSUID()).set(TABLE_PREFIX + name, false);
+				cyIdList.add(cyId);
+			}
+		}
+		fireSetRemovedEvent(name, cyIdList);
 	}
 	
 	// Implementation for SessionLoadedListener 

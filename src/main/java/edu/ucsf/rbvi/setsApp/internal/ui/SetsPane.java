@@ -66,6 +66,7 @@ import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedListener;
+import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetOperations;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
@@ -409,6 +410,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		List<CyIdentifiable> added = (List<CyIdentifiable>) event.getCyIdsAdded(),
 				removed = (List<CyIdentifiable>) event.getCyIdsRemoved();
 		DefaultMutableTreeNode setNode = setsNode.get(event.getSetName());
+		Set set = mySets.getSet(event.getSetName());
 		if (added != null) {
 			for (CyIdentifiable node: added) {
 				String cyIdName = mySets.getElementName(cyNetwork, event.getSetName(), node);
@@ -417,10 +419,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		} else if (removed != null) {
 			for (CyIdentifiable edge: removed) {
-				treeModel.removeNodeFromParent(cyIdNode.get(event.getSetName()).get(edge.getSUID()));
+				DefaultMutableTreeNode treeNode = cyIdNode.get(event.getSetName()).get(edge.getSUID());
+				if (treeNode != null)
+					treeModel.removeNodeFromParent(treeNode);
 			}
 		}
-		setNode.setUserObject(new NodeInfo(event.getSetName() + " (" + setNode.getChildCount() + ")", event.getSetName()));
+		setNode.setUserObject(new NodeInfo(event.getSetName() + " (" + set.getElements().size() + ")", event.getSetName()));
 		treeModel.nodeChanged(setNode);
 	}
 
