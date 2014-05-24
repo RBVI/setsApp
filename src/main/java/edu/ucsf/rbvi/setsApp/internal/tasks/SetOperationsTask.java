@@ -29,6 +29,11 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 	
 	public SetOperationsTask(SetsManager setsManager, Class<? extends CyIdentifiable> type, SetOperations s) {
 		sm = setsManager;
+		if (type == null) {
+			// Coming from command-line help?
+			type = CyNode.class;
+		}
+
 		if (type.equals(CyNode.class) || type.equals(CyEdge.class)) {
 			List<String> attr = sm.getSetNames(type); 
 			this.set1 = new ListSingleSelection<String>(attr);

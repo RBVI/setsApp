@@ -192,7 +192,11 @@ public class CyActivator extends AbstractCyActivator {
 
 		// Now that everything is initialized, ask the SetsManager to look for any existing
 		// sets
-		sets.initialize();
+		try {
+			sets.initialize();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {
