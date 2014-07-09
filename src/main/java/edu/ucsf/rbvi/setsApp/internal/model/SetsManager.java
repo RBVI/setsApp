@@ -6,9 +6,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.TreeMap;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.BitSet;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
@@ -424,6 +428,97 @@ public class SetsManager implements SessionLoadedListener {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).difference(newName, setsMap.get(set2));
 		addSet(newSet);
+	}
+
+	private static BitSet calculateMembership(final Long suid, final List<Set<? extends CyIdentifiable>> sets) {
+		// calculate networkObject's membership -- the membership BitSet is effectively an array of booleans, where
+		// if index i in the BitSet is true, then the partition is derived from the set at index i in the sets list
+		final int numSets = sets.size();
+		final BitSet membership = new BitSet(numSets);
+		for (int i = 0; i < numSets; i++) {
+			if (sets.get(i).hasCyId(suid)) {
+				membership.set(i);
+			}
+		}
+		return membership;
+	}
+
+	private static String createPartitionName(final BitSet membership, final List<Set<? extends CyIdentifiable>> sets, final StringBuffer buffer) {
+    if (membership.isEmpty()) {
+      return "Remaining";
+    } else {
+      buffer.setLength(0); // clear buffer before using it
+      for (int i = membership.nextSetBit(0); i >= 0; i = membership.nextSetBit(i+1)) { // loop thru each set bit in membership
+        final Set<? extends CyIdentifiable> set = sets.get(i);
+        buffer.append(set.getName());
+        buffer.append(", ");
+      }
+      final int length = buffer.length();
+      buffer.delete(length - 2, length); // delete the final comma and space
+      return buffer.toString();
+    }
+	}
+
+	public void partition(final CyNetwork network, final Class<? extends CyIdentifiable> networkObjectType) {
+		final Iterable<? extends CyIdentifiable> networkObjects = networkObjectType.equals(CyNode.class) ? network.getNodeList() : network.getEdgeList();
+		final StringBuffer buffer = new StringBuffer();
+
+		// copy setsMap to a list -- we need an ordered collection for calculating membership
+		final List<Set<? extends CyIdentifiable>> sets = new ArrayList<Set<? extends CyIdentifiable>>(setsMap.values());
+
+		// create the partitions
+		final Map<BitSet,Set<? extends CyIdentifiable>> partitions = new TreeMap<BitSet,Set<? extends CyIdentifiable>>(PartitionComparator.INSTANCE);
+		for (final CyIdentifiable networkObject : networkObjects) {
+			final Long suid = networkObject.getSUID();
+			final BitSet membership = calculateMembership(suid, sets);
+			// store networkObject into the partitions map
+			if (!partitions.containsKey(membership)) {
+				final Set<CyIdentifiable> partition = new Set<CyIdentifiable>(
+						createPartitionName(membership, sets, buffer),
+						network,
+						networkObjectType);
+				partitions.put(membership, partition);
+			}
+			partitions.get(membership).add(networkObject);
+		}
+
+		// remove all sets
+		for (final Set<? extends CyIdentifiable> set : sets) {
+			try {
+				removeSet(set.getName());
+			} catch (Exception e) {} // Yikes! removeSet() should throw IllegalArgumentException instead of Exception
+		}
+
+		// add partitions
+		for (final Map.Entry<BitSet,Set<? extends CyIdentifiable>> entry : partitions.entrySet()) {
+			addSet(entry.getValue());
+		}
+	}
+
+	static class PartitionComparator implements Comparator<BitSet> {
+		public static PartitionComparator INSTANCE = new PartitionComparator();
+	  public int compare(BitSet o1, BitSet o2) {
+	    // Compare the cardinality first. Here cardinality
+	    // represents the number of node lists a partition
+	    // belongs to. Partitions that belong
+	    // to fewer node lists should appear higher.
+	    final int card1 = o1.cardinality();
+	    final int card2 = o2.cardinality();
+	    final int cardD = card1 - card2;
+	    if (cardD != 0) {
+	      return cardD;
+	    }
+
+	    // Do a bitwise comparison so that the partitions' orders
+	    // reflect the order of node lists
+	    final int len = Math.max(o1.length(), o2.length());
+	    for (int i = len - 1; i >= 0; i--) {
+	      if (o1.get(i) != o2.get(i)) {
+	        return o1.get(i) ? 1 : -1;
+	      }
+	    }
+	    return 0;
+	  }
 	}
 	
 	/**

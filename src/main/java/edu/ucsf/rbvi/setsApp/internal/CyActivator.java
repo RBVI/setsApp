@@ -51,6 +51,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributesTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.tasks.PartitionNodesTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveFromSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveEdgeViewTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveNodeViewTaskFactory;
@@ -189,6 +190,11 @@ public class CyActivator extends AbstractCyActivator {
 		Properties nodeDifferenceProperties = new Properties();
 		setStandardProperties(nodeDifferenceProperties, null, "difference", "3.0");
 		registerService(bc,nodeDifference, TaskFactory.class, nodeDifferenceProperties);
+
+		TaskFactory partitionNodes = new PartitionNodesTaskFactory(sets);
+		Properties partitionNodesProperties = new Properties();
+		setStandardProperties(partitionNodesProperties, null, "partition", "4.0");
+		registerService(bc,partitionNodes, TaskFactory.class, partitionNodesProperties);
 
 		// Now that everything is initialized, ask the SetsManager to look for any existing
 		// sets
