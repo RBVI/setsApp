@@ -77,6 +77,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.PartitionNodesTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
@@ -89,7 +90,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  *
  */
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener {
-	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, exportSet;
+	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, partition, exportSet;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
 	private DefaultTreeModel treeModel;
@@ -172,6 +173,17 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 		difference.setEnabled(false);
+
+		partition = new JButton("Partition Node Sets");
+		partition.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		partition.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new PartitionNodesTask(mySets, appManager.getCurrentNetwork())));
+			}
+		});
+
 		// Button for exporting set to file
 		exportSet = new JButton("Export Set to File");
 		exportSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
@@ -285,6 +297,12 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		buttons1.add(union);
 		buttons1.add(intersection);
 		buttons1.add(difference);
+
+		JPanel buttons3 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
+		buttons3.setBorder(BorderFactory.createTitledBorder("Partitions"));
+		adjustWidth(new JButton[] {partition});
+		buttons3.add(partition);
+
 		// Create "Import/Export Sets to File"
 		JPanel buttons2 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
 		buttons2.setBorder(BorderFactory.createTitledBorder("Import/Export Sets to File"));
@@ -293,6 +311,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		buttons2.add(exportSet);
 
 		btmPanel.add(buttons1, BorderLayout.NORTH);
+		btmPanel.add(buttons3, BorderLayout.CENTER);
 		btmPanel.add(buttons2, BorderLayout.SOUTH);
 
 		modePanel.add(topPanel, BorderLayout.NORTH);
