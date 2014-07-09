@@ -535,9 +535,9 @@ public class SetsManager implements SessionLoadedListener {
 		public static PartitionComparator INSTANCE = new PartitionComparator();
 	  public int compare(BitSet o1, BitSet o2) {
 	    // Compare the cardinality first. Here cardinality
-	    // represents the number of node lists a partition
+	    // represents the number of sets a partition
 	    // belongs to. Partitions that belong
-	    // to fewer node lists should appear higher.
+	    // to fewer sets should appear higher.
 	    final int card1 = o1.cardinality();
 	    final int card2 = o2.cardinality();
 	    final int cardD = card1 - card2;
@@ -546,7 +546,7 @@ public class SetsManager implements SessionLoadedListener {
 	    }
 
 	    // Do a bitwise comparison so that the partitions' orders
-	    // reflect the order of node lists
+	    // reflect the order of sets
 	    final int len = Math.max(o1.length(), o2.length());
 	    for (int i = len - 1; i >= 0; i--) {
 	      if (o1.get(i) != o2.get(i)) {
