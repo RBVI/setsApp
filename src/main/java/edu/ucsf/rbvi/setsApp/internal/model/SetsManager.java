@@ -430,9 +430,14 @@ public class SetsManager implements SessionLoadedListener {
 		addSet(newSet);
 	}
 
+	/**
+	 * Calculate a network object's membership.
+	 * @param suid A network object's SUID
+	 * @param sets An ordered collection of sets to be partitioned
+	 * @return The membership BitSet (effectively an array of booleans) where
+	 * if index i in the BitSet is true, then the partition is derived from the set at index i in the sets list
+	 */
 	private static BitSet calculateMembership(final Long suid, final List<Set<? extends CyIdentifiable>> sets) {
-		// calculate networkObject's membership -- the membership BitSet is effectively an array of booleans, where
-		// if index i in the BitSet is true, then the partition is derived from the set at index i in the sets list
 		final int numSets = sets.size();
 		final BitSet membership = new BitSet(numSets);
 		for (int i = 0; i < numSets; i++) {
@@ -459,12 +464,43 @@ public class SetsManager implements SessionLoadedListener {
     }
 	}
 
+	/**
+	 * Partition the sets such that all possible intersections are
+	 * represented as their own sets. In other words, nodes (or edges)
+	 * that belong to more than one set are pulled out and put into
+	 * their own intersection sets. After partitioning, a node (or edge) will belong
+	 * to only one set.
+	 *
+	 * Here's an example:
+   * <p><b>Before partitioning:</b>
+   * <ul>
+	 *   <li>set A: node X, node Y</li>
+	 *   <li>set B: node Y, node Z</li>
+	 *   <li>set C: node X</li>
+   * </ul></p>
+   * <p><b>After partitioning:</b>
+   * <ul>
+	 *   <li>set B: node Z</li>
+	 *   <li>set A, B: node Y</li>
+	 *   <li>set A, C: node X</li>
+   * </ul></p>
+   *
+   * @param network The network to which the sets belong to.
+   * @param networkObjectType Either {@code CyNode.class} to only partition node sets
+   * or {@code CyEdge.class} for edge sets.
+	 */
 	public void partition(final CyNetwork network, final Class<? extends CyIdentifiable> networkObjectType) {
 		final Iterable<? extends CyIdentifiable> networkObjects = networkObjectType.equals(CyNode.class) ? network.getNodeList() : network.getEdgeList();
 		final StringBuffer buffer = new StringBuffer();
 
 		// copy setsMap to a list -- we need an ordered collection for calculating membership
-		final List<Set<? extends CyIdentifiable>> sets = new ArrayList<Set<? extends CyIdentifiable>>(setsMap.values());
+		final List<Set<? extends CyIdentifiable>> sets = new ArrayList<Set<? extends CyIdentifiable>>(setsMap.size());
+		for (final Map.Entry<String,Set<? extends CyIdentifiable>> entry : setsMap.entrySet()) {
+			final Set<? extends CyIdentifiable> set = entry.getValue();
+			if (set.getType().equals(networkObjectType) && set.getNetwork().equals(network)) {
+				sets.add(set);
+			}
+		}
 
 		// create the partitions
 		final Map<BitSet,Set<? extends CyIdentifiable>> partitions = new TreeMap<BitSet,Set<? extends CyIdentifiable>>(PartitionComparator.INSTANCE);
@@ -482,7 +518,7 @@ public class SetsManager implements SessionLoadedListener {
 			partitions.get(membership).add(networkObject);
 		}
 
-		// remove all sets
+		// remove all sets that we partitioned
 		for (final Set<? extends CyIdentifiable> set : sets) {
 			try {
 				removeSet(set.getName());
