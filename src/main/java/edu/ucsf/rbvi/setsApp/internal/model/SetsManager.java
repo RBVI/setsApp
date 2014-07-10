@@ -219,6 +219,22 @@ public class SetsManager implements SessionLoadedListener {
 		}
 		else return null;
 	}
+
+	/**
+	 * Return an ordered collection of sets that belong to the given {@code network}
+	 * and are of the given {@code type}.
+	 * @param type Must be either {@code CyNode.class} or {@code CyEdge.class}
+	 */
+	public <T extends CyIdentifiable> List<Set<T>> getSetsFor(final CyNetwork network, final Class<T> type) {
+		final List<Set<T>> sets = new ArrayList<Set<T>>(setsMap.size());
+		for (final Map.Entry<String,Set<? extends CyIdentifiable>> entry : setsMap.entrySet()) {
+			final Set<? extends CyIdentifiable> set = entry.getValue();
+			if (set.getType().equals(type) && set.getNetwork().equals(network)) {
+				sets.add((Set<T>) set);
+			}
+		}
+		return sets;
+	}
 	
 	/**
 	 * Clear all sets from the SetsManager
@@ -437,7 +453,7 @@ public class SetsManager implements SessionLoadedListener {
 	 * @return The membership BitSet (effectively an array of booleans) where
 	 * if index i in the BitSet is true, then the partition is derived from the set at index i in the sets list
 	 */
-	private static BitSet calculateMembership(final Long suid, final List<Set<? extends CyIdentifiable>> sets) {
+	private static <T extends CyIdentifiable> BitSet calculateMembership(final Long suid, final List<Set<T>> sets) {
 		final int numSets = sets.size();
 		final BitSet membership = new BitSet(numSets);
 		for (int i = 0; i < numSets; i++) {
@@ -448,13 +464,13 @@ public class SetsManager implements SessionLoadedListener {
 		return membership;
 	}
 
-	private static String createPartitionName(final BitSet membership, final List<Set<? extends CyIdentifiable>> sets, final StringBuffer buffer) {
+	private static <T extends CyIdentifiable> String createPartitionName(final BitSet membership, final List<Set<T>> sets, final StringBuffer buffer) {
     if (membership.isEmpty()) {
       return "Remaining";
     } else {
       buffer.setLength(0); // clear buffer before using it
       for (int i = membership.nextSetBit(0); i >= 0; i = membership.nextSetBit(i+1)) { // loop thru each set bit in membership
-        final Set<? extends CyIdentifiable> set = sets.get(i);
+        final Set<T> set = sets.get(i);
         buffer.append(set.getName());
         buffer.append(", ");
       }
@@ -489,27 +505,20 @@ public class SetsManager implements SessionLoadedListener {
    * @param networkObjectType Either {@code CyNode.class} to only partition node sets
    * or {@code CyEdge.class} for edge sets.
 	 */
-	public void partition(final CyNetwork network, final Class<? extends CyIdentifiable> networkObjectType) {
+	public <T extends CyIdentifiable> void partition(final CyNetwork network, final Class<T> networkObjectType) {
 		final Iterable<? extends CyIdentifiable> networkObjects = networkObjectType.equals(CyNode.class) ? network.getNodeList() : network.getEdgeList();
 		final StringBuffer buffer = new StringBuffer();
 
-		// copy setsMap to a list -- we need an ordered collection for calculating membership
-		final List<Set<? extends CyIdentifiable>> sets = new ArrayList<Set<? extends CyIdentifiable>>(setsMap.size());
-		for (final Map.Entry<String,Set<? extends CyIdentifiable>> entry : setsMap.entrySet()) {
-			final Set<? extends CyIdentifiable> set = entry.getValue();
-			if (set.getType().equals(networkObjectType) && set.getNetwork().equals(network)) {
-				sets.add(set);
-			}
-		}
+		final List<Set<T>> sets = getSetsFor(network, networkObjectType);
 
 		// create the partitions
-		final Map<BitSet,Set<? extends CyIdentifiable>> partitions = new TreeMap<BitSet,Set<? extends CyIdentifiable>>(PartitionComparator.INSTANCE);
+		final Map<BitSet,Set<T>> partitions = new TreeMap<BitSet,Set<T>>(PartitionComparator.INSTANCE);
 		for (final CyIdentifiable networkObject : networkObjects) {
 			final Long suid = networkObject.getSUID();
 			final BitSet membership = calculateMembership(suid, sets);
 			// store networkObject into the partitions map
 			if (!partitions.containsKey(membership)) {
-				final Set<CyIdentifiable> partition = new Set<CyIdentifiable>(
+				final Set<T> partition = new Set<T>(
 						createPartitionName(membership, sets, buffer),
 						network,
 						networkObjectType);
@@ -526,7 +535,7 @@ public class SetsManager implements SessionLoadedListener {
 		}
 
 		// add partitions
-		for (final Map.Entry<BitSet,Set<? extends CyIdentifiable>> entry : partitions.entrySet()) {
+		for (final Map.Entry<BitSet,Set<T>> entry : partitions.entrySet()) {
 			addSet(entry.getValue());
 		}
 	}

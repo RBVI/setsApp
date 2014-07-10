@@ -31,11 +31,13 @@ import org.cytoscape.task.NetworkCollectionTaskFactory;
 import org.cytoscape.task.NetworkTaskFactory;
 import org.cytoscape.task.NetworkViewTaskFactory;
 import org.cytoscape.task.NodeViewTaskFactory;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.AbstractTaskFactory;
 import org.cytoscape.work.TaskFactory;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.work.undo.UndoSupport;
 import org.osgi.framework.BundleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,6 +61,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTaskFactory;
+import edu.ucsf.rbvi.setsApp.internal.layouts.GridLayoutAlgorithm;
 import edu.ucsf.rbvi.setsApp.internal.ui.SetsPane;
 
 public class CyActivator extends AbstractCyActivator {
@@ -203,6 +206,16 @@ public class CyActivator extends AbstractCyActivator {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+
+		/* Layouts */
+
+		UndoSupport undoSupport = getService(bc, UndoSupport.class);
+		CyLayoutAlgorithm gridLayoutAlgorithm = new GridLayoutAlgorithm(sets, undoSupport);
+		Properties gridLayoutAlgorithmProps = new Properties();
+		gridLayoutAlgorithmProps.setProperty("preferredTaskManager","menu");
+    gridLayoutAlgorithmProps.setProperty(TITLE,gridLayoutAlgorithmProps.toString());
+    gridLayoutAlgorithmProps.setProperty(MENU_GRAVITY,"20.0");
+    registerService(bc, gridLayoutAlgorithm, CyLayoutAlgorithm.class, gridLayoutAlgorithmProps);
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {
