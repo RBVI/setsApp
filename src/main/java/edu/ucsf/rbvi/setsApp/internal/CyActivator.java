@@ -62,6 +62,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.SetOperationsTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTaskFactory;
 import edu.ucsf.rbvi.setsApp.internal.layouts.GridLayoutAlgorithm;
+import edu.ucsf.rbvi.setsApp.internal.layouts.ForceDirectedLayoutAlgorithm;
 import edu.ucsf.rbvi.setsApp.internal.ui.SetsPane;
 
 public class CyActivator extends AbstractCyActivator {
@@ -210,12 +211,20 @@ public class CyActivator extends AbstractCyActivator {
 		/* Layouts */
 
 		UndoSupport undoSupport = getService(bc, UndoSupport.class);
+
 		CyLayoutAlgorithm gridLayoutAlgorithm = new GridLayoutAlgorithm(sets, undoSupport);
 		Properties gridLayoutAlgorithmProps = new Properties();
 		gridLayoutAlgorithmProps.setProperty("preferredTaskManager","menu");
     gridLayoutAlgorithmProps.setProperty(TITLE,gridLayoutAlgorithmProps.toString());
     gridLayoutAlgorithmProps.setProperty(MENU_GRAVITY,"20.0");
     registerService(bc, gridLayoutAlgorithm, CyLayoutAlgorithm.class, gridLayoutAlgorithmProps);
+
+		CyLayoutAlgorithm forceDirectedLayoutAlgorithm = new ForceDirectedLayoutAlgorithm(sets, undoSupport);
+		Properties forceDirectedLayoutAlgorithmProps = new Properties();
+		forceDirectedLayoutAlgorithmProps.setProperty("preferredTaskManager","menu");
+    forceDirectedLayoutAlgorithmProps.setProperty(TITLE,forceDirectedLayoutAlgorithmProps.toString());
+    forceDirectedLayoutAlgorithmProps.setProperty(MENU_GRAVITY,"20.1");
+    registerService(bc, forceDirectedLayoutAlgorithm, CyLayoutAlgorithm.class, forceDirectedLayoutAlgorithmProps);
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {
