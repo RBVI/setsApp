@@ -1,9 +1,11 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
 
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
@@ -22,6 +24,8 @@ import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 
 public class CreateSetFromAttributeTask extends AbstractTask implements ObservableTask {
+	static final HashSet<Class<?>> DISCRETE_TYPES = new HashSet<Class<?>>(Arrays.asList(String.class, Integer.class, Long.class));
+
 	@Tunable(description="Select the name of the column:")
 	public ListSingleSelection<String> colName;
 	@Tunable(description="Enter a prefix for the sets:")
@@ -29,20 +33,20 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 	private SetsManager setsManager;
 	private CyNetwork cyNetwork = null;
 	private String newName;
-	private	Map<String, Set<? extends CyIdentifiable>> cySet;
+	private	Map<Object, Set<? extends CyIdentifiable>> cySet;
 	private Class<? extends CyIdentifiable> type;
 
 	public CreateSetFromAttributeTask(SetsManager mgr, CyNetwork network, Class<? extends CyIdentifiable> t) {
 		setsManager = mgr;
 		cyNetwork = network;
 		type = t;
-		colName = new ListSingleSelection<String>(getStringAttributes(network, t));
+		colName = new ListSingleSelection<String>(getDiscreteAttributes(network, t));
 	}
 	
 	public void run(TaskMonitor taskMonitor) throws Exception {
 		taskMonitor.setTitle("Creating set from attribute");
 		String column = colName.getSelectedValue();
-		cySet = new HashMap<String, Set<? extends CyIdentifiable>>();
+		cySet = new HashMap<Object, Set<? extends CyIdentifiable>>();
 
 		CyTable cyTable;
 		if (type.equals(CyNode.class))
@@ -54,11 +58,14 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 		List<Long> cyIdList = cyIdColumn.getValues(Long.class);
 
 		for (Long cyId: cyIdList) {
-			String attrName = setName + ":" + cyTable.getRow(cyId).get(column, String.class);
+			Object value = cyTable.getRow(cyId).getRaw(column);
+			if (value == null)
+				continue;
+			String attrName = setName + ":" + value.toString();
 			addSet(attrName, cyId);
 		}
 
-		for (String s: cySet.keySet()) {
+		for (Object s: cySet.keySet()) {
 			setsManager.addSet(cySet.get(s));
 		}
 		taskMonitor.showMessage(TaskMonitor.Level.INFO, 
@@ -90,7 +97,7 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 		}
 	}
 
-	private List<String> getStringAttributes(CyNetwork network, Class<? extends CyIdentifiable> t) {
+	private List<String> getDiscreteAttributes(CyNetwork network, Class<? extends CyIdentifiable> t) {
 		List<String> attr = new ArrayList<String>();
 		CyTable table = null;
 		if (t.equals(CyNode.class))
@@ -98,7 +105,7 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 		else
 			table = network.getDefaultEdgeTable();
 		for (CyColumn column : table.getColumns()) {
-			if (column.getType() == String.class) {
+			if (DISCRETE_TYPES.contains(column.getType())) {
 				attr.add(column.getName());
 			}
 		}
