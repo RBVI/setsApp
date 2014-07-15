@@ -57,13 +57,28 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 		CyColumn cyIdColumn = cyTable.getPrimaryKey();
 		List<Long> cyIdList = cyIdColumn.getValues(Long.class);
 
-		for (Long cyId: cyIdList) {
-			Object value = cyTable.getRow(cyId).getRaw(column);
-			if (value == null)
-				continue;
-			String attrName = setName + ":" + value.toString();
-			addSet(attrName, cyId);
+		if (cyTable.getColumn(column).getType().equals(List.class)) {
+			for (Long cyId: cyIdList) {
+				List<?> values = cyTable.getRow(cyId).getList(column, cyTable.getColumn(column).getListElementType());
+				if (values == null) {
+					continue;
+				}
+				for (Object value : values) {
+					String attrName = setName + ":" + value.toString();
+					addSet(attrName, cyId);
+				}
+			}
+		} else {
+			for (Long cyId: cyIdList) {
+				Object value = cyTable.getRow(cyId).getRaw(column);
+				if (value == null) {
+					continue;
+				}
+				String attrName = setName + ":" + value.toString();
+				addSet(attrName, cyId);
+			}
 		}
+
 
 		for (Object s: cySet.keySet()) {
 			setsManager.addSet(cySet.get(s));
@@ -105,7 +120,10 @@ public class CreateSetFromAttributeTask extends AbstractTask implements Observab
 		else
 			table = network.getDefaultEdgeTable();
 		for (CyColumn column : table.getColumns()) {
-			if (DISCRETE_TYPES.contains(column.getType())) {
+			Class<?> type = column.getType();
+			if (DISCRETE_TYPES.contains(type) ||
+					(List.class.equals(type) &&
+					 DISCRETE_TYPES.contains(column.getListElementType()))) {
 				attr.add(column.getName());
 			}
 		}
