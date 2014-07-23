@@ -180,6 +180,7 @@ public class SetsMouseAdapter extends MouseAdapter {
 		}
 	}
 	public void mouseReleased(MouseEvent e) {
+
 		if (e.isPopupTrigger()) popupEvent(e);
 		else {
 			if (getSetsSelectedFromTree(e))
@@ -188,6 +189,8 @@ public class SetsMouseAdapter extends MouseAdapter {
 			if (singleSetSelected(e))
 				panel.enableExportButton(true);
 			else panel.enableExportButton(false);
+			JTree tree = (JTree)e.getSource();
+			panel.enableRemoveButton(tree.getSelectionPath() != null);
 			// panel.setFirstSet(set1);
 			// panel.setSecondSet(set2);
 		}

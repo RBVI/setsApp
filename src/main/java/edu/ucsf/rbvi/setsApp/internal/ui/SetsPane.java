@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
@@ -90,7 +92,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  *
  */
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener {
-	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, partition, exportSet;
+	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, partition, exportSet, removeBtn;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
 	private DefaultTreeModel treeModel;
@@ -126,7 +128,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		setPreferredSize(new Dimension(500,600));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 		// Button for importing sets from file
-		importSet = new JButton("Import Set From File");
+		ImageIcon importSetIcon = new ImageIcon(getClass().getResource("/icons/import.png"));
+		importSet = new JButton(importSetIcon);
+		importSet.setToolTipText("Import a set from a file.");
 		importSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		importSet.addActionListener(new ActionListener() {
 			
@@ -135,7 +139,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 		// Button for set union
-		union = new JButton("Union");
+		ImageIcon unionIcon = new ImageIcon(getClass().getResource("/icons/union.png"));
+		union = new JButton(unionIcon);
+		union.setToolTipText("<html>Create a new set from the <b>union</b> of two or more selected sets.</html>");
 		union.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		union.addActionListener(new ActionListener() {
 			
@@ -148,7 +154,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		union.setEnabled(false);
 		// Button for set intersection
-		intersection = new JButton("Intersection");
+		ImageIcon intersectIcon = new ImageIcon(getClass().getResource("/icons/intersect.png"));
+		intersection = new JButton(intersectIcon);
+		intersection.setToolTipText("<html>Create a new set from the <b>intersection</b> of two or more selected sets.</html>");
 		intersection.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		intersection.addActionListener(new ActionListener() {
 			
@@ -161,7 +169,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		intersection.setEnabled(false);
 		// Button for set difference
-		difference = new JButton("Difference");
+		ImageIcon differenceIcon = new ImageIcon(getClass().getResource("/icons/difference.png"));
+		difference = new JButton(differenceIcon);
+		difference.setToolTipText("<html>Create a new set from the <b>difference</b> of two or more selected sets.</html>");
 		difference.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		difference.addActionListener(new ActionListener() {
 			
@@ -174,7 +184,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 		difference.setEnabled(false);
 
-		partition = new JButton("Partition Node Sets");
+		ImageIcon partitionIcon = new ImageIcon(getClass().getResource("/icons/partition.png"));
+		partition = new JButton(partitionIcon);
+		partition.setToolTipText("<html><b>Partition</b> all node sets such that &mdash; after partitioning &mdash; each node in the network belongs to only one node set.</html>");
 		partition.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		partition.addActionListener(new ActionListener() {
 			
@@ -185,7 +197,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		});
 
 		// Button for exporting set to file
-		exportSet = new JButton("Export Set to File");
+		ImageIcon exportSetIcon = new ImageIcon(getClass().getResource("/icons/export.png"));
+		exportSet = new JButton(exportSetIcon);
+		exportSet.setToolTipText("Export the selected set to a file");
 		exportSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
 		exportSet.addActionListener(new ActionListener() {
 			
@@ -212,107 +226,112 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		modePanel.setBorder(BorderFactory.createEmptyBorder(BS, BS, BS, BS));
 		
 		// Create "New Sets" panel
-		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		topPanel.setBorder(BorderFactory.createTitledBorder("New Sets"));
-		final String noneSelected = "",
-				selectNodes = "selected nodes",
-				selectEdges = "selected edges",
-				attrNodes = "node attributes",
-				attrEdges = "edge attributes";
-		final String [] selectOptions = {noneSelected, selectNodes, selectEdges, attrNodes, attrEdges};
-		final PartialDisableComboBox createSetsFromSelected = new PartialDisableComboBox();
-		createSetsFromSelected.addItem(selectOptions[0], false);
-		createSetsFromSelected.addItem(selectOptions[1], false);
-		createSetsFromSelected.addItem(selectOptions[2], false);
-		createSetsFromSelected.addItem(selectOptions[3], false);
-		createSetsFromSelected.addItem(selectOptions[4], false);
-		createSetsFromSelected.setSelectedIndex(0);
-		createSetsFromSelected.addPopupMenuListener(new PopupMenuListener() {
-			
-			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+		final Action addSelectedNodes = new AbstractAction("selected nodes") {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new CreateNodeSetTask(mySets, appManager.getCurrentNetwork())));
+			}
+		};
+		final Action addSelectedEdges = new AbstractAction("selected edges") {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new CreateEdgeSetTask(mySets, appManager.getCurrentNetwork())));
+			}
+		};
+		final Action addNodeAttributes = new AbstractAction("node attributes") {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyNode.class)));
+			}
+		};	
+		final Action addEdgeAttributes = new AbstractAction("edge attributes") {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyEdge.class)));
+			}
+		};	
+		final JPopupMenu addMenu = new JPopupMenu();
+		addMenu.add(addSelectedNodes);
+		addMenu.add(addSelectedEdges);
+		addMenu.add(addNodeAttributes);
+		addMenu.add(addEdgeAttributes);
+
+		ImageIcon addIcon = new ImageIcon(getClass().getResource("/icons/add.png"));
+		final JButton addBtn = new JButton(addIcon);
+		addBtn.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
 				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 				CyNetwork curNetwork = appManager.getCurrentNetwork();
-				createSetsFromSelected.setItemEnabled(0, true);
 				if (curNetwork != null) {
 					List<CyNode> nodes = CyTableUtil.getNodesInState(curNetwork, CyNetwork.SELECTED, true);
 					List<CyEdge> edges = CyTableUtil.getEdgesInState(curNetwork, CyNetwork.SELECTED, true);
-					if (!nodes.isEmpty())
-						createSetsFromSelected.setItemEnabled(1, true);
-					else
-						createSetsFromSelected.setItemEnabled(1, false);
-					if (!edges.isEmpty())
-						createSetsFromSelected.setItemEnabled(2, true);
-					else
-						createSetsFromSelected.setItemEnabled(2, false);
+					addSelectedNodes.setEnabled(!nodes.isEmpty());
+					addSelectedEdges.setEnabled(!edges.isEmpty());
 					CyTable nodesTable = curNetwork.getDefaultNodeTable(),
-							edgesTable = curNetwork.getDefaultEdgeTable();
-					if (!nodesTable.getColumns().isEmpty())
-						createSetsFromSelected.setItemEnabled(3, true);
-					if (!edgesTable.getColumns().isEmpty())
-						createSetsFromSelected.setItemEnabled(4, true);
+					        edgesTable = curNetwork.getDefaultEdgeTable();
+					addNodeAttributes.setEnabled(!nodesTable.getColumns().isEmpty());
+					addEdgeAttributes.setEnabled(!edgesTable.getColumns().isEmpty());
+				} else {
+					addSelectedNodes.setEnabled(false);
+					addSelectedEdges.setEnabled(false);
+					addNodeAttributes.setEnabled(false);
+					addEdgeAttributes.setEnabled(false);
 				}
-				else {
-					for (int i = 1; i < selectOptions.length; i++)
-						createSetsFromSelected.setItemEnabled(i, false);
-				}
-			}
-			
-			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-				// TODO Auto-generated method stub
-			}
-			
-			public void popupMenuCanceled(PopupMenuEvent e) {
-				// TODO Auto-generated method stub
-				
+				addMenu.show(addBtn, 0, addBtn.getHeight());
 			}
 		});
-		createSetsFromSelected.addActionListener(new ActionListener() {
+
+		ImageIcon removeIcon = new ImageIcon(getClass().getResource("/icons/remove.png"));
+		removeBtn = new JButton(removeIcon);
+		removeBtn.setEnabled(false);
+		removeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				JComboBox selectedStuff = (JComboBox) e.getSource();
-				String selectedType = (String) selectedStuff.getSelectedItem();
-				selectedStuff.setPopupVisible(false);
-				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
-				if (selectedType.equals(selectNodes))
-					taskManager.execute(new TaskIterator(new CreateNodeSetTask(mySets, appManager.getCurrentNetwork())));
-				if (selectedType.equals(selectEdges))
-					taskManager.execute(new TaskIterator(new CreateEdgeSetTask(mySets, appManager.getCurrentNetwork())));
-				if (selectedType.equals(attrNodes))
-					taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyNode.class)));
-				if (selectedType.equals(attrEdges))
-					taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyEdge.class)));
+				TreePath[] paths = setsTree.getSelectionPaths();
 
-				selectedStuff.setSelectedIndex(0);
+				// delete set elements first
+				for (TreePath path : paths) {
+					final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+					boolean isSetElement = ! node.isRoot() && ((NodeInfo) node.getUserObject()).cyId != null;
+					if (isSetElement) {
+						final DefaultMutableTreeNode setNode = (DefaultMutableTreeNode) node.getParent();
+						final CyIdentifiable selectecCyId = ((NodeInfo) node.getUserObject()).cyId;
+						final String thisSetName = ((NodeInfo) setNode.getUserObject()).setName;
+						try {
+							mySets.removeFromSet(thisSetName, selectecCyId);
+						} catch (Exception ex) {
+							ex.printStackTrace();
+						}
+					}
+				}
+
+				// delete sets
+				for (TreePath path : paths) {
+					final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
+					boolean isSetElement = ! node.isRoot() && ((NodeInfo) node.getUserObject()).cyId != null;
+					if (!isSetElement) {
+						taskManager.execute(new TaskIterator(new RemoveSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
+					}
+				}
 			}
 		});
+
+		JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, BS, 0));
+		topPanel.add(addBtn);
+		topPanel.add(removeBtn);
 		
-		topPanel.add(new Label("Create set from:"));
-		topPanel.add(createSetsFromSelected);
-	//	topPanel.add(createSet);
-		
+		JPanel leftBtmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		leftBtmPanel.add(importSet);
+		leftBtmPanel.add(exportSet);
+
+		JPanel rightBtmPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+		rightBtmPanel.add(partition);
+		rightBtmPanel.add(union);
+		rightBtmPanel.add(intersection);
+		rightBtmPanel.add(difference);
+
 		JPanel btmPanel = new JPanel(new BorderLayout(BS, BS));
-		// Create "Set Operations" panel
-		JPanel buttons1 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		buttons1.setBorder(BorderFactory.createTitledBorder("Set Operations"));
-		adjustWidth(new JButton[] {union, intersection, difference});
-		buttons1.add(union);
-		buttons1.add(intersection);
-		buttons1.add(difference);
-
-		JPanel buttons3 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		buttons3.setBorder(BorderFactory.createTitledBorder("Partitions"));
-		adjustWidth(new JButton[] {partition});
-		buttons3.add(partition);
-
-		// Create "Import/Export Sets to File"
-		JPanel buttons2 = new JPanel(new FlowLayout(FlowLayout.CENTER, BS, 0));
-		buttons2.setBorder(BorderFactory.createTitledBorder("Import/Export Sets to File"));
-		adjustWidth(new JButton[] {importSet, exportSet});
-		buttons2.add(importSet);
-		buttons2.add(exportSet);
-
-		btmPanel.add(buttons1, BorderLayout.NORTH);
-		btmPanel.add(buttons3, BorderLayout.CENTER);
-		btmPanel.add(buttons2, BorderLayout.SOUTH);
+		btmPanel.add(leftBtmPanel, BorderLayout.LINE_START);
+		btmPanel.add(rightBtmPanel, BorderLayout.LINE_END);
 
 		modePanel.add(topPanel, BorderLayout.NORTH);
 		modePanel.add(scrollPane, BorderLayout.CENTER);
@@ -337,6 +356,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	 */
 	public void enableExportButton(boolean b) {
 		exportSet.setEnabled(b);
+	}
+
+	public void enableRemoveButton(boolean b) {
+		removeBtn.setEnabled(b);
 	}
 
 	/**
