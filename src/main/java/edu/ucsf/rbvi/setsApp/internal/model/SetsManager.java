@@ -262,7 +262,7 @@ public class SetsManager implements SessionLoadedListener {
 					String loadedSetName = colName.substring(8);
 					List<CyNode> cyNodes = new ArrayList<CyNode>();
 					for (Long suid: cyTable.getPrimaryKey().getValues(Long.class))
-						if (cyTable.getRow(suid).get(colName, Boolean.class))
+						if (Boolean.TRUE.equals(cyTable.getRow(suid).get(colName, Boolean.class)))
 							cyNodes.add(cyNetwork.getNode(suid));
 					if (cyNodes != null && cyNodes.size() == 0) cyNodes = null;
 					try {

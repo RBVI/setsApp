@@ -307,8 +307,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				// delete sets
 				for (TreePath path : paths) {
 					final DefaultMutableTreeNode node = (DefaultMutableTreeNode)path.getLastPathComponent();
-					boolean isSetElement = ! node.isRoot() && ((NodeInfo) node.getUserObject()).cyId != null;
-					if (!isSetElement) {
+					boolean isSet = ! node.isRoot() && ((NodeInfo) node.getUserObject()).cyId == null;
+					if (isSet) {
 						taskManager.execute(new TaskIterator(new RemoveSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
 					}
 				}
