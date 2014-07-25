@@ -8,6 +8,8 @@ import java.awt.event.MouseListener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Arrays;
+import java.util.HashSet;
 
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -21,6 +23,7 @@ import org.cytoscape.model.CyNetworkManager;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyTable;
+import org.cytoscape.model.CyRow;
 
 import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
@@ -28,6 +31,7 @@ import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 
+import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopySetTask;
@@ -193,8 +197,44 @@ public class SetsMouseAdapter extends MouseAdapter {
 			panel.enableRemoveButton(tree.getSelectionPath() != null);
 			// panel.setFirstSet(set1);
 			// panel.setSecondSet(set2);
+			updateNetworkSelectionFromSelectedPaths(tree.getSelectionPaths());
 		}
 	}
+
+	private void updateNetworkSelectionFromSelectedPaths(final TreePath[] paths) {
+		final HashSet<CyNetwork> networksSeen = new HashSet<CyNetwork>();
+		for (final TreePath path : paths) {
+			final DefaultMutableTreeNode node = (DefaultMutableTreeNode) path.getLastPathComponent();
+			final DefaultMutableTreeNode parent = (DefaultMutableTreeNode) node.getParent();
+			final Object obj = ((DefaultMutableTreeNode)path.getLastPathComponent()).getUserObject();
+			if (obj == null || !(obj instanceof NodeInfo)) {
+				continue;
+			}
+			final NodeInfo nodeInfo = (NodeInfo) obj;
+			final boolean isSet = nodeInfo.cyId == null;
+			final String name = isSet ? nodeInfo.setName : ((NodeInfo) parent.getUserObject()).setName;
+
+			final CyNetwork network = mySets.getCyNetwork(name);
+			if (!networksSeen.contains(network)) {
+				for (final CyTable tbl : Arrays.asList(network.getDefaultNodeTable(), network.getDefaultEdgeTable())) {
+					for (final CyRow row : tbl.getAllRows()) {
+						row.set(CyNetwork.SELECTED, false);
+					}
+				}
+				networksSeen.add(network);
+			}
+
+			final CyTable tbl = mySets.getType(name).equals(CyNode.class) ? network.getDefaultNodeTable() : network.getDefaultEdgeTable();
+			if (isSet) {
+				for (final CyIdentifiable cyId : mySets.getSet(nodeInfo.setName).getElements()) {
+					tbl.getRow(cyId.getSUID()).set(CyNetwork.SELECTED, true);
+				}
+			} else {
+				tbl.getRow(nodeInfo.cyId.getSUID()).set(CyNetwork.SELECTED, true);
+			}
+		}
+	}
+
 	private boolean singleSetSelected(MouseEvent e) {
 		JTree tree = (JTree) e.getSource();
 		TreePath path[] = tree.getSelectionPaths();
