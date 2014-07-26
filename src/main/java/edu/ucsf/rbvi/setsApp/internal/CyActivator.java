@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
 import org.cytoscape.io.BasicCyFileFilter;
@@ -86,6 +87,7 @@ public class CyActivator extends AbstractCyActivator {
 		} else {
 			SetsPane setsPanel = new SetsPane(bc, sets);
 			registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
+			registerService(bc,setsPanel,SetCurrentNetworkListener.class, new Properties());
 		}
 
 		registerService(bc,sets,SessionLoadedListener.class, new Properties());

@@ -64,6 +64,8 @@ import org.cytoscape.view.model.CyNetworkView;
 import org.cytoscape.view.model.CyNetworkViewManager;
 import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
+import org.cytoscape.application.events.SetCurrentNetworkEvent;
+import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
@@ -91,7 +93,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  * @author Allan Wu
  *
  */
-public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener {
+public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SetCurrentNetworkListener {
 	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, partition, exportSet, removeBtn;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
@@ -130,8 +132,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		// Button for importing sets from file
 		ImageIcon importSetIcon = new ImageIcon(getClass().getResource("/icons/import.png"));
 		importSet = new JButton(importSetIcon);
-		importSet.setToolTipText("Import a set from a file.");
-		importSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		importSet.setToolTipText("Import from file");
 		importSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -141,8 +142,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		// Button for set union
 		ImageIcon unionIcon = new ImageIcon(getClass().getResource("/icons/union.png"));
 		union = new JButton(unionIcon);
-		union.setToolTipText("<html>Create a new set from the <b>union</b> of two or more selected sets.</html>");
-		union.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		union.setToolTipText("Union");
 		union.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -156,8 +156,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		// Button for set intersection
 		ImageIcon intersectIcon = new ImageIcon(getClass().getResource("/icons/intersect.png"));
 		intersection = new JButton(intersectIcon);
-		intersection.setToolTipText("<html>Create a new set from the <b>intersection</b> of two or more selected sets.</html>");
-		intersection.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		intersection.setToolTipText("Intersect");
 		intersection.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -171,8 +170,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		// Button for set difference
 		ImageIcon differenceIcon = new ImageIcon(getClass().getResource("/icons/difference.png"));
 		difference = new JButton(differenceIcon);
-		difference.setToolTipText("<html>Create a new set from the <b>difference</b> of two or more selected sets.</html>");
-		difference.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		difference.setToolTipText("Difference");
 		difference.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -186,8 +184,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 		ImageIcon partitionIcon = new ImageIcon(getClass().getResource("/icons/partition.png"));
 		partition = new JButton(partitionIcon);
-		partition.setToolTipText("<html><b>Partition</b> all node sets such that &mdash; after partitioning &mdash; each node in the network belongs to only one node set.</html>");
-		partition.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		partition.setToolTipText("Partition");
+		partition.setEnabled(false);
 		partition.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -199,8 +197,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		// Button for exporting set to file
 		ImageIcon exportSetIcon = new ImageIcon(getClass().getResource("/icons/export.png"));
 		exportSet = new JButton(exportSetIcon);
-		exportSet.setToolTipText("Export the selected set to a file");
-		exportSet.setFont(new Font(Font.DIALOG, Font.PLAIN, 11));
+		exportSet.setToolTipText("Export to file");
 		exportSet.addActionListener(new ActionListener() {
 			
 			public void actionPerformed(ActionEvent e) {
@@ -258,6 +255,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 		ImageIcon addIcon = new ImageIcon(getClass().getResource("/icons/add.png"));
 		final JButton addBtn = new JButton(addIcon);
+		addBtn.setToolTipText("Add a set");
 		addBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
@@ -283,6 +281,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 		ImageIcon removeIcon = new ImageIcon(getClass().getResource("/icons/remove.png"));
 		removeBtn = new JButton(removeIcon);
+		removeBtn.setToolTipText("Remove selected sets");
 		removeBtn.setEnabled(false);
 		removeBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -427,6 +426,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 		// Move this functionality to Set??
 		CyNetwork cyNetwork = mySets.getCyNetwork(event.getSetName());
+		Class<? extends CyIdentifiable> type = mySets.getType(event.getSetName());
 		CyTable nodeTable = cyNetwork.getDefaultNodeTable();
 		CyTable edgeTable = cyNetwork.getDefaultEdgeTable();
 		Collection<? extends CyIdentifiable> cyIds = mySets.getSet(event.getSetName()).getElements();
@@ -446,6 +446,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		thisSet.setUserObject(new NodeInfo(event.getSetName() + " (" + thisSet.getChildCount() + ")", event.getSetName()));
 		treeModel.insertNodeInto(thisSet, sets, sets.getChildCount());
 		setsTree.expandPath(new TreePath(sets.getPath()));
+		updatePartitionBtn();
 	}
 
 	/**
@@ -455,6 +456,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		treeModel.removeNodeFromParent(setsNode.get(event.getSetName()));
 		setsNode.remove(event.getSetName());
 		cyIdNode.remove(event.getSetName());
+		updatePartitionBtn();
 	}
 
 	/**
@@ -465,6 +467,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
 		exportSet.setEnabled(false);
+		partition.setEnabled(false);
 	}
 
 	/**
@@ -493,24 +496,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		treeModel.nodeChanged(setNode);
 	}
 
+	public void handleEvent(SetCurrentNetworkEvent e) {
+		updatePartitionBtn();
+	}
+
 
 	/****************************************************
  	 * Private methods
  	 ***************************************************/
-	private void adjustWidth(JComponent[] components) {
-		Dimension dim = components[0].getPreferredSize();
-		int width = dim.width;
-		for (int i = 1; i < components.length; i++) {
-			dim = components[i].getPreferredSize();
-			if (dim.width > width) {
-				width = dim.width;
-			}
-		}
-		for (final JComponent cbx : components) {
-			dim = cbx.getPreferredSize();
-			dim.width = width;
-			cbx.setPreferredSize(dim);
-		}
+
+	private void updatePartitionBtn() {
+		CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+		partition.setEnabled(mySets.getSetsFor(appManager.getCurrentNetwork(), CyNode.class).size() > 0);
 	}
 
 	
