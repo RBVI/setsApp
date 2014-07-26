@@ -691,6 +691,29 @@ public class SetsManager implements SessionLoadedListener {
 		fireSetCreatedEvent(name); */
 	}
 
+	public String suggestNewSetName() {
+		int i = 0;
+		String name = null;
+		do {
+			name = encodeBase26(i++);
+		} while (setsMap.containsKey(name));
+		return name;
+	}
+
+	private static String encodeBase26(int a) {
+		final String alphabet = "abcdefghijklmnopqrstuvwxyz";
+		final int n = alphabet.length();
+		if (a == 0) {
+			return Character.toString(alphabet.charAt(a));
+		}
+		final StringBuffer buffer = new StringBuffer(1);
+		while (a != 0) {
+			buffer.append(alphabet.charAt(a % n));
+			a /= n;
+		}
+		return buffer.toString();
+	}
+
 	private void restoreSet(String name, CyNetwork network, Class<? extends CyIdentifiable> type, 
             List<? extends CyIdentifiable> members) throws Exception {
 		setsMap.put(name, addSetHelper(name, network, type, members));

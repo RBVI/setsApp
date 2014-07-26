@@ -47,6 +47,7 @@ public class CreateNodeSetTask extends AbstractTask implements ObservableTask {
 	public CreateNodeSetTask(SetsManager manager, CyNetwork net) {
 		mgr = manager;
 		this.net = net;
+		this.name = mgr.suggestNewSetName();
 		// System.out.println("Creating node set task with net: "+net);
 	}
 

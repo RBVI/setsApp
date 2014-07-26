@@ -56,6 +56,17 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 		this.set2 = null;
 		this.setsList = setList;
 		operation = s;
+
+		final StringBuffer buffer = new StringBuffer();
+		for (int i = 0; i < setList.size(); i++) {
+			buffer.append(setList.get(i));
+			if (i < (setList.size() - 1)) {
+				buffer.append(' ');
+				buffer.append(s.operator());
+				buffer.append(' ');
+			}
+		}
+		this.name = buffer.toString();
 	}
 
 	public SetOperationsTask(SetsManager setsManager, String set1, String set2, SetOperations s) {
@@ -65,6 +76,7 @@ public class SetOperationsTask extends AbstractTask implements ObservableTask {
 		s1 = set1;
 		s2 = set2;
 		operation = s;
+		this.name = String.format("%s %s %s", set1, s.operator(), set2);
 	}
 	
 	@Override

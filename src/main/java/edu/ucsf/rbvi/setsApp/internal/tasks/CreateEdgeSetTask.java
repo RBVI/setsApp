@@ -40,6 +40,7 @@ public class CreateEdgeSetTask extends AbstractTask implements ObservableTask {
 	public CreateEdgeSetTask(SetsManager manager, CyNetwork net) {
 		mgr = manager;
 		this.net = net;
+		this.name = mgr.suggestNewSetName();
 	}
 	
 	@Override
