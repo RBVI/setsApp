@@ -66,6 +66,9 @@ public class ForceDirectedLayoutTask extends AbstractTask {
       }
     }
 
+    final float edgeSpringCoeff = (float) Math.pow(10, -settings.edgeSpringCoeffNLog);
+    final float groupSpringCoeff = (float) Math.pow(10, -settings.groupSpringCoeffNLog);
+
     // create springs for each edge
     for (final CyEdge edge : network.getEdgeList()) {
       final CyNode src = edge.getSource();
@@ -75,7 +78,7 @@ public class ForceDirectedLayoutTask extends AbstractTask {
       if (srcItem == null || trgItem == null) {
         continue;
       }
-      sim.addSpring(srcItem, trgItem, (float) settings.edgeSpringCoeff, (float) settings.edgeSpringLength);
+      sim.addSpring(srcItem, trgItem, (float) edgeSpringCoeff, (float) settings.edgeSpringLength);
     }
 
     // create springs between all intra-group nodes
@@ -85,7 +88,7 @@ public class ForceDirectedLayoutTask extends AbstractTask {
         final ForceItem srcItem = items.get(src);
         for (final CyNode trg : nodes) {
           final ForceItem trgItem = items.get(trg);
-          sim.addSpring(srcItem, trgItem, (float) settings.groupSpringCoeff, (float) settings.groupSpringLength);
+          sim.addSpring(srcItem, trgItem, (float) groupSpringCoeff, (float) settings.groupSpringLength);
         }
       }
     }

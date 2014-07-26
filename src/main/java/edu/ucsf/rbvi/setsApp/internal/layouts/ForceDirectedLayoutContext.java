@@ -3,21 +3,25 @@ package edu.ucsf.rbvi.setsApp.internal.layouts;
 import org.cytoscape.work.Tunable;
 
 public class ForceDirectedLayoutContext {
-  @Tunable(description="The number of iterations to run the algorithm -- the higher the number, the better the accuracy yet longer run-time")
+  @Tunable(description="Iterations",
+           tooltip="The number of iterations to run the algorithm. The higher the number, the better the accuracy yet longer run-time.")
   public int iterations = 100;
 
-  @Tunable(description="The mass of nodes -- the higher the number, the less nodes move around the network")
-  public double nodeMass = 3.0f;
+  @Tunable(description="Node mass",
+           tooltip="The higher the node mass, the less nodes move around the network")
+  public double nodeMass = 3.0;
 
-  @Tunable(description="The spring coefficient for springs between connected nodes")
-  public double edgeSpringCoeff = 1e-4f;
+  @Tunable(description="Spring coefficient for connected nodes",
+           tooltip="The higher this number is, the more that network topology affects the layout. The effective coefficient is the negative log of this value.")
+  public double edgeSpringCoeffNLog = 4;
 
-  @Tunable(description="The spring length for springs between connected nodes")
-  public double edgeSpringLength = 50.0f;
+  @Tunable(description="Spring length for connected nodes")
+  public double edgeSpringLength = 50.0;
 
-  @Tunable(description="The spring coefficient for nodes in the same group")
-  public double groupSpringCoeff = 1e-7f;
+  @Tunable(description="Spring coefficient for nodes in the same set",
+           tooltip="The higher this number is, the more that set membership affects the layout. The effective coefficient is the negative log of this value.")
+  public double groupSpringCoeffNLog = 7;
 
-  @Tunable(description="The spring length for nodes in the same group")
-  public double groupSpringLength = 300.0f;
+  @Tunable(description="Spring length for nodes in the same set")
+  public double groupSpringLength = 50.0;
 }
