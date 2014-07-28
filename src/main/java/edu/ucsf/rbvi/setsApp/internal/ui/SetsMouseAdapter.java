@@ -38,6 +38,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CopySetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
 
 /**
  * Creates context menu for the JTree
@@ -74,23 +75,8 @@ public class SetsMouseAdapter extends MouseAdapter {
 			final CyIdentifiable selectecCyId = ((NodeInfo) node.getUserObject()).cyId;
 			final String thisSetName = ((NodeInfo) setNode.getUserObject()).setName;
 			
-			JMenuItem select = new JMenuItem("Select");
-			JMenuItem unselect = new JMenuItem("Unselect");
 			JMenuItem copy = new JMenuItem("Copy to...");
 			JMenuItem move = new JMenuItem("Move to...");
-			JMenuItem delete = new JMenuItem("Remove from Set");
-			select.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					displaySelectedCyIds(thisSetName, selectecCyId.getSUID());
-				}
-			});
-			unselect.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					unDisplaySelectedCyIds(thisSetName, selectecCyId.getSUID());
-				}
-			});
 			copy.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
@@ -103,55 +89,18 @@ public class SetsMouseAdapter extends MouseAdapter {
 					taskManager.execute(new TaskIterator(new MoveCyIdTask(mySets, thisSetName, selectecCyId)));
 				}
 			});
-			delete.addActionListener(new ActionListener() {
-					
-				public void actionPerformed(ActionEvent e) {
-					try {
-						mySets.removeFromSet(thisSetName, selectecCyId);
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-				}
-			});
-			popup.add(select);
-			popup.add(unselect);
 			popup.add(copy);
 			popup.add(move);
-			popup.add(delete);
 		}
 		else {
-			JMenuItem select = new JMenuItem("Select");
-			JMenuItem unselect = new JMenuItem("Unselect");
-			JMenuItem delete = new JMenuItem("Remove Set");
 			JMenuItem rename = new JMenuItem("Rename");
 			JMenuItem move = new JMenuItem("Copy set to different network");
+			JMenuItem export = new JMenuItem("Export to file");
 
-			select.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					String setName = ((NodeInfo) node.getUserObject()).setName;
-					displaySelectedCyIds(setName, null);
-				}
-			});
-			unselect.addActionListener(new ActionListener() {
-				
-				public void actionPerformed(ActionEvent e) {
-					String setName = ((NodeInfo) node.getUserObject()).setName;
-					unDisplaySelectedCyIds(setName, null);
-				}
-			});
 			rename.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
 					taskManager.execute(new TaskIterator(new RenameSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
-				}
-			});
-			delete.addActionListener(new ActionListener() {
-					
-				public void actionPerformed(ActionEvent e) {
-					taskManager.execute(new TaskIterator(new RemoveSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
-				//	mySets.removeSet(((NodeInfo) node.getUserObject()).setName);
 				}
 			});
 			move.addActionListener(new ActionListener() {
@@ -161,11 +110,15 @@ public class SetsMouseAdapter extends MouseAdapter {
 					taskManager.execute(new TaskIterator(new CopySetTask(mySets, networkManager.getNetworkSet(), ((NodeInfo) node.getUserObject()).setName)));
 				}
 			});
-			popup.add(select);
-			popup.add(unselect);
-			popup.add(delete);
+			export.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					final String setName = ((NodeInfo) node.getUserObject()).setName;
+					taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,setName)));
+				}
+			});
 			popup.add(rename);
 			popup.add(move);
+			popup.add(export);
 		}
 		popup.show(tree, x, y);
 	}

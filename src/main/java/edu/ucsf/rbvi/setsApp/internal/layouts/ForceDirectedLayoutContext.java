@@ -12,14 +12,14 @@ public class ForceDirectedLayoutContext {
   public double nodeMass = 3.0;
 
   @Tunable(description="Spring coefficient for connected nodes",
-           tooltip="The higher this number is, the more that network topology affects the layout. The effective coefficient is the negative log of this value.")
+           tooltip="The higher this number is, the more that network topology affects the layout. This value is the negative log of the effective coefficient.")
   public double edgeSpringCoeffNLog = 4;
 
   @Tunable(description="Spring length for connected nodes")
   public double edgeSpringLength = 50.0;
 
   @Tunable(description="Spring coefficient for nodes in the same set",
-           tooltip="The higher this number is, the more that set membership affects the layout. The effective coefficient is the negative log of this value.")
+           tooltip="The higher this number is, the more that set membership affects the layout. This value is the negative log of the effective coefficient.")
   public double groupSpringCoeffNLog = 7;
 
   @Tunable(description="Spring length for nodes in the same set")

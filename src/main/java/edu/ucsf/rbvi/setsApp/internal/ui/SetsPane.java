@@ -94,7 +94,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  *
  */
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SetCurrentNetworkListener {
-	private JButton importSet, createSet, newSetFromAttribute, union, intersection, difference, partition, exportSet, removeBtn;
+	private JButton createSet, newSetFromAttribute, union, intersection, difference, partition, removeBtn;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
 	private DefaultTreeModel treeModel;
@@ -129,16 +129,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		setPreferredSize(new Dimension(500,600));
 		setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-		// Button for importing sets from file
-		ImageIcon importSetIcon = new ImageIcon(getClass().getResource("/icons/import.png"));
-		importSet = new JButton(importSetIcon);
-		importSet.setToolTipText("Import from file");
-		importSet.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(new TaskIterator(new CreateSetFromFileTask(mySets,networkManager)));
-			}
-		});
 		// Button for set union
 		ImageIcon unionIcon = new ImageIcon(getClass().getResource("/icons/union.png"));
 		union = new JButton(unionIcon);
@@ -194,18 +184,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 
-		// Button for exporting set to file
-		ImageIcon exportSetIcon = new ImageIcon(getClass().getResource("/icons/export.png"));
-		exportSet = new JButton(exportSetIcon);
-		exportSet.setToolTipText("Export to file");
-		exportSet.addActionListener(new ActionListener() {
-			
-			public void actionPerformed(ActionEvent e) {
-				taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,set1)));
-			}
-		});
-		exportSet.setEnabled(false);
-		
 		// Create sets tree inside a scroll pane
 		sets = new DefaultMutableTreeNode("Sets"/* new NodeInfo("Sets","Sets") */);
 		setsTree = new JTree(sets);
@@ -247,11 +225,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 				taskManager.execute(new TaskIterator(new CreateSetFromAttributeTask(mySets, appManager.getCurrentNetwork(), CyEdge.class)));
 			}
 		};	
+		final Action importFromFile = new AbstractAction("import from file") {
+			public void actionPerformed(ActionEvent e) {
+				taskManager.execute(new TaskIterator(new CreateSetFromFileTask(mySets,networkManager)));
+			}
+		};
 		final JPopupMenu addMenu = new JPopupMenu();
 		addMenu.add(addSelectedNodes);
 		addMenu.add(addSelectedEdges);
 		addMenu.add(addNodeAttributes);
 		addMenu.add(addEdgeAttributes);
+		addMenu.addSeparator();
+		addMenu.add(importFromFile);
 
 		ImageIcon addIcon = new ImageIcon(getClass().getResource("/icons/add.png"));
 		final JButton addBtn = new JButton(addIcon);
@@ -319,8 +304,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		topPanel.add(removeBtn);
 		
 		JPanel leftBtmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		leftBtmPanel.add(importSet);
-		leftBtmPanel.add(exportSet);
 
 		JPanel rightBtmPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		rightBtmPanel.add(partition);
@@ -354,7 +337,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	 * @param b "true" to enable buttons, "false" to disable buttons
 	 */
 	public void enableExportButton(boolean b) {
-		exportSet.setEnabled(b);
 	}
 
 	public void enableRemoveButton(boolean b) {
@@ -466,7 +448,6 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		while (sets.getChildCount() > 0) {
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
-		exportSet.setEnabled(false);
 		partition.setEnabled(false);
 	}
 
