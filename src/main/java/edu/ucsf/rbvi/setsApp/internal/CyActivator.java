@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Arrays;
 
 import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
@@ -84,10 +85,6 @@ public class CyActivator extends AbstractCyActivator {
 
 		if (cyApplication == null) {
 			haveGUI = false;
-		} else {
-			SetsPane setsPanel = new SetsPane(bc, sets);
-			registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
-			registerService(bc,setsPanel,SetCurrentNetworkListener.class, new Properties());
 		}
 
 		registerService(bc,sets,SessionLoadedListener.class, new Properties());
@@ -227,6 +224,12 @@ public class CyActivator extends AbstractCyActivator {
     forceDirectedLayoutAlgorithmProps.setProperty(TITLE,forceDirectedLayoutAlgorithmProps.toString());
     forceDirectedLayoutAlgorithmProps.setProperty(MENU_GRAVITY,"20.1");
     registerService(bc, forceDirectedLayoutAlgorithm, CyLayoutAlgorithm.class, forceDirectedLayoutAlgorithmProps);
+
+		if (haveGUI) {
+			SetsPane setsPanel = new SetsPane(bc, sets, Arrays.asList(gridLayoutAlgorithm, forceDirectedLayoutAlgorithm));
+			registerService(bc,setsPanel,CytoPanelComponent.class, new Properties());
+			registerService(bc,setsPanel,SetCurrentNetworkListener.class, new Properties());
+		}
 	}
 	
 	private void setStandardProperties(Properties p, String title, String command, String gravity) {

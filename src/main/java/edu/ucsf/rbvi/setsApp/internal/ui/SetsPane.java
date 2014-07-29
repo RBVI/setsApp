@@ -66,6 +66,7 @@ import org.cytoscape.work.TaskIterator;
 import org.cytoscape.work.TaskManager;
 import org.cytoscape.application.events.SetCurrentNetworkEvent;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
+import org.cytoscape.view.layout.CyLayoutAlgorithm;
 import org.osgi.framework.BundleContext;
 
 import edu.ucsf.rbvi.setsApp.internal.events.SetChangedEvent;
@@ -95,6 +96,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  */
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SetCurrentNetworkListener {
 	private JButton createSet, newSetFromAttribute, union, intersection, difference, partition, removeBtn;
+	private SplitButton layout;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
 	private DefaultTreeModel treeModel;
@@ -104,6 +106,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private JMenuItem setsFNodes, setsFEdges, setsFNodeA, setsFEdgeA;
 	private BundleContext bundleContext;
 	private SetsManager mySets;
+	private List<CyLayoutAlgorithm> setLayouts;
+	private CyLayoutAlgorithm defaultLayout;
 	private CyNetworkManager networkManager;
 	private CyNetworkViewManager networkViewManager;
 	private TaskManager taskManager;
@@ -112,16 +116,18 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 	private JFileChooser chooseImport;
 	private String set1, set2;
 	private List<String> setsList;
-	
+
 	/**
 	 * Constructor for SetsPane
 	 * @param bc BundleContext of this instance of Cytoscape
 	 * @param thisSet SetsManager instance for this instance of Cytoscape
 	 */
-	public SetsPane(BundleContext bc, SetsManager thisSet) {
+	public SetsPane(BundleContext bc, SetsManager thisSet, List<CyLayoutAlgorithm> setLayouts) {
 		bundleContext = bc;
 		mySets = thisSet;
 		mySets.addSetChangedListener(this);
+		this.setLayouts = setLayouts;
+		defaultLayout = setLayouts.get(0);
 		networkManager = (CyNetworkManager) getService(CyNetworkManager.class);
 		networkViewManager = (CyNetworkViewManager) getService(CyNetworkViewManager.class);
 		taskManager = (TaskManager) getService(TaskManager.class);
@@ -177,12 +183,40 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		partition.setToolTipText("Partition");
 		partition.setEnabled(false);
 		partition.addActionListener(new ActionListener() {
-			
 			public void actionPerformed(ActionEvent e) {
 				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 				taskManager.execute(new TaskIterator(new PartitionNodesTask(mySets, appManager.getCurrentNetwork())));
 			}
 		});
+
+		final ActionListener runLayout = new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				CyNetworkView netView = appManager.getCurrentNetworkView();
+				taskManager.execute(defaultLayout.createTaskIterator(netView, defaultLayout.getDefaultLayoutContext(), null, null));
+			}
+		};
+
+		JPopupMenu layoutMenu = new JPopupMenu();
+		final List<CheckMarkMenuItem> layoutItems = new ArrayList<CheckMarkMenuItem>(setLayouts.size());
+		for (final CyLayoutAlgorithm alg : setLayouts) {
+			final CheckMarkMenuItem item = new CheckMarkMenuItem(alg.toString(), defaultLayout == alg);
+			item.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					for (CheckMarkMenuItem other : layoutItems) {
+						other.setSelected(other == item);
+					}
+					defaultLayout = alg;
+					runLayout.actionPerformed(e);
+				}
+			});
+			layoutMenu.add(item);
+		}
+		ImageIcon layoutIcon = new ImageIcon(getClass().getResource("/icons/layout.png"));
+		layout = new SplitButton(layoutIcon);
+		layout.setEnabled(false);
+		layout.setMenu(layoutMenu);
+		layout.addActionListener(runLayout);
 
 		// Create sets tree inside a scroll pane
 		sets = new DefaultMutableTreeNode("Sets"/* new NodeInfo("Sets","Sets") */);
@@ -304,9 +338,10 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		topPanel.add(removeBtn);
 		
 		JPanel leftBtmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+		leftBtmPanel.add(partition);
+		leftBtmPanel.add(layout);
 
 		JPanel rightBtmPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-		rightBtmPanel.add(partition);
 		rightBtmPanel.add(union);
 		rightBtmPanel.add(intersection);
 		rightBtmPanel.add(difference);
@@ -449,6 +484,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
 		partition.setEnabled(false);
+		layout.setEnabled(false);
 	}
 
 	/**
@@ -488,7 +524,9 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 
 	private void updatePartitionBtn() {
 		CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
-		partition.setEnabled(mySets.getSetsFor(appManager.getCurrentNetwork(), CyNode.class).size() > 0);
+		boolean areThereNodeSets = mySets.getSetsFor(appManager.getCurrentNetwork(), CyNode.class).size() > 0;
+		partition.setEnabled(areThereNodeSets);
+		layout.setEnabled(areThereNodeSets);
 	}
 
 	
