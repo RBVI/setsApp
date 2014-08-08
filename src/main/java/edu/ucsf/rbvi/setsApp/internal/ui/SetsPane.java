@@ -216,6 +216,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		layout = new SplitButton(layoutIcon);
 		layout.setEnabled(false);
 		layout.setMenu(layoutMenu);
+    layout.setToolTipText("Layout");
 		layout.addActionListener(runLayout);
 
 		// Create sets tree inside a scroll pane
