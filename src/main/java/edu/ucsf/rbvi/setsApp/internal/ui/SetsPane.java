@@ -80,6 +80,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromAttributeTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateSetFromFileTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateEdgeSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CreateNodeSetTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.GroupNodesTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.PartitionNodesTask;
@@ -95,7 +96,7 @@ import edu.ucsf.rbvi.setsApp.internal.tasks.WriteSetToFileTask2;
  *
  */
 public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedListener, SetCurrentNetworkListener {
-	private JButton createSet, newSetFromAttribute, union, intersection, difference, partition, removeBtn;
+	private JButton createSet, newSetFromAttribute, union, intersection, difference, partition, group, removeBtn;
 	private SplitButton layout;
 	private JPanel modePanel, createSetPanel, filePanel, setOpPanel;
 	private JTree setsTree;
@@ -186,6 +187,17 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			public void actionPerformed(ActionEvent e) {
 				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 				taskManager.execute(new TaskIterator(new PartitionNodesTask(mySets, appManager.getCurrentNetwork())));
+			}
+		});
+
+		ImageIcon groupIcon = new ImageIcon(getClass().getResource("/icons/partition.png"));
+		group = new JButton(groupIcon);
+		group.setToolTipText("Create groups from node sets");
+		group.setEnabled(false);
+		group.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
+				taskManager.execute(new TaskIterator(new GroupNodesTask(mySets, appManager.getCurrentNetwork())));
 			}
 		});
 
@@ -340,6 +352,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		
 		JPanel leftBtmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
 		leftBtmPanel.add(partition);
+		leftBtmPanel.add(group);
 		leftBtmPanel.add(layout);
 
 		JPanel rightBtmPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -485,6 +498,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			treeModel.removeNodeFromParent((MutableTreeNode) sets.getLastChild());
 		}
 		partition.setEnabled(false);
+		group.setEnabled(false);
 		layout.setEnabled(false);
 	}
 
@@ -527,6 +541,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		CyApplicationManager appManager = (CyApplicationManager) getService(CyApplicationManager.class);
 		boolean areThereNodeSets = mySets.getSetsFor(appManager.getCurrentNetwork(), CyNode.class).size() > 0;
 		partition.setEnabled(areThereNodeSets);
+		group.setEnabled(areThereNodeSets);
 		layout.setEnabled(areThereNodeSets);
 	}
 

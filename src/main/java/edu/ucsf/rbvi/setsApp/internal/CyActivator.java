@@ -19,6 +19,7 @@ import org.cytoscape.application.CyApplicationManager;
 import org.cytoscape.application.events.SetCurrentNetworkListener;
 import org.cytoscape.application.swing.CySwingApplication;
 import org.cytoscape.application.swing.CytoPanelComponent;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.io.BasicCyFileFilter;
 import org.cytoscape.io.DataCategory;
 import org.cytoscape.model.CyNetwork;
@@ -81,7 +82,8 @@ public class CyActivator extends AbstractCyActivator {
 		CySwingApplication cyApplication = getService(bc, CySwingApplication.class);
 		CyApplicationManager cyApplicationManager = getService(bc, CyApplicationManager.class);
 		CyNetworkManager networkManager = (CyNetworkManager) getService(bc, CyNetworkManager.class);
-		SetsManager sets = new SetsManager(networkManager, cyApplicationManager);
+		CyGroupFactory groupFactory = (CyGroupFactory) getService(bc, CyGroupFactory.class);
+		SetsManager sets = new SetsManager(networkManager, cyApplicationManager, groupFactory);
 
 		if (cyApplication == null) {
 			haveGUI = false;

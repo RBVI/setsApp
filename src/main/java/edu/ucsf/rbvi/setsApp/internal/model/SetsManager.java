@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.cytoscape.application.CyApplicationManager;
+import org.cytoscape.group.CyGroup;
+import org.cytoscape.group.CyGroupFactory;
 import org.cytoscape.model.CyColumn;
 import org.cytoscape.model.CyEdge;
 import org.cytoscape.model.CyIdentifiable;
@@ -26,6 +28,7 @@ import org.cytoscape.model.CyRow;
 import org.cytoscape.model.CyTable;
 import org.cytoscape.model.CyTableUtil;
 import org.cytoscape.model.subnetwork.CySubNetwork;
+import org.cytoscape.model.subnetwork.CyRootNetwork;
 import org.cytoscape.session.events.SessionLoadedEvent;
 import org.cytoscape.session.events.SessionLoadedListener;
 import org.cytoscape.view.model.CyNetworkView;
@@ -47,6 +50,7 @@ public class SetsManager implements SessionLoadedListener {
 	private ArrayList<SetChangedListener> setChangedListener = new ArrayList<SetChangedListener>();
 	private CyNetworkManager netMgr;
 	private CyApplicationManager appMgr;
+	private CyGroupFactory groupFactory;
 	public static final String TABLE_PREFIX = "setsApp:";
 	
 	/**
@@ -54,10 +58,11 @@ public class SetsManager implements SessionLoadedListener {
 	 * @param netMgr The current CyNetworkManager
 	 * @param appMgr The current CyApplicationManager
 	 */
-	public SetsManager(CyNetworkManager netMgr, CyApplicationManager appMgr) {
+	public SetsManager(CyNetworkManager netMgr, CyApplicationManager appMgr, CyGroupFactory groupFactory) {
 		this.setsMap = new ConcurrentHashMap<String, Set<? extends CyIdentifiable>> ();
 		this.netMgr = netMgr;
 		this.appMgr = appMgr;
+		this.groupFactory = groupFactory;
 	}
 	
 	/**
@@ -444,6 +449,30 @@ public class SetsManager implements SessionLoadedListener {
 		sanityCheck(newName, set1, set2);
 		Set<? extends CyIdentifiable> newSet = setsMap.get(set1).difference(newName, setsMap.get(set2));
 		addSet(newSet);
+	}
+
+	/**
+	 * Create a group for every node set.  The name of the group should be the name of the set.
+	 *
+	 * @param network the network to create the groups in
+	 */
+	public void group(final CyNetwork network) {
+		for (String setName: setsMap.keySet()) {
+			Set<? extends CyIdentifiable> set = setsMap.get(setName);
+			// Only want node sets
+			if (set.getType().equals(CyNode.class)) {
+				groupSet(network, (Set<CyNode>)set);
+			}
+		}
+	}
+
+	public CyGroup groupSet(final CyNetwork network, final Set<CyNode> set) {
+		Collection<CyNode> nodes = set.getElements();
+		CyGroup newGroup = groupFactory.createGroup(network, new ArrayList<CyNode>(nodes), null, true);
+		// set the name
+    CyRow groupRow = ((CySubNetwork)network).getRootNetwork().getRow(newGroup.getGroupNode(), CyRootNetwork.SHARED_ATTRS);
+    groupRow.set(CyRootNetwork.SHARED_NAME, set.getName());
+		return newGroup;
 	}
 
 	/**
