@@ -190,7 +190,7 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 			}
 		});
 
-		ImageIcon groupIcon = new ImageIcon(getClass().getResource("/icons/partition.png"));
+		ImageIcon groupIcon = new ImageIcon(getClass().getResource("/icons/togroups.png"));
 		group = new JButton(groupIcon);
 		group.setToolTipText("Create groups from node sets");
 		group.setEnabled(false);
@@ -351,8 +351,8 @@ public class SetsPane extends JPanel implements CytoPanelComponent, SetChangedLi
 		topPanel.add(removeBtn);
 		
 		JPanel leftBtmPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-		leftBtmPanel.add(partition);
 		leftBtmPanel.add(group);
+		leftBtmPanel.add(partition);
 		leftBtmPanel.add(layout);
 
 		JPanel rightBtmPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
