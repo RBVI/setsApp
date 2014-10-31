@@ -466,7 +466,17 @@ public class SetsManager implements SessionLoadedListener {
 		}
 	}
 
-	public CyGroup groupSet(final CyNetwork network, final Set<CyNode> set) {
+	public CyGroup group(CyNetwork network, String setName) {
+		if (network == null) network = appMgr.getCurrentNetwork();
+		Set<? extends CyIdentifiable> set = setsMap.get(setName);
+		if (set.getType().equals(CyNode.class)) {
+			CyGroup group = groupSet(network, (Set<CyNode>)set);
+			group.collapse(network);
+		}
+		return null;
+	}
+
+	private CyGroup groupSet(CyNetwork network, final Set<CyNode> set) {
 		Collection<CyNode> nodes = set.getElements();
 		CyGroup newGroup = groupFactory.createGroup(network, new ArrayList<CyNode>(nodes), null, true);
 		// set the name

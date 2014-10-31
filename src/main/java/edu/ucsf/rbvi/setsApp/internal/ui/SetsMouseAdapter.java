@@ -35,6 +35,7 @@ import edu.ucsf.rbvi.setsApp.internal.model.Set;
 import edu.ucsf.rbvi.setsApp.internal.model.SetsManager;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopyCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.CopySetTask;
+import edu.ucsf.rbvi.setsApp.internal.tasks.GroupNodesTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.MoveCyIdTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RemoveSetTask;
 import edu.ucsf.rbvi.setsApp.internal.tasks.RenameSetTask;
@@ -96,29 +97,42 @@ public class SetsMouseAdapter extends MouseAdapter {
 			JMenuItem rename = new JMenuItem("Rename");
 			JMenuItem move = new JMenuItem("Copy set to different network");
 			JMenuItem export = new JMenuItem("Export to file");
+			final String setName = ((NodeInfo) node.getUserObject()).setName;
 
 			rename.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
-					taskManager.execute(new TaskIterator(new RenameSetTask(mySets, ((NodeInfo) node.getUserObject()).setName)));
+					taskManager.execute(new TaskIterator(new RenameSetTask(mySets, setName)));
 				}
 			});
 			move.addActionListener(new ActionListener() {
 				
 				public void actionPerformed(ActionEvent e) {
 					CyNetworkManager networkManager = (CyNetworkManager) panel.getService(CyNetworkManager.class);
-					taskManager.execute(new TaskIterator(new CopySetTask(mySets, networkManager.getNetworkSet(), ((NodeInfo) node.getUserObject()).setName)));
+					taskManager.execute(new TaskIterator(new CopySetTask(mySets, networkManager.getNetworkSet(), setName)));
 				}
 			});
 			export.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
-					final String setName = ((NodeInfo) node.getUserObject()).setName;
 					taskManager.execute(new TaskIterator(new WriteSetToFileTask2(mySets,setName)));
 				}
 			});
+
 			popup.add(rename);
 			popup.add(move);
 			popup.add(export);
+
+			if (mySets.getType(setName).equals(CyNode.class)) {
+				JMenuItem group = new JMenuItem("Create group from set nodes");
+
+				group.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+						taskManager.execute(new TaskIterator(new GroupNodesTask(mySets,setName)));
+					}
+				});
+				popup.add(group);
+			}
+
 		}
 		popup.show(tree, x, y);
 	}

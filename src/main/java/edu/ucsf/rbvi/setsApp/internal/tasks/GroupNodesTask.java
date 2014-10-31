@@ -15,10 +15,18 @@ public class GroupNodesTask extends AbstractTask {
 
 	private SetsManager mgr;
 	private CyNetwork net;
+	private String setName;
 
 	public GroupNodesTask(SetsManager manager, CyNetwork net) {
 		mgr = manager;
 		this.net = net;
+		this.setName = null;
+	}
+
+	public GroupNodesTask(SetsManager manager, String setName) {
+		mgr = manager;
+		this.net = null;
+		this.setName = setName;
 	}
 
 	@Override
@@ -26,6 +34,9 @@ public class GroupNodesTask extends AbstractTask {
 		if (net == null && network != null) {
 			net = network;
 		}
-		mgr.group(net);
+		if (setName == null)
+			mgr.group(net);
+		else
+			mgr.group(net, setName);
 	}
 }
