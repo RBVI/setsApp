@@ -456,14 +456,17 @@ public class SetsManager implements SessionLoadedListener {
 	 *
 	 * @param network the network to create the groups in
 	 */
-	public void group(final CyNetwork network) {
+	public int group(final CyNetwork network) {
+		int nGroups = 0;
 		for (String setName: setsMap.keySet()) {
 			Set<? extends CyIdentifiable> set = setsMap.get(setName);
 			// Only want node sets
 			if (set.getType().equals(CyNode.class)) {
 				groupSet(network, (Set<CyNode>)set);
+				nGroups++;
 			}
 		}
+		return nGroups;
 	}
 
 	public CyGroup group(CyNetwork network, String setName) {
@@ -472,6 +475,7 @@ public class SetsManager implements SessionLoadedListener {
 		if (set.getType().equals(CyNode.class)) {
 			CyGroup group = groupSet(network, (Set<CyNode>)set);
 			group.collapse(network);
+			return group;
 		}
 		return null;
 	}

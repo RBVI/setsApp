@@ -1,5 +1,6 @@
 package edu.ucsf.rbvi.setsApp.internal.tasks;
 
+import org.cytoscape.group.CyGroup;
 import org.cytoscape.model.CyNode;
 import org.cytoscape.model.CyNetwork;
 import org.cytoscape.work.AbstractTask;
@@ -34,9 +35,24 @@ public class GroupNodesTask extends AbstractTask {
 		if (net == null && network != null) {
 			net = network;
 		}
-		if (setName == null)
-			mgr.group(net);
-		else
-			mgr.group(net, setName);
+		if (setName == null) {
+			monitor.setTitle("Creating groups from node sets");
+			int nGroups = mgr.group(net);
+			monitor.setStatusMessage("Created "+nGroups+" groups");
+		} else {
+			monitor.setTitle("Creating group from set "+setName);
+			CyGroup group = mgr.group(net, setName);
+			if (group == null) {
+				monitor.showMessage(TaskMonitor.Level.ERROR, 
+				                    "Filed to create group "+setName);
+			} else {
+				monitor.setStatusMessage("Created new group "+setName+
+				                         " with "+group.getNodeList().size()+
+									               " nodes, "+group.getInternalEdgeList().size()+
+																 " internal edges, and "+
+																 group.getExternalEdgeList().size()+
+																 " external edges");
+			}
+		}
 	}
 }
